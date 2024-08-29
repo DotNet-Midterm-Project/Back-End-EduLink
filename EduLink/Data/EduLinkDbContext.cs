@@ -8,5 +8,11 @@ namespace EduLink.Data
         {
 
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configuring relationships between all Entities.
+        }
     }
 }
