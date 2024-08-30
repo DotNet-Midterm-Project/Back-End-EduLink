@@ -10,6 +10,7 @@
 
         public string SessionStatus {  get; set; }
         public string SessionLink { get; set; }
+        public ICollection<Notification_Booking> notification_Bookings { get; set; } = new List<Notification_Booking>();  
 
     }
 }
