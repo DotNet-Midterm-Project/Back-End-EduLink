@@ -5,8 +5,8 @@
         public int CourseID { get; set; }
         public int DepartmentID { get; set; }
 
-        public Department department { get; set; }
-        public Course course { get; set; }
+        public Department Department { get; set; }
+        public Course Course { get; set; }
 
     }
 }

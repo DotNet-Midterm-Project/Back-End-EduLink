@@ -6,8 +6,8 @@ namespace EduLink.Models
     {
         public int CourseID { get; set; }
         public string CourseName { get; set; }
-        public ICollection<Department_Courses> department_Courses { get; set; } = new List<Department_Courses>();
-
+        public ICollection<Department_Courses> Department_Courses { get; set; } = new List<Department_Courses>();
+        public ICollection<Reservation> Reservations { get; set; }
 
     }
 }

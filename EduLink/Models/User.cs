@@ -1,12 +1,11 @@
-﻿namespace EduLink.Models
-{
-    public class User
-    {
-        public int UserId { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber {  get; set; }
-        public string Password { get; set; }
+﻿using Microsoft.AspNetCore.Identity;
 
+namespace EduLink.Models
+{
+    public class User :IdentityUser
+    {
+
+        public Student Student { get; set; }
+        public Admin Admin { get; set; }
     }
 }
