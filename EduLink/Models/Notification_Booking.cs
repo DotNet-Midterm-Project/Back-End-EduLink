@@ -8,6 +8,6 @@
         public DateTime DateSent { get; set; }
         public string Message { get; set; }
         public Student Student { get; set; }
-        public Booking booking { get; set; }
+        public Booking Booking { get; set; }
     }
 }
