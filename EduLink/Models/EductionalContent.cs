@@ -7,5 +7,7 @@
         public int VolunteerID { get; set; }
         public string ContentType { get; set; }
         public string ContentDescription { get; set; }
+        public Volunteer Volunteers { get; set; }
+        public Course Courses { get; set; }
     }
 }
