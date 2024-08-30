@@ -9,6 +9,8 @@
         public DateTime Date { get; set; }
         public string SessionLink { get; set; }
         public int Capasity { get; set; }
-
+        public Volunteer Volunteer { get; set; }
+        public NotificationWorkshops NotificationWorkshops { get; set; }
+        public ICollection<WorkshopsRegistration> WorkshopsRegistrations { get; set; }
     }
 }

@@ -12,6 +12,7 @@
         public ICollection<Article> Articles { get; set; }
         public ICollection<EductionalContent> EductionalContent { get; set; }
         public ICollection<VolunteerCourse> VolunteerCourse { get; set; }
-
+        public  ICollection<Reservation> Reservations { get; set; }
+        public ICollection <WorkShop> WorkShops { get; set; }
     }
 }
