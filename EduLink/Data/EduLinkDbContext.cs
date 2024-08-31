@@ -22,6 +22,7 @@ namespace EduLink.Data
         public DbSet<Department_Courses> Department_courses { get; set; }
         public DbSet<Notification_Booking> NotificationBookings { get; set; }
         public DbSet<NotificationWorkshops> NotificationWorkshops { get; set; }
+        public DbSet<WorkshopsRegistration> WorkshopsRegistration { get; set; }
 
         public EduLinkDbContext(DbContextOptions options) : base(options){}
 

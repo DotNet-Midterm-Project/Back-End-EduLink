@@ -111,7 +111,7 @@ namespace EduLink.Migrations
 
                     b.HasKey("CourseID");
 
-                    b.ToTable("Course");
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("EduLink.Models.Department", b =>
@@ -669,7 +669,7 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.EductionalContent", b =>
                 {
-                    b.HasOne("EduLink.Models.Course", "Course")
+                    b.HasOne("EduLink.Models.Course", "Courses")
                         .WithMany("EductionalContents")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -681,7 +681,7 @@ namespace EduLink.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.Navigation("Courses");
 
                     b.Navigation("Volunteers");
                 });
