@@ -53,7 +53,7 @@ namespace EduLink.Repositories.Services
         {
             var contents = await _context.EductionalContents
                 .Where(ec => ec.VolunteerID == volunteerID && ec.CourseID == courseID)
-                .Select(ec => new EducationalContentDTOResponse
+                .Select(ec => new EducationalContentDtoResponse
                 {
                     ContentType = ec.ContentType,
                     ContentDescription = ec.ContentDescription
