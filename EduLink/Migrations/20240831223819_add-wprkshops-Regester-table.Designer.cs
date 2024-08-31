@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    [Migration("20240830133700_CreateTables")]
-    partial class CreateTables
+    [Migration("20240831223819_add-wprkshops-Regester-table")]
+    partial class addwprkshopsRegestertable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,7 +100,7 @@ namespace EduLink.Migrations
                     b.ToTable("Bookings");
                 });
 
-            modelBuilder.Entity("EduLink.Models.Courses", b =>
+            modelBuilder.Entity("EduLink.Models.Course", b =>
                 {
                     b.Property<int>("CourseID")
                         .ValueGeneratedOnAdd()
@@ -653,7 +653,7 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.Department_Courses", b =>
                 {
-                    b.HasOne("EduLink.Models.Courses", "Courses")
+                    b.HasOne("EduLink.Models.Course", "Course")
                         .WithMany("Department_Courses")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -665,14 +665,14 @@ namespace EduLink.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Courses");
+                    b.Navigation("Course");
 
                     b.Navigation("Department");
                 });
 
             modelBuilder.Entity("EduLink.Models.EductionalContent", b =>
                 {
-                    b.HasOne("EduLink.Models.Courses", "Courses")
+                    b.HasOne("EduLink.Models.Course", "Courses")
                         .WithMany("EductionalContents")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -732,7 +732,7 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.Reservation", b =>
                 {
-                    b.HasOne("EduLink.Models.Courses", "Courses")
+                    b.HasOne("EduLink.Models.Course", "Course")
                         .WithMany("Reservations")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -744,7 +744,7 @@ namespace EduLink.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Courses");
+                    b.Navigation("Course");
 
                     b.Navigation("Volunteer");
                 });
@@ -781,7 +781,7 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.VolunteerCourse", b =>
                 {
-                    b.HasOne("EduLink.Models.Courses", "Courses")
+                    b.HasOne("EduLink.Models.Course", "Courses")
                         .WithMany("volunteerCourses")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -887,7 +887,7 @@ namespace EduLink.Migrations
                     b.Navigation("Notification_Bookings");
                 });
 
-            modelBuilder.Entity("EduLink.Models.Courses", b =>
+            modelBuilder.Entity("EduLink.Models.Course", b =>
                 {
                     b.Navigation("Department_Courses");
 

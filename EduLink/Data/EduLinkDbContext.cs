@@ -95,7 +95,7 @@ namespace EduLink.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<VolunteerCourse>()
-                .HasOne(vc => vc.Course)                  // Each VolunteerCourse has one Course
+                .HasOne(vc => vc.Courses)                  // Each VolunteerCourse has one Course
                 .WithMany(c => c.volunteerCourses)         // Each Course has many VolunteerCourses
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);

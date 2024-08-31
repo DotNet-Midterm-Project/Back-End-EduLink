@@ -22,7 +22,7 @@ namespace EduLink.Repositories.Services
                 .Select(vc => new VolunteerCourseDTO
                 {
                     CourseID = vc.CourseID,
-                    CourseName = vc.Course.CourseName
+                    CourseName = vc.Courses.CourseName
                 }).ToListAsync();
 
             return courses;

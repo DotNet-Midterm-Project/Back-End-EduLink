@@ -778,7 +778,7 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.VolunteerCourse", b =>
                 {
-                    b.HasOne("EduLink.Models.Course", "Course")
+                    b.HasOne("EduLink.Models.Course", "Courses")
                         .WithMany("volunteerCourses")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -790,7 +790,7 @@ namespace EduLink.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.Navigation("Courses");
 
                     b.Navigation("Volunteers");
                 });
