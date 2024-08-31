@@ -1,4 +1,6 @@
 using EduLink.Data;
+using EduLink.Repositories.Interfaces;
+using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -29,6 +31,7 @@ namespace EduLink
             // Register repositories
             //Ex:
             //builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+            builder.Services.AddScoped<IStudent, StudentService>();
 
             //For JWT Later
             //builder.Services.AddScoped<JwtTokenService>();
