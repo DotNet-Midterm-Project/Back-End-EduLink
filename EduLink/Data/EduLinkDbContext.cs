@@ -22,6 +22,7 @@ namespace EduLink.Data
         public DbSet<Department_Courses> Department_courses { get; set; }
         public DbSet<Notification_Booking> NotificationBookings { get; set; }
         public DbSet<NotificationWorkshops> NotificationWorkshops { get; set; }
+        public DbSet<WorkshopsRegistration> WorkshopsRegistration { get; set; }
 
         public EduLinkDbContext(DbContextOptions options) : base(options){}
 
@@ -94,7 +95,7 @@ namespace EduLink.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<VolunteerCourse>()
-                .HasOne(vc => vc.Course)                  // Each VolunteerCourse has one Course
+                .HasOne(vc => vc.Courses)                  // Each VolunteerCourse has one Course
                 .WithMany(c => c.volunteerCourses)         // Each Course has many VolunteerCourses
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
