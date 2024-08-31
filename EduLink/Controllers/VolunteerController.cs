@@ -1,6 +1,8 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using EduLink.Models;
+using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -113,6 +115,20 @@ namespace EduLink.Controllers
             var response = await _volunteer.DeleteArticleAsync(request.VolunteerID, request.ArticleID);
 
             return Ok(response);
+        }
+
+        [HttpGet("get-all-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> GetAllReservations(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromQuery] ReservationReqDTO reservationRequest)
+        {
+            //if(authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            var resResrvation = await _volunteer.GetAllReservationAsync(reservationRequest);
+            return Ok(resResrvation);
         }
     }
 }

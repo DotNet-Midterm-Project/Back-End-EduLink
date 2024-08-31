@@ -3,6 +3,7 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 namespace EduLink.Repositories.Services
 {
@@ -109,6 +110,18 @@ namespace EduLink.Repositories.Services
             return new MessageResponseDTO
             {
                 Message = $"The article '{article.Title}' deleted successfully."
+            };
+        }
+
+        public async Task<ReservationResponseDTO> GetAllReservationAsync(ReservationReqDTO reservation)
+        {
+            var reservations = await _context.Reservations
+                .Where(r => r.VolunteerID == reservation.VolunteerID && r.CourseID == reservation.CourseID)
+                .ToListAsync();
+
+            return new ReservationResponseDTO
+            {
+                Reservations = reservations
             };
         }
     }
