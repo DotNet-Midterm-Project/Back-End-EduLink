@@ -51,7 +51,7 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Courses",
+                name: "Course",
                 columns: table => new
                 {
                     CourseID = table.Column<int>(type: "int", nullable: false)
@@ -211,7 +211,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_Department_courses_Courses_CourseID",
                         column: x => x.CourseID,
-                        principalTable: "Courses",
+                        principalTable: "Course",
                         principalColumn: "CourseID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -306,7 +306,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_EductionalContents_Courses_CourseID",
                         column: x => x.CourseID,
-                        principalTable: "Courses",
+                        principalTable: "Course",
                         principalColumn: "CourseID");
                     table.ForeignKey(
                         name: "FK_EductionalContents_Volunteers_VolunteerID",
@@ -334,7 +334,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_Reservations_Courses_CourseID",
                         column: x => x.CourseID,
-                        principalTable: "Courses",
+                        principalTable: "Course",
                         principalColumn: "CourseID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -358,7 +358,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_VolunteerCourses_Courses_CourseID",
                         column: x => x.CourseID,
-                        principalTable: "Courses",
+                        principalTable: "Course",
                         principalColumn: "CourseID");
                     table.ForeignKey(
                         name: "FK_VolunteerCourses_Volunteers_VolunteerID",
@@ -694,7 +694,7 @@ namespace EduLink.Migrations
                 name: "Reservations");
 
             migrationBuilder.DropTable(
-                name: "Courses");
+                name: "Course");
 
             migrationBuilder.DropTable(
                 name: "Volunteers");

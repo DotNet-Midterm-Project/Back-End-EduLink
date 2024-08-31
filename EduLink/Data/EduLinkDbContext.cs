@@ -94,7 +94,7 @@ namespace EduLink.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<VolunteerCourse>()
-                .HasOne(vc => vc.Courses)                  // Each VolunteerCourse has one Course
+                .HasOne(vc => vc.Course)                  // Each VolunteerCourse has one Course
                 .WithMany(c => c.volunteerCourses)         // Each Course has many VolunteerCourses
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
@@ -162,7 +162,7 @@ namespace EduLink.Data
                .HasForeignKey(x => x.DepartmentID);
             // End One-To-Many relationship between Department and Student
 
-            // Define Many-To-Many relationship between Department and Courses
+            // Define Many-To-Many relationship between Department and Course
             modelBuilder.Entity<Department_Courses>().HasKey(x => new { x.CourseID, x.DepartmentID }); // Set composite key for Department_Courses entity
             modelBuilder.Entity<Department_Courses>()
                 .HasOne(x => x.Department)
