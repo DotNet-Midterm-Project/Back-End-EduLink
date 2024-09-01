@@ -1,6 +1,8 @@
 ﻿using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using EduLink.Repositories.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -112,6 +114,71 @@ namespace EduLink.Controllers
 
             var response = await _volunteer.DeleteArticleAsync(request.VolunteerID, request.ArticleID);
 
+            return Ok(response);
+        }
+
+        [HttpGet("get-all-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> GetAllReservations(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromQuery] ReservationReqDTO reservationRequest)
+        {
+            //if(authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+            if (reservationRequest == null)
+            {
+                return BadRequest();
+            }
+
+            var resResrvation = await _volunteer.GetAllReservationAsync(reservationRequest);
+            return Ok(resResrvation);
+        }
+
+        [HttpDelete("delete-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> DeleteReservation(//[FromHeader(Name = "Authorization")] string authToken, 
+            [FromBody] DeleteReservationDTO deleteReservationRequest)
+        {
+            //if (authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            var response = await _volunteer.DeleteReservationAsync(deleteReservationRequest);
+            return Ok(response);
+        }
+
+        [HttpPut("update-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> UpdateReservation(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromBody] UpdateReservationReqDTO updateReservationRequest)
+        {
+            //if (authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            var response = await _volunteer.UpdateReservationAsync(updateReservationRequest);
+            return Ok(response);
+        }
+
+        [HttpPost("add-workshop")]
+        //[Authorize]
+        public async Task<IActionResult> AddWorkshop(//[FromHeader(Name = "Authorization")] string authToken, 
+            [FromBody] AddWorkshopReqDTO addWorkshopRequest)
+        {
+            //if (authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var response = await _volunteer.AddWorkshopAsync(addWorkshopRequest);
             return Ok(response);
         }
     }
