@@ -1,4 +1,5 @@
 ﻿using EduLink.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -238,6 +239,29 @@ namespace EduLink.Data
                 .HasOne(b => b.Student)
                 .WithMany(s => s.Bookings)
                 .HasForeignKey(b => b.StudentID);
+
+            //Seed Roles
+            SeedRoles(modelBuilder, "Admin");
+            SeedRoles(modelBuilder, "Student");
+            SeedRoles(modelBuilder, "Volunteer");
         }
+        private void SeedRoles(ModelBuilder modelBuilder, string roleName, params string[] permission)
+        {
+            var role = new IdentityRole
+            {
+                Id = roleName.ToLower(),
+                Name = roleName,
+                NormalizedName = roleName.ToUpper(),
+                ConcurrencyStamp = Guid.Empty.ToString()
+            };
+
+            // add claims for the users
+            // complete
+
+
+            modelBuilder.Entity<IdentityRole>().HasData(role);
+        }
+
     }
 }
+
