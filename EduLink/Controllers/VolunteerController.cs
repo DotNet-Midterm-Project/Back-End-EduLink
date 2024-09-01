@@ -1,6 +1,10 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using EduLink.Models;
+using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using EduLink.Repositories.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -114,5 +118,121 @@ namespace EduLink.Controllers
 
             return Ok(response);
         }
+
+        [HttpGet("get-all-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> GetAllReservations(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromQuery] ReservationReqDTO reservationRequest)
+        {
+            //if(authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+            if (reservationRequest == null)
+            {
+                return BadRequest();
+            }
+
+            var resResrvation = await _volunteer.GetAllReservationAsync(reservationRequest);
+            return Ok(resResrvation);
+        }
+
+        [HttpDelete("delete-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> DeleteReservation(//[FromHeader(Name = "Authorization")] string authToken, 
+            [FromBody] DeleteReservationDTO deleteReservationRequest)
+        {
+            //if (authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            var response = await _volunteer.DeleteReservationAsync(deleteReservationRequest);
+            return Ok(response);
+        }
+
+        [HttpPut("update-reservation")]
+        //[Authorize]
+        public async Task<IActionResult> UpdateReservation(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromBody] UpdateReservationReqDTO updateReservationRequest)
+        {
+            //if (authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            var response = await _volunteer.UpdateReservationAsync(updateReservationRequest);
+            return Ok(response);
+        }
+
+        [HttpPost("add-workshop")]
+        //[Authorize]
+        public async Task<IActionResult> AddWorkshop(//[FromHeader(Name = "Authorization")] string authToken, 
+            [FromBody] AddWorkshopReqDTO addWorkshopRequest)
+        {
+            //if (authToken != "tech_token")
+            //{
+            //    return Unauthorized("Invalid token.");
+            //}
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var response = await _volunteer.AddWorkshopAsync(addWorkshopRequest);
+            return Ok(response);
+        }
+
+        [HttpDelete("delete-workshop/{id}")]
+        //[Authorize]
+        public async Task<IActionResult> DeleteWorkshop(//[FromHeader(Name = "Authorization")] string authToken,
+                      [FromRoute] int id, [FromBody] DeleteWorkshopReqDTO deleteWorkshopRequest)
+        {
+            if (id != deleteWorkshopRequest.WorkshopID)
+            {
+                return BadRequest(new { message = "Workshop ID in the route does not match the ID in the request body." });
+            }
+
+            var result = await _volunteer.DeleteWorkshopAsync(deleteWorkshopRequest);
+
+            if (result.Message == "Workshop not found or does not belong to this volunteer.")
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
+
+        //[Authorize]
+        [HttpGet("get-all-workshop/{volunteerID}")]
+        public async Task<IActionResult> GetAllWorkshops(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromRoute] int volunteerID)
+        {
+            var workshops = await _volunteer.GetAllWorkshopsAsync(new GetAllWorkshopsReqDTO { VolunteerID = volunteerID });
+
+            if (workshops == null || !workshops.Any())
+            {
+                return NotFound(new { message = "No workshops found for this volunteer." });
+            }
+
+            return Ok(new { Workshop = workshops });
+        }
+
+
+        [HttpGet("get-notifications-workshops")]
+        public async Task<IActionResult> GetWorkshopNotifications(//[FromHeader(Name = "Authorization")] string authToken,
+                                                                  )
+        {
+            var notifications = await _volunteer.GetWorkshopNotificationsAsync();
+
+            if (notifications == null || notifications.Count == 0)
+            {
+                return NotFound(new { message = "No notifications found for this student." });
+            }
+
+            return Ok(new { notifications });
+        }
+
     }
 }
