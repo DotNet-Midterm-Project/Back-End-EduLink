@@ -43,7 +43,7 @@ namespace EduLink.Controllers
 
     
         [HttpPost("add-educational-content")]
-        public async Task<IActionResult> AddEducationalContent([FromHeader] string Authorization, [FromBody] EducationalContentDTO dto)
+        public async Task<IActionResult> AddEducationalContent([FromHeader] string Authorization, [FromBody] EducationalContentDtoReq dto)
         {
             // Validate the authorization token
             if (Authorization != "tech_token")
@@ -232,6 +232,34 @@ namespace EduLink.Controllers
             }
 
             return Ok(new { notifications });
+        }
+
+        [HttpGet("get-article/")]
+        [Authorize]
+        public async Task<IActionResult> GetArticle( [FromBody] GetArticleRequestDTO request)
+        {
+            var article = await _volunteer .GetArticleByIdAsync(request.VolunteerID, request.AricaleID);
+
+            if (article == null)
+            {
+                return NotFound(new { message = "Article not found" });
+            }
+
+            return Ok(new { Article = article });
+        }
+
+        [HttpPost("add-reservation")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> AddReservation([FromBody] AddReservationRequestDTO request)
+        {
+            var response = await _volunteer.AddReservationAsync(request);
+
+            if (response.Message == "Volunteer is not associated with the course.")
+            {
+                return BadRequest(new { message = response.Message });
+            }
+
+            return Ok(new { message = response.Message });
         }
 
     }

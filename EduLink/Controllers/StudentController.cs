@@ -2,6 +2,8 @@
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using EduLink.Repositories.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -145,5 +147,36 @@ namespace EduLink.Controllers
             return Ok(workshopsRegistratio);
          }
 
+        [HttpPost("Register/Volinteer")]
+       // [Authorize]
+        public async Task<IActionResult> RegisterVolunteer([FromBody] VolunteerRegisterDtoReq registerDTO)
+        {
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
+
+            var response = await student.RegisterVolunteerAsync(registerDTO);
+
+            if (response.Message == "You are already registered as a volunteer.")
+            {
+                return Conflict(response); // HTTP 409 Conflict if the volunteer is already registered
+            }
+
+            return Ok(response); // HTTP 200 OK if registration is successful
+        }
+
+        [HttpGet("get-notifications-booking")]
+        public async Task<IActionResult> GetNotificationsByStudent([FromHeader] string studentId)
+        {
+            if (string.IsNullOrEmpty(studentId))
+            {
+                return BadRequest("StudentId is required.");
+            }
+
+            var notifications = await student.GetNotificationsByStudentAsync(studentId);
+            return Ok(new { notifications });
+        }
     }
+
 }
