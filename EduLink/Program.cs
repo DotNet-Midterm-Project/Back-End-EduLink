@@ -1,8 +1,11 @@
 using EduLink.Data;
+using EduLink.Models;
 using EduLink.Repositories.Interfaces;
 using EduLink.Repositories.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 namespace EduLink
@@ -33,9 +36,10 @@ namespace EduLink
            builder.Services.AddScoped<IVolunteer, VolunteerService>();
 
             builder.Services.AddScoped<IStudent, StudentService>();
+            builder.Services.AddScoped<IAccount, IdentityAccountService>();
 
             //For JWT Later
-            //builder.Services.AddScoped<JwtTokenService>();
+            builder.Services.AddScoped<JwtTokenService>();
 
 
             // Swagger Config
@@ -43,40 +47,40 @@ namespace EduLink
             {
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
                 {
-                    Title = "Tunify API",
+                    Title = "EduLink API",
                     Version = "v1",
-                    Description = "API for managing playlists, songs, and artists in the Tunify Platform"
+                    Description = "API for managing student, volunteer, and courses in the EduLink Platform"
                 });
                 //HERE For JWT
-                //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                //{
-                //    Name = "Authorization",
-                //    Type = SecuritySchemeType.Http,
-                //    Scheme = "bearer",
-                //    BearerFormat = "JWT",
-                //    In = ParameterLocation.Header,
-                //    Description = "Please enter user token below."
-                //});
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Please enter user token below."
+                });
 
-                //options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                //    {
-                //        {
-                //            new OpenApiSecurityScheme
-                //            {
-                //                Reference = new OpenApiReference
-                //                {
-                //                    Type = ReferenceType.SecurityScheme,
-                //                    Id = "Bearer"
-                //                }
-                //            },
-                //            Array.Empty<string>()
-                //        }
-                //    });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
 
             });
 
             //Configure Identity
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+            builder.Services.AddIdentity<User, IdentityRole>()
                    .AddEntityFrameworkStores<EduLinkDbContext>();
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
@@ -85,18 +89,18 @@ namespace EduLink
 
             // add auth service to the app using jwt
 
-            //builder.Services.AddAuthentication(
-            //    options =>
-            //    {
-            //        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            //        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    }
-            //    ).AddJwtBearer(
-            //    options =>
-            //    {
-            //        options.TokenValidationParameters = JwtTokenService.ValidateToken(builder.Configuration);
-            //    });
+            builder.Services.AddAuthentication(
+                options =>
+                {
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                }
+                ).AddJwtBearer(
+                options =>
+                {
+                    options.TokenValidationParameters = JwtTokenService.ValidateToken(builder.Configuration);
+                });
 
 
             var app = builder.Build();
@@ -111,7 +115,7 @@ namespace EduLink
             app.UseSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/api/v1/swagger.json", "EduLink API v1");
-                options.RoutePrefix = "EduLinkSwagger";
+                options.RoutePrefix = "EduLink";
             });
 
             // Add redirection from root URL to Swagger UI
@@ -119,7 +123,7 @@ namespace EduLink
             {
                 if (context.Request.Path == "/")
                 {
-                    context.Response.Redirect("/EduLinkSwagger/index.html");
+                    context.Response.Redirect("/EduLink/index.html");
                 }
                 else
                 {
@@ -128,8 +132,8 @@ namespace EduLink
             });
 
             //Authentication
-            //app.UseAuthentication();
-            //app.UseAuthorization();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
 
             //app.MapGet("/", () => "Hello World!");

@@ -4,6 +4,7 @@ using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    partial class EduLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240901072914_AddRoles")]
+    partial class AddRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,7 +32,7 @@ namespace EduLink.Migrations
 
                     b.HasKey("AdminID");
 
-                    b.ToTable("Admins", (string)null);
+                    b.ToTable("Admins");
                 });
 
             modelBuilder.Entity("EduLink.Models.Article", b =>
@@ -62,7 +65,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("VolunteerID");
 
-                    b.ToTable("Articles", (string)null);
+                    b.ToTable("Articles");
                 });
 
             modelBuilder.Entity("EduLink.Models.Booking", b =>
@@ -94,7 +97,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("Bookings", (string)null);
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("EduLink.Models.Course", b =>
@@ -111,9 +114,7 @@ namespace EduLink.Migrations
 
                     b.HasKey("CourseID");
 
-
                     b.ToTable("Courses");
-
                 });
 
             modelBuilder.Entity("EduLink.Models.Department", b =>
@@ -130,7 +131,7 @@ namespace EduLink.Migrations
 
                     b.HasKey("DepartmentID");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("EduLink.Models.Department_Courses", b =>
@@ -145,7 +146,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("DepartmentID");
 
-                    b.ToTable("Department_courses", (string)null);
+                    b.ToTable("Department_courses");
                 });
 
             modelBuilder.Entity("EduLink.Models.EductionalContent", b =>
@@ -176,7 +177,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("VolunteerID");
 
-                    b.ToTable("EductionalContents", (string)null);
+                    b.ToTable("EductionalContents");
                 });
 
             modelBuilder.Entity("EduLink.Models.Feedback", b =>
@@ -202,7 +203,7 @@ namespace EduLink.Migrations
                     b.HasIndex("BookingID")
                         .IsUnique();
 
-                    b.ToTable("Feedbacks", (string)null);
+                    b.ToTable("Feedbacks");
                 });
 
             modelBuilder.Entity("EduLink.Models.NotificationWorkshops", b =>
@@ -228,7 +229,7 @@ namespace EduLink.Migrations
                     b.HasIndex("WorkshopID")
                         .IsUnique();
 
-                    b.ToTable("NotificationWorkshops", (string)null);
+                    b.ToTable("NotificationWorkshops");
                 });
 
             modelBuilder.Entity("EduLink.Models.Notification_Booking", b =>
@@ -259,7 +260,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("NotificationBookings", (string)null);
+                    b.ToTable("NotificationBookings");
                 });
 
             modelBuilder.Entity("EduLink.Models.Reservation", b =>
@@ -294,7 +295,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("VolunteerID");
 
-                    b.ToTable("Reservations", (string)null);
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("EduLink.Models.Student", b =>
@@ -309,7 +310,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("DepartmentID");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("EduLink.Models.User", b =>
@@ -407,7 +408,7 @@ namespace EduLink.Migrations
                     b.HasIndex("StudentID")
                         .IsUnique();
 
-                    b.ToTable("Volunteers", (string)null);
+                    b.ToTable("Volunteers");
                 });
 
             modelBuilder.Entity("EduLink.Models.VolunteerCourse", b =>
@@ -422,7 +423,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("CourseID");
 
-                    b.ToTable("VolunteerCourses", (string)null);
+                    b.ToTable("VolunteerCourses");
                 });
 
             modelBuilder.Entity("EduLink.Models.WorkShop", b =>
@@ -458,7 +459,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("VolunteerID");
 
-                    b.ToTable("WorkShops", (string)null);
+                    b.ToTable("WorkShops");
                 });
 
             modelBuilder.Entity("EduLink.Models.WorkshopsRegistration", b =>
@@ -473,7 +474,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("WorkshopsRegistration", (string)null);
+                    b.ToTable("WorkshopsRegistration");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
