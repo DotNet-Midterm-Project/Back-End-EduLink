@@ -260,5 +260,59 @@ namespace EduLink.Repositories.Services
 
             return notifications;
         }
+
+        public async Task<ArticleResponseDTO> GetArticleByIdAsync(int volunteerId, int articleId)
+        {
+            var article = await _context.Articles
+                .FirstOrDefaultAsync(a => a.VolunteerID == volunteerId && a.ArticleID == articleId);
+
+            if (article == null)
+            {
+                return null; 
+            }
+
+            return new ArticleResponseDTO
+            {
+                Title = article.Title,
+                Description = article.Description,
+                AuthorName = article.AuthorName,
+                VolunteerID = article.VolunteerID,
+                PublicationDate = article.PublicationDate
+            };
+        }
+
+        public async Task<MessageResponseDTO> AddReservationAsync(AddReservationRequestDTO request)
+        {
+   
+            var volunteerCourse = await _context.VolunteerCourses
+                .FirstOrDefaultAsync(vc => vc.VolunteerID == request.VolunteerID && vc.CourseID == request.CourseID);
+
+            if (volunteerCourse == null)
+            {
+                return new MessageResponseDTO
+                {
+                    Message = "Volunteer is not associated with the course."
+                };
+            }
+
+        
+            var reservation = new Reservation
+            {
+                VolunteerID = request.VolunteerID,
+                CourseID = request.CourseID,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                Date = request.Date
+            };
+
+           
+            await _context.Reservations.AddAsync(reservation);
+            await _context.SaveChangesAsync();
+
+            return new MessageResponseDTO
+            {
+                Message = "Reservation added successfully."
+            };
+        }
     }
 }
