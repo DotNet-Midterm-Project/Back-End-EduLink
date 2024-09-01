@@ -7,7 +7,7 @@ namespace EduLink.Repositories.Interfaces
     {
 
         Task<List<VolunteerCourseDTO>> GetVolunteerCoursesAsync(int volunteerID);
-        Task<MessageResponseDTO> AddEducationalContentAsync(EducationalContentDTO dto);
+        Task<MessageResponseDTO> AddEducationalContentAsync(EducationalContentDtoReq dto);
         Task<GetEducationalContentResponseDTO> GetEducationalContentForEachCourseAsync(int volunteerID, int courseID);
         Task<MessageResponseDTO> AddArticleAsync(ArticleDTO dto);
         Task<MessageResponseDTO> DeleteArticleAsync(int volunteerId, int articleId);

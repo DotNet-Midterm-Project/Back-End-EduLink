@@ -27,7 +27,7 @@ namespace EduLink.Repositories.Services
 
             return courses;
         }
-        public async Task<MessageResponseDTO> AddEducationalContentAsync(EducationalContentDTO dto)
+        public async Task<MessageResponseDTO> AddEducationalContentAsync(EducationalContentDtoReq dto)
         {
           
             var newContent = new EductionalContent

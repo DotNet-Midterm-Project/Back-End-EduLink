@@ -39,7 +39,7 @@ namespace EduLink.Controllers
 
     
         [HttpPost("add-educational-content")]
-        public async Task<IActionResult> AddEducationalContent([FromHeader] string Authorization, [FromBody] EducationalContentDTO dto)
+        public async Task<IActionResult> AddEducationalContent([FromHeader] string Authorization, [FromBody] EducationalContentDtoReq dto)
         {
             // Validate the authorization token
             if (Authorization != "tech_token")
