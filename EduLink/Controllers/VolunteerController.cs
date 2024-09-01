@@ -184,18 +184,55 @@ namespace EduLink.Controllers
             return Ok(response);
         }
 
-        [HttpGet("get-all-reservation")]
+        [HttpDelete("delete-workshop/{id}")]
         //[Authorize]
-        public async Task<IActionResult> GetAllReservations(//[FromHeader(Name = "Authorization")] string authToken,
-            [FromQuery] ReservationReqDTO reservationRequest)
+        public async Task<IActionResult> DeleteWorkshop(//[FromHeader(Name = "Authorization")] string authToken,
+                      [FromRoute] int id, [FromBody] DeleteWorkshopReqDTO deleteWorkshopRequest)
         {
-            //if(authToken != "tech_token")
-            //{
-            //    return Unauthorized("Invalid token.");
-            //}
+            if (id != deleteWorkshopRequest.WorkshopID)
+            {
+                return BadRequest(new { message = "Workshop ID in the route does not match the ID in the request body." });
+            }
 
-            var resResrvation = await _volunteer.GetAllReservationAsync(reservationRequest);
-            return Ok(resResrvation);
+            var result = await _volunteer.DeleteWorkshopAsync(deleteWorkshopRequest);
+
+            if (result.Message == "Workshop not found or does not belong to this volunteer.")
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
         }
+
+        //[Authorize]
+        [HttpGet("get-all-workshop/{volunteerID}")]
+        public async Task<IActionResult> GetAllWorkshops(//[FromHeader(Name = "Authorization")] string authToken,
+            [FromRoute] int volunteerID)
+        {
+            var workshops = await _volunteer.GetAllWorkshopsAsync(new GetAllWorkshopsReqDTO { VolunteerID = volunteerID });
+
+            if (workshops == null || !workshops.Any())
+            {
+                return NotFound(new { message = "No workshops found for this volunteer." });
+            }
+
+            return Ok(new { Workshop = workshops });
+        }
+
+
+        [HttpGet("get-notifications-workshops")]
+        public async Task<IActionResult> GetWorkshopNotifications(//[FromHeader(Name = "Authorization")] string authToken,
+                                                                  )
+        {
+            var notifications = await _volunteer.GetWorkshopNotificationsAsync();
+
+            if (notifications == null || notifications.Count == 0)
+            {
+                return NotFound(new { message = "No notifications found for this student." });
+            }
+
+            return Ok(new { notifications });
+        }
+
     }
 }

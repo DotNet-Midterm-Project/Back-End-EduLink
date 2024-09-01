@@ -12,11 +12,13 @@ namespace EduLink.Repositories.Interfaces
         Task<MessageResponseDTO> AddArticleAsync(ArticleDTO dto);
         Task<MessageResponseDTO> DeleteArticleAsync(int volunteerId, int articleId);
 
-        Task<ReservationResponseDTO> GetAllReservationAsync(ReservationReqDTO reservationRequest);
         //
         Task<List<ReservationDtoResponse>> GetAllReservationAsync(ReservationReqDTO reservationRequest);
         Task<MessageResponseDTO> DeleteReservationAsync(DeleteReservationDTO deleteReservationRequest);
         Task<MessageResponseDTO> UpdateReservationAsync(UpdateReservationReqDTO updateReservationRequest);
         Task<MessageResponseDTO> AddWorkshopAsync(AddWorkshopReqDTO addWorkshopRequest);
+        Task<MessageResponseDTO> DeleteWorkshopAsync(DeleteWorkshopReqDTO deleteWorkshopRequest);
+        Task<List<WorkshopResDTO>> GetAllWorkshopsAsync(GetAllWorkshopsReqDTO getAllWorkshopsRequest);
+        Task<List<GetWorkshopNotificationRespDTO>> GetWorkshopNotificationsAsync();
     }
 }

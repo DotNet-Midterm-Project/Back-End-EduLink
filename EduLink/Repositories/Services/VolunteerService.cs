@@ -113,18 +113,6 @@ namespace EduLink.Repositories.Services
             };
         }
 
-        public async Task<ReservationResponseDTO> GetAllReservationAsync(ReservationReqDTO reservation)
-        {
-            var reservations = await _context.Reservations
-                .Where(r => r.VolunteerID == reservation.VolunteerID && r.CourseID == reservation.CourseID)
-                .ToListAsync();
-
-            return new ReservationResponseDTO
-            {
-                Reservations = reservations
-            };
-        }
-
         public async Task<List<ReservationDtoResponse>> GetAllReservationAsync(ReservationReqDTO reservation)
         {
             var reservations = await _context.Reservations
@@ -213,6 +201,64 @@ namespace EduLink.Repositories.Services
             {
                 Message = "The workshop added successfully"
             };
+        }
+
+        public async Task<MessageResponseDTO> DeleteWorkshopAsync(DeleteWorkshopReqDTO deleteWorkshopRequest)
+        {
+            var workshop = await _context.WorkShops
+                .FirstOrDefaultAsync(w => w.WorkShopID == deleteWorkshopRequest.WorkshopID && w.VolunteerID == deleteWorkshopRequest.VolunteerID);
+
+            if (workshop == null)
+            {
+                return new MessageResponseDTO
+                {
+                    Message = "Workshop not found or does not belong to this volunteer."
+                };
+            }
+
+            _context.WorkShops.Remove(workshop);
+            await _context.SaveChangesAsync();
+
+            return new MessageResponseDTO
+            {
+                Message = "The Workshop deleted successfully"
+            };
+        }
+
+        public async Task<List<WorkshopResDTO>> GetAllWorkshopsAsync(GetAllWorkshopsReqDTO getAllWorkshopsRequest)
+        {
+            // Query the workshops for the given volunteer
+            var workshops = await _context.WorkShops
+                .Where(w => w.VolunteerID == getAllWorkshopsRequest.VolunteerID)
+                .Select(w => new WorkshopResDTO
+                {
+                    Title = w.Title,
+                    Description = w.Description,
+                    VolunteerID = w.VolunteerID,
+                    Date = w.Date,
+                    SessionLink = w.SessionLink,
+                    Capasity = w.Capasity
+                })
+                .ToListAsync();
+
+            return workshops;
+        }
+
+        public async Task<List<GetWorkshopNotificationRespDTO>> GetWorkshopNotificationsAsync()
+        {
+            var notifications = await _context.NotificationWorkshops
+                .Include(n => n.WorkShop) // Include the related WorkShop entity
+                .Where(n => n.ID > 0) // Filter by WorkshopID and StudentID if necessary
+                .Select(n => new GetWorkshopNotificationRespDTO
+                {
+                    ID = n.ID,
+                    Message = n.Message,
+                    DateSend = n.DateSend,
+                    Capasity = n.WorkShop.Capasity  
+                })
+                .ToListAsync();
+
+            return notifications;
         }
     }
 }
