@@ -145,8 +145,10 @@ namespace EduLink.Repositories.Services
 
             var volunteer = new Volunteer
             {
-                StudentID = student.UserID,
-                Students = student
+
+                StudentID = student.StudentID,
+                Student = student
+
             };
 
             _context.Volunteers.Add(volunteer);

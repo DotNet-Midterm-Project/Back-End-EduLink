@@ -223,7 +223,7 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Students",
+                name: "Student",
                 columns: table => new
                 {
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -263,7 +263,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_Volunteers_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Students",
+                        principalTable: "Student",
                         principalColumn: "StudentID");
                 });
 
@@ -413,7 +413,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_Bookings_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Students",
+                        principalTable: "Student",
                         principalColumn: "StudentID",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -451,7 +451,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_WorkshopsRegistration_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Students",
+                        principalTable: "Student",
                         principalColumn: "StudentID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -504,7 +504,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_NotificationBookings_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Students",
+                        principalTable: "Student",
                         principalColumn: "StudentID");
                 });
 
@@ -611,7 +611,7 @@ namespace EduLink.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_DepartmentID",
-                table: "Students",
+                table: "Student",
                 column: "DepartmentID");
 
             migrationBuilder.CreateIndex(
@@ -700,7 +700,7 @@ namespace EduLink.Migrations
                 name: "Volunteers");
 
             migrationBuilder.DropTable(
-                name: "Students");
+                name: "Student");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

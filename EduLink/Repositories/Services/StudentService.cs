@@ -59,8 +59,8 @@ namespace EduLink.Repositories.Services
                                 VolunteerID = vc.Volunteers.VolunteerID,
                                 SkillDescription = vc.Volunteers.SkillDescription,
                                 Rating = vc.Volunteers.Rating,
-                                Email = vc.Volunteers.Students.User.Email,
-                                PhoneNumber = vc.Volunteers.Students.User.PhoneNumber
+                                Email = vc.Volunteers.Student.User.Email,
+                                PhoneNumber = vc.Volunteers.Student.User.PhoneNumber
                             })
                             .ToList();
             if (volunteers == null)
@@ -165,7 +165,7 @@ namespace EduLink.Repositories.Services
             {
                 StudentID = e.StudentID,
                 SessionStatus = e.SessionStatus,
-                VolunteerName = e.Reservation.Volunteer.Students.User.UserName, 
+                VolunteerName = e.Reservation.Volunteer.Student.User.UserName, 
                 CourseID = e.Reservation.CourseID,
                 Date = e.Reservation.Date,
                 StartTime = e.Reservation.StartTime,
@@ -259,7 +259,7 @@ namespace EduLink.Repositories.Services
                 {
                     SkillDescription = registerDTO.SkillsDescription,
                     StudentID = registerDTO.StudentID,
-                    IsVolunteer = false,
+                    Aprove = false,
                     Availability = true,
                     // Initialize the VolunteerCourse collection
             VolunteerCourse = new List<VolunteerCourse>()
