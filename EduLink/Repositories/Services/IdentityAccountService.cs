@@ -56,7 +56,7 @@ namespace EduLink.Repositories.Services
 
             var student = new Student
             {
-                StudentID = user.Id,
+                UserID = user.Id,
                 User = user,
                 DepartmentID = registerStudentDto.DepartmentID
             };
@@ -69,7 +69,7 @@ namespace EduLink.Repositories.Services
 
             return new RegisterStudentDtoResponse
             {
-                StudentID = student.StudentID,
+                StudentID = student.UserID,
                 UserName = user.UserName,
                 Email = user.Email,
                 DepartmentID = student.DepartmentID,
@@ -135,7 +135,7 @@ namespace EduLink.Repositories.Services
                 return false;
             }
 
-            var user = await _userManager.FindByIdAsync(student.StudentID);
+            var user = await _userManager.FindByIdAsync(student.UserID);
             if (user == null)
             {
                 return false;
@@ -145,7 +145,7 @@ namespace EduLink.Repositories.Services
 
             var volunteer = new Volunteer
             {
-                StudentID = student.StudentID,
+                StudentID = student.UserID,
                 Students = student
             };
 

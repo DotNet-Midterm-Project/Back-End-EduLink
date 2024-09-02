@@ -20,7 +20,7 @@ namespace EduLink.Data
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<VolunteerCourse> VolunteerCourses { get; set; }
         public DbSet<EductionalContent> EductionalContents { get; set; }
-        public DbSet<Department_Courses> Department_courses { get; set; }
+        public DbSet<DepartmentCourses> Department_courses { get; set; }
         public DbSet<Notification_Booking> NotificationBookings { get; set; }
         public DbSet<NotificationWorkshops> NotificationWorkshops { get; set; }
         public DbSet<WorkshopsRegistration> WorkshopsRegistration { get; set; }
@@ -32,7 +32,7 @@ namespace EduLink.Data
             base.OnModelCreating(modelBuilder);
             // Configure the primary key for the Student entity
             modelBuilder.Entity<Student>()
-                .HasKey(s => s.StudentID);
+                .HasKey(s => s.UserID);
 
             // Configure the one-to-one relationship between Volunteer and Student
             modelBuilder.Entity<Volunteer>()
@@ -133,7 +133,7 @@ namespace EduLink.Data
 
             modelBuilder.Entity<User>().HasKey(u => u.Id);  // Set primary key for User entity
             
-            modelBuilder.Entity<Student>().HasKey(u => u.StudentID); // Set primary key for Student entity
+            modelBuilder.Entity<Student>().HasKey(u => u.UserID); // Set primary key for Student entity
             modelBuilder.Entity<Department>().HasKey(u => u.DepartmentID); // Set primary key for Department entity
           
             modelBuilder.Entity<Course>().HasKey(x => x.CourseID);  // Set primary key for Course entity
@@ -145,7 +145,7 @@ namespace EduLink.Data
             modelBuilder.Entity<Student>()
                .HasOne(x => x.User)
                .WithOne(x => x.Student)
-               .HasForeignKey<Student>(x => x.StudentID)
+               .HasForeignKey<Student>(x => x.UserID)
                .OnDelete(DeleteBehavior.NoAction); ;
             // End One-To-One relationship between User and Student
 
@@ -165,13 +165,13 @@ namespace EduLink.Data
             // End One-To-Many relationship between Department and Student
 
             // Define Many-To-Many relationship between Department and Course
-            modelBuilder.Entity<Department_Courses>().HasKey(x => new { x.CourseID, x.DepartmentID }); // Set composite key for Department_Courses entity
-            modelBuilder.Entity<Department_Courses>()
+            modelBuilder.Entity<DepartmentCourses>().HasKey(x => new { x.CourseID, x.DepartmentID }); // Set composite key for Department_Courses entity
+            modelBuilder.Entity<DepartmentCourses>()
                 .HasOne(x => x.Department)
                 .WithMany(x => x.Department_Courses)
                 .HasForeignKey(x => x.DepartmentID);
                 
-            modelBuilder.Entity<Department_Courses>()
+            modelBuilder.Entity<DepartmentCourses>()
                 .HasOne(x => x.Course)
                 .WithMany(x => x.Department_Courses)
                 .HasForeignKey(x => x.CourseID);
