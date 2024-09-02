@@ -8,7 +8,6 @@ namespace EduLink.Data
     public class EduLinkDbContext : IdentityDbContext<User>
     {
         public DbSet<User> Users {  get; set; }
-        public DbSet<Admin> Admins { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Article> Articles { get; set; }
         public DbSet<Student> Students { get; set; }
@@ -22,8 +21,8 @@ namespace EduLink.Data
         public DbSet<EductionalContent> EductionalContents { get; set; }
         public DbSet<DepartmentCourses> Department_courses { get; set; }
         public DbSet<Notification_Booking> NotificationBookings { get; set; }
-        public DbSet<NotificationWorkshops> NotificationWorkshops { get; set; }
-        public DbSet<WorkshopsRegistration> WorkshopsRegistration { get; set; }
+        //public DbSet<NotificationWorkshops> NotificationWorkshops { get; set; }
+        //public DbSet<WorkshopsRegistration> WorkshopsRegistration { get; set; }
 
         public EduLinkDbContext(DbContextOptions options) : base(options){}
 
@@ -120,16 +119,16 @@ namespace EduLink.Data
             modelBuilder.Entity<WorkShop>()
                 .HasKey(w => w.WorkShopID);
 
-            // Configure the primary key for the NotificationWorkshops entity
-            modelBuilder.Entity<NotificationWorkshops>()
-                .HasKey(nw => nw.ID);
+            //// Configure the primary key for the NotificationWorkshops entity
+            //modelBuilder.Entity<NotificationWorkshops>()
+            //    .HasKey(nw => nw.ID);
 
-            // Configure the one-to-one relationship between WorkShop and NotificationWorkshops
-            modelBuilder.Entity<WorkShop>()
-                .HasOne(w => w.NotificationWorkshops)                  // Each WorkShop has one NotificationWorkshops
-                .WithOne(nw => nw.WorkShop)                            // Each NotificationWorkshops has one WorkShop
-                .HasForeignKey<NotificationWorkshops>(nw => nw.WorkshopID) // Foreign key in NotificationWorkshops entity
-                .OnDelete(DeleteBehavior.NoAction);
+            //// Configure the one-to-one relationship between WorkShop and NotificationWorkshops
+            //modelBuilder.Entity<WorkShop>()
+            //    .HasOne(w => w.NotificationWorkshops)                  // Each WorkShop has one NotificationWorkshops
+            //    .WithOne(nw => nw.WorkShop)                            // Each NotificationWorkshops has one WorkShop
+            //    .HasForeignKey<NotificationWorkshops>(nw => nw.WorkshopID) // Foreign key in NotificationWorkshops entity
+            //    .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<User>().HasKey(u => u.Id);  // Set primary key for User entity
             
@@ -194,11 +193,25 @@ namespace EduLink.Data
                 .OnDelete(DeleteBehavior.NoAction);
             // End One-To-Many relationship between Notification_Booking and Booking
 
-            //Relation Between Volunteers and Reservations (one to many) 
+
+            //////////////////////////////////////////////////////////////////////////////
+            // Relationship between VolunteerCourse and Event (one-to-many)
             modelBuilder.Entity<Event>()
-                    .HasOne(r => r.Volunteer)
-                    .WithMany(v => v.Reservations)
-                    .HasForeignKey(r => r.VolunteerID);
+                .HasOne(e => e.VolunteerCourse)
+                .WithMany(vc => vc.Events)
+                .HasForeignKey(e => e.VolunteerCoursID);
+
+            // Relationship between Volunteer and VolunteerCourse (one-to-many)
+            modelBuilder.Entity<VolunteerCourse>()
+                .HasOne(vc => vc.Volunteers)
+                .WithMany(v => v.VolunteerCourses)
+                .HasForeignKey(vc => vc.VolunteerID);
+
+            // Relationship between Course and VolunteerCourse (one-to-many)
+            modelBuilder.Entity<VolunteerCourse>()
+                .HasOne(vc => vc.Courses)
+                .WithMany(c => c.VolunteerCourses)
+                .HasForeignKey(vc => vc.CourseID);
 
 
             //Relation Between Volunteers and Workshops (one to many) 
@@ -213,19 +226,6 @@ namespace EduLink.Data
             .WithMany(c => c.Reservations)
             .HasForeignKey(r => r.CourseID);
 
-            // ٌRElation  Between WorkShop and Student(many-to-many)
-            modelBuilder.Entity<WorkshopsRegistration>()
-                .HasKey(wr => new { wr.WorkShopID, wr.StudentID });
-
-            modelBuilder.Entity<WorkshopsRegistration>()
-                .HasOne(wr => wr.WorkShop)
-                .WithMany(w => w.WorkshopsRegistrations)
-                .HasForeignKey(wr => wr.WorkShopID);
-
-            modelBuilder.Entity<WorkshopsRegistration>()
-                .HasOne(wr => wr.Student)
-                .WithMany(s => s.WorkshopsRegistrations)
-                .HasForeignKey(wr => wr.StudentID);
 
             //Relation between Reservation and Booking (one to one)
             modelBuilder.Entity<Event>()

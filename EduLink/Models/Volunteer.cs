@@ -19,7 +19,7 @@
         public Student Student { get; set; }
         public ICollection<Article> Articles { get; set; }
         public ICollection<EductionalContent> EductionalContent { get; set; }
-        public ICollection<VolunteerCourse> VolunteerCourse { get; set; }
+        public ICollection<VolunteerCourse> VolunteerCourses { get; set; }
         public ICollection<Event> Reservations { get; set; }
         public ICollection<WorkShop> WorkShops { get; set; }
     }
