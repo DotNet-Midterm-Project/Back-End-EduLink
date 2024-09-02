@@ -1,6 +1,6 @@
 ﻿namespace EduLink.Models
 {
-    public class Department_Courses
+    public class DepartmentCourses
     {
         public int CourseID { get; set; }
         public int DepartmentID { get; set; }

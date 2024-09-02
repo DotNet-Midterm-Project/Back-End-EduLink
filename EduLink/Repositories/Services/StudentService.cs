@@ -25,7 +25,7 @@ namespace EduLink.Repositories.Services
                   .Include(s => s.Department)
                   .ThenInclude(d => d.Department_Courses)
                   .ThenInclude(dc => dc.Course)
-                  .FirstOrDefaultAsync(s => s.StudentID == studentId);
+                  .FirstOrDefaultAsync(s => s.UserID == studentId);
             if (student == null)
             {
                 return null;
@@ -241,7 +241,7 @@ namespace EduLink.Repositories.Services
 
         public async Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterDtoReq registerDTO)
         {
-            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.StudentID==registerDTO.StudentID);
+            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.UserID==registerDTO.StudentID);
             if (student == null)
             {
                 return    new MessageResponseDTO { Message = "Student Not found", };
