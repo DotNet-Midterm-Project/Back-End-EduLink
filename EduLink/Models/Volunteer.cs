@@ -15,12 +15,12 @@
         public int RatingAcount { get; set; }
         public AvailabilityStatus Availability { get; set; } 
         public bool Aprove { get; set; }
-        public string StudentID { get; set; }
+        public int StudentID { get; set; }
         public Student Student { get; set; }
         public ICollection<Article> Articles { get; set; }
     
         public ICollection<VolunteerCourse> VolunteerCourse { get; set; }
         public ICollection<Event> Reservations { get; set; }
-        public ICollection<WorkShop> WorkShops { get; set; }
+     
     }
 }

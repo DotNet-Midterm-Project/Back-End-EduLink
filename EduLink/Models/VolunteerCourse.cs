@@ -10,5 +10,6 @@
 
         // Add this collection to represent the one-to-many relationship with Events
         public ICollection<Event> Events { get; set; }
+
     }
 }

@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace EduLink.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateTables : Migration
+    public partial class addTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +32,10 @@ namespace EduLink.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsAdmin = table.Column<bool>(type: "bit", nullable: false),
+                    IsLocked = table.Column<bool>(type: "bit", nullable: false),
+                    Skills = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -51,7 +57,7 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Course",
+                name: "Courses",
                 columns: table => new
                 {
                     CourseID = table.Column<int>(type: "int", nullable: false)
@@ -69,7 +75,8 @@ namespace EduLink.Migrations
                 {
                     DepartmentID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DepartmentName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    DepartmentName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,22 +102,6 @@ namespace EduLink.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Admins",
-                columns: table => new
-                {
-                    AdminID = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Admins", x => x.AdminID);
-                    table.ForeignKey(
-                        name: "FK_Admins_AspNetUsers_AdminID",
-                        column: x => x.AdminID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -199,7 +190,7 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Department_courses",
+                name: "DepartmentCourses",
                 columns: table => new
                 {
                     CourseID = table.Column<int>(type: "int", nullable: false),
@@ -207,15 +198,15 @@ namespace EduLink.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Department_courses", x => new { x.CourseID, x.DepartmentID });
+                    table.PrimaryKey("PK_DepartmentCourses", x => new { x.CourseID, x.DepartmentID });
                     table.ForeignKey(
-                        name: "FK_Department_courses_Courses_CourseID",
+                        name: "FK_DepartmentCourses_Courses_CourseID",
                         column: x => x.CourseID,
-                        principalTable: "Course",
+                        principalTable: "Courses",
                         principalColumn: "CourseID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Department_courses_Departments_DepartmentID",
+                        name: "FK_DepartmentCourses_Departments_DepartmentID",
                         column: x => x.DepartmentID,
                         principalTable: "Departments",
                         principalColumn: "DepartmentID",
@@ -223,18 +214,20 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Student",
+                name: "Students",
                 columns: table => new
                 {
-                    StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    DepartmentID = table.Column<int>(type: "int", nullable: false)
+                    StudentID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DepartmentID = table.Column<int>(type: "int", nullable: false),
+                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Students", x => x.StudentID);
                     table.ForeignKey(
-                        name: "FK_Students_AspNetUsers_StudentID",
-                        column: x => x.StudentID,
+                        name: "FK_Students_AspNetUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -252,10 +245,11 @@ namespace EduLink.Migrations
                     VolunteerID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SkillDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Availability = table.Column<bool>(type: "bit", nullable: false),
-                    IsVolunteer = table.Column<bool>(type: "bit", nullable: false),
-                    StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Rating = table.Column<float>(type: "real", nullable: false),
+                    RatingAcount = table.Column<int>(type: "int", nullable: false),
+                    Availability = table.Column<int>(type: "int", nullable: false),
+                    Aprove = table.Column<bool>(type: "bit", nullable: false),
+                    StudentID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -263,7 +257,7 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_Volunteers_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Student",
+                        principalTable: "Students",
                         principalColumn: "StudentID");
                 });
 
@@ -277,7 +271,8 @@ namespace EduLink.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AuthorName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PublicationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    VolunteerID = table.Column<int>(type: "int", nullable: false)
+                    VolunteerID = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -290,75 +285,21 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EductionalContents",
-                columns: table => new
-                {
-                    ContentID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CourseID = table.Column<int>(type: "int", nullable: false),
-                    VolunteerID = table.Column<int>(type: "int", nullable: false),
-                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ContentDescription = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EductionalContents", x => x.ContentID);
-                    table.ForeignKey(
-                        name: "FK_EductionalContents_Courses_CourseID",
-                        column: x => x.CourseID,
-                        principalTable: "Course",
-                        principalColumn: "CourseID");
-                    table.ForeignKey(
-                        name: "FK_EductionalContents_Volunteers_VolunteerID",
-                        column: x => x.VolunteerID,
-                        principalTable: "Volunteers",
-                        principalColumn: "VolunteerID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Reservations",
-                columns: table => new
-                {
-                    ReservationID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    VolunteerID = table.Column<int>(type: "int", nullable: false),
-                    CourseID = table.Column<int>(type: "int", nullable: false),
-                    StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsAvailable = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reservations", x => x.ReservationID);
-                    table.ForeignKey(
-                        name: "FK_Reservations_Courses_CourseID",
-                        column: x => x.CourseID,
-                        principalTable: "Course",
-                        principalColumn: "CourseID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Reservations_Volunteers_VolunteerID",
-                        column: x => x.VolunteerID,
-                        principalTable: "Volunteers",
-                        principalColumn: "VolunteerID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "VolunteerCourses",
                 columns: table => new
                 {
+                    VolunteerCourseID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     VolunteerID = table.Column<int>(type: "int", nullable: false),
                     CourseID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VolunteerCourses", x => new { x.VolunteerID, x.CourseID });
+                    table.PrimaryKey("PK_VolunteerCourses", x => x.VolunteerCourseID);
                     table.ForeignKey(
                         name: "FK_VolunteerCourses_Courses_CourseID",
                         column: x => x.CourseID,
-                        principalTable: "Course",
+                        principalTable: "Courses",
                         principalColumn: "CourseID");
                     table.ForeignKey(
                         name: "FK_VolunteerCourses_Volunteers_VolunteerID",
@@ -368,27 +309,86 @@ namespace EduLink.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WorkShops",
+                name: "EductionalContents",
                 columns: table => new
                 {
-                    WorkShopID = table.Column<int>(type: "int", nullable: false)
+                    ContentID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    VolunteerID = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SessionLink = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Capasity = table.Column<int>(type: "int", nullable: false)
+                    VolunteerCourseID = table.Column<int>(type: "int", nullable: false),
+                    ContentName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FileLength = table.Column<float>(type: "real", nullable: false),
+                    ContentType = table.Column<int>(type: "int", nullable: false),
+                    ContentDescription = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WorkShops", x => x.WorkShopID);
+                    table.PrimaryKey("PK_EductionalContents", x => x.ContentID);
                     table.ForeignKey(
-                        name: "FK_WorkShops_Volunteers_VolunteerID",
+                        name: "FK_EductionalContents_VolunteerCourses_VolunteerCourseID",
+                        column: x => x.VolunteerCourseID,
+                        principalTable: "VolunteerCourses",
+                        principalColumn: "VolunteerCourseID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Events",
+                columns: table => new
+                {
+                    EventID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Location = table.Column<bool>(type: "bit", nullable: false),
+                    VolunteerCoursID = table.Column<int>(type: "int", nullable: false),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EventDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EventStatus = table.Column<bool>(type: "bit", nullable: false),
+                    Capacity = table.Column<int>(type: "int", nullable: false),
+                    EventType = table.Column<int>(type: "int", nullable: false),
+                    SessionURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CourseID = table.Column<int>(type: "int", nullable: true),
+                    VolunteerID = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Events", x => x.EventID);
+                    table.ForeignKey(
+                        name: "FK_Events_Courses_CourseID",
+                        column: x => x.CourseID,
+                        principalTable: "Courses",
+                        principalColumn: "CourseID");
+                    table.ForeignKey(
+                        name: "FK_Events_VolunteerCourses_VolunteerCoursID",
+                        column: x => x.VolunteerCoursID,
+                        principalTable: "VolunteerCourses",
+                        principalColumn: "VolunteerCourseID");
+                    table.ForeignKey(
+                        name: "FK_Events_Volunteers_VolunteerID",
                         column: x => x.VolunteerID,
                         principalTable: "Volunteers",
-                        principalColumn: "VolunteerID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "VolunteerID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Announcement",
+                columns: table => new
+                {
+                    AnouncementID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EventID = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AnounceDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Announcement", x => x.AnouncementID);
+                    table.ForeignKey(
+                        name: "FK_Announcement_Events_EventID",
+                        column: x => x.EventID,
+                        principalTable: "Events",
+                        principalColumn: "EventID");
                 });
 
             migrationBuilder.CreateTable(
@@ -397,8 +397,8 @@ namespace EduLink.Migrations
                 {
                     BookingID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReservationID = table.Column<int>(type: "int", nullable: false),
+                    StudentID = table.Column<int>(type: "int", nullable: false),
+                    EventID = table.Column<int>(type: "int", nullable: false),
                     SessionStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SessionLink = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -406,59 +406,15 @@ namespace EduLink.Migrations
                 {
                     table.PrimaryKey("PK_Bookings", x => x.BookingID);
                     table.ForeignKey(
-                        name: "FK_Bookings_Reservations_ReservationID",
-                        column: x => x.ReservationID,
-                        principalTable: "Reservations",
-                        principalColumn: "ReservationID");
+                        name: "FK_Bookings_Events_EventID",
+                        column: x => x.EventID,
+                        principalTable: "Events",
+                        principalColumn: "EventID");
                     table.ForeignKey(
                         name: "FK_Bookings_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Student",
+                        principalTable: "Students",
                         principalColumn: "StudentID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "NotificationWorkshops",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkshopID = table.Column<int>(type: "int", nullable: false),
-                    DateSend = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_NotificationWorkshops", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_NotificationWorkshops_WorkShops_WorkshopID",
-                        column: x => x.WorkshopID,
-                        principalTable: "WorkShops",
-                        principalColumn: "WorkShopID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WorkshopsRegistration",
-                columns: table => new
-                {
-                    WorkShopID = table.Column<int>(type: "int", nullable: false),
-                    StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WorkshopsRegistration", x => new { x.WorkShopID, x.StudentID });
-                    table.ForeignKey(
-                        name: "FK_WorkshopsRegistration_Students_StudentID",
-                        column: x => x.StudentID,
-                        principalTable: "Student",
-                        principalColumn: "StudentID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_WorkshopsRegistration_WorkShops_WorkShopID",
-                        column: x => x.WorkShopID,
-                        principalTable: "WorkShops",
-                        principalColumn: "WorkShopID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -489,7 +445,7 @@ namespace EduLink.Migrations
                     NotificationID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BookingID = table.Column<int>(type: "int", nullable: false),
-                    StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StudentID = table.Column<int>(type: "int", nullable: false),
                     DateSent = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -504,9 +460,25 @@ namespace EduLink.Migrations
                     table.ForeignKey(
                         name: "FK_NotificationBookings_Students_StudentID",
                         column: x => x.StudentID,
-                        principalTable: "Student",
-                        principalColumn: "StudentID");
+                        principalTable: "Students",
+                        principalColumn: "StudentID",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "admin", "00000000-0000-0000-0000-000000000000", "Admin", "ADMIN" },
+                    { "student", "00000000-0000-0000-0000-000000000000", "Student", "STUDENT" },
+                    { "volunteer", "00000000-0000-0000-0000-000000000000", "Volunteer", "VOLUNTEER" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Announcement_EventID",
+                table: "Announcement",
+                column: "EventID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Articles_VolunteerID",
@@ -553,9 +525,9 @@ namespace EduLink.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_ReservationID",
+                name: "IX_Bookings_EventID",
                 table: "Bookings",
-                column: "ReservationID");
+                column: "EventID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_StudentID",
@@ -563,18 +535,28 @@ namespace EduLink.Migrations
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Department_courses_DepartmentID",
-                table: "Department_courses",
+                name: "IX_DepartmentCourses_DepartmentID",
+                table: "DepartmentCourses",
                 column: "DepartmentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EductionalContents_CourseID",
+                name: "IX_EductionalContents_VolunteerCourseID",
                 table: "EductionalContents",
+                column: "VolunteerCourseID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Events_CourseID",
+                table: "Events",
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EductionalContents_VolunteerID",
-                table: "EductionalContents",
+                name: "IX_Events_VolunteerCoursID",
+                table: "Events",
+                column: "VolunteerCoursID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Events_VolunteerID",
+                table: "Events",
                 column: "VolunteerID");
 
             migrationBuilder.CreateIndex(
@@ -594,25 +576,15 @@ namespace EduLink.Migrations
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationWorkshops_WorkshopID",
-                table: "NotificationWorkshops",
-                column: "WorkshopID",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reservations_CourseID",
-                table: "Reservations",
-                column: "CourseID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reservations_VolunteerID",
-                table: "Reservations",
-                column: "VolunteerID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Students_DepartmentID",
-                table: "Student",
+                table: "Students",
                 column: "DepartmentID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Students_UserID",
+                table: "Students",
+                column: "UserID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_VolunteerCourses_CourseID",
@@ -620,27 +592,22 @@ namespace EduLink.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_VolunteerCourses_VolunteerID",
+                table: "VolunteerCourses",
+                column: "VolunteerID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Volunteers_StudentID",
                 table: "Volunteers",
                 column: "StudentID",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkShops_VolunteerID",
-                table: "WorkShops",
-                column: "VolunteerID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkshopsRegistration_StudentID",
-                table: "WorkshopsRegistration",
-                column: "StudentID");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Admins");
+                name: "Announcement");
 
             migrationBuilder.DropTable(
                 name: "Articles");
@@ -661,7 +628,7 @@ namespace EduLink.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Department_courses");
+                name: "DepartmentCourses");
 
             migrationBuilder.DropTable(
                 name: "EductionalContents");
@@ -673,34 +640,25 @@ namespace EduLink.Migrations
                 name: "NotificationBookings");
 
             migrationBuilder.DropTable(
-                name: "NotificationWorkshops");
-
-            migrationBuilder.DropTable(
-                name: "VolunteerCourses");
-
-            migrationBuilder.DropTable(
-                name: "WorkshopsRegistration");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Bookings");
 
             migrationBuilder.DropTable(
-                name: "WorkShops");
+                name: "Events");
 
             migrationBuilder.DropTable(
-                name: "Reservations");
+                name: "VolunteerCourses");
 
             migrationBuilder.DropTable(
-                name: "Course");
+                name: "Courses");
 
             migrationBuilder.DropTable(
                 name: "Volunteers");
 
             migrationBuilder.DropTable(
-                name: "Student");
+                name: "Students");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

@@ -9,7 +9,7 @@
         public DateTime PublicationDate { get; set; }
         public int VolunteerID { get; set; }
         public Volunteer Volunteer { get; set; }
-        public Enum Status { get; set; }
+        public ArticleStatus Status { get; set; }
     }
     public enum ArticleStatus
     {
