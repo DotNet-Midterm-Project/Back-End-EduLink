@@ -8,6 +8,6 @@
         public string Message { get; set; }
         public DateTime AnounceDate { get; set; }   
 
-        public WorkShop WorkShop { get; set; }
+        public Event Event { get; set; }
     }
 }

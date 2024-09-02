@@ -137,7 +137,7 @@ namespace EduLink.Repositories.Services
             var booking = new Booking
             {
                 StudentID = studentId,
-                ReservationID = reservationId,
+                EventID = reservationId,
                 SessionStatus = "Book",
                 SessionLink = "gf"
             };
@@ -156,7 +156,7 @@ namespace EduLink.Repositories.Services
         public async Task<List<BookingForStudentDtoResponse>> GetBookingAsync(string StudentId, int ReservationId)
         {
             var studentBookings = await eduLinkDbContext.Bookings
-          .Include(b => b.Reservation)
+          .Include(b => b.Event)
           .ThenInclude(r => r.Volunteer)
           .Where(e => e.ReservationID == ReservationId && e.StudentID == StudentId)
           .ToListAsync();
