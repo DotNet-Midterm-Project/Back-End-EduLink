@@ -10,7 +10,7 @@ namespace EduLink.Repositories.Interfaces
         //Maybe Move this to Admin Routes (This will be used once)
         Task<RegisterAdminDtoResponse> RegisterAdminAsync(RegisterAdminDtoRequest registerAdminDto, ModelStateDictionary modelState);
         
-        //Move this to Volunteer routes
+        //Move this to Student routes
         Task<bool> AddStudentToVolunteerRoleAsync(string studentID);
         Task<LoginDtoResponse> LoginAsync(LoginDtoRequest loginDto);
 

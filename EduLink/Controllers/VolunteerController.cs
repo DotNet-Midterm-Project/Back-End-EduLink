@@ -249,12 +249,12 @@ namespace EduLink.Controllers
         }
 
         [HttpPost("add-reservation")]
-        [Authorize(Roles = "Volunteer")]
+        [Authorize(Roles = "Student")]
         public async Task<IActionResult> AddReservation([FromBody] AddReservationRequestDTO request)
         {
             var response = await _volunteer.AddReservationAsync(request);
 
-            if (response.Message == "Volunteer is not associated with the course.")
+            if (response.Message == "Student is not associated with the course.")
             {
                 return BadRequest(new { message = response.Message });
             }

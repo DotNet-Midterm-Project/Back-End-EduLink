@@ -291,7 +291,7 @@
 //            {
 //                return new MessageResponseDTO
 //                {
-//                    Message = "Volunteer is not associated with the course."
+//                    Message = "Student is not associated with the course."
 //                };
 //            }
 

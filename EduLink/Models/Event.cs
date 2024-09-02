@@ -32,7 +32,7 @@ namespace EduLink.Models
         public string Title { get; set; }
         public EventLocation Location { get; set; }
         public int EventContetntID { get; set; }
-        public  ICollection<EventContent> MyProperty { get; set; }
+        public  ICollection<EventContent> EventContents { get; set; }
 
         public DateTimeOffset StartTime { get; set; }
         public DateTimeOffset EndTime { get; set; }
@@ -48,5 +48,6 @@ namespace EduLink.Models
 
         // Add this collection to represent the one-to-many relationship with Announcements
         public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
+        public ICollection<Session> Sessions { get; set; } = new List<Session>();
     }
 }

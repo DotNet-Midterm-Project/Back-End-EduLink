@@ -8,31 +8,28 @@ namespace EduLink.Data
     public class EduLinkDbContext : IdentityDbContext<User>
     {
         public DbSet<User> Users {  get; set; }
-
+         public DbSet<Student> Students { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Article> Articles { get; set; }
-        public DbSet<Student> Students { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Volunteer> Volunteers { get; set; }
-       
         public DbSet<Department> Departments { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<VolunteerCourse> VolunteerCourses { get; set; }
-        public DbSet<EventContent> EductionalContents { get; set; }
+        public DbSet<EventContent> EventContents { get; set; }
         public DbSet<DepartmentCourses> DepartmentCourses { get; set; }
         public DbSet<Announcement> Announcement { get; set; }
-       
+        public DbSet<Session> Sessions { get; set; }
+
 
         public EduLinkDbContext(DbContextOptions options) : base(options){}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+        
             // Configure the primary key for the Student entity
-            modelBuilder.Entity<Student>()
-                .HasKey(s => s.StudentID);
-            // Configure the primary key for the Volunteer entity
             modelBuilder.Entity<Volunteer>()
                 .HasKey(v => v.VolunteerID);
             // Configure the primary key for the Article entity
@@ -64,29 +61,34 @@ namespace EduLink.Data
             // Configure the one-to-one relationship between WorkShop and NotificationWorkshops
 
 
-            modelBuilder.Entity<User>().HasKey(u => u.Id);  // Set primary key for User entity
+            modelBuilder.Entity<User>().HasKey(u => u.Id);  // Set primary key for Student entity
 
-            modelBuilder.Entity<Student>().HasKey(u => u.StudentID); // Set primary key for Student entity
+         
             modelBuilder.Entity<Department>().HasKey(u => u.DepartmentID); // Set primary key for Department entity
 
             modelBuilder.Entity<Course>().HasKey(x => x.CourseID);  // Set primary key for Course entity
 
+            // Configure the one-to-one relationship between Student and User
+            modelBuilder.Entity<Student>()
+                .HasOne(s => s.User)                  // Each Student has one Student
+                .WithOne(u => u.Student)               // Each Student has one Student
+                .HasForeignKey<Student>(s => s.UserID) // Foreign key in Student entity
+                .OnDelete(DeleteBehavior.NoAction);
 
-      
 
 
-            // Configure the one-to-one relationship between Volunteer and Student
+            // Configure the one-to-one relationship between Student and Volunteer
             modelBuilder.Entity<Volunteer>()
-                .HasOne(v => v.Student)                  // Each Volunteer has one Student
-                .WithOne(s => s.Volunteers)               // Each Student has one Volunteer
-                .HasForeignKey<Volunteer>(v => v.StudentID) // Foreign key in Volunteer entity
+                .HasOne(v => v.Student)                  // Each Student has one Student
+                .WithOne(s => s.Volunteer)               // Each Student has one Student
+                .HasForeignKey<Volunteer>(v => v.StudentID) // Foreign key in Student entity
                 .OnDelete(DeleteBehavior.NoAction);
 
         
-            // Configure the many-to-many relationship between Volunteer and Course via VolunteerCourse
+            // Configure the many-to-many relationship between Student and Course via VolunteerCourse
             modelBuilder.Entity<VolunteerCourse>()
-                .HasOne(vc => vc.Volunteers)               // Each VolunteerCourse has one Volunteer
-                .WithMany(v => v.VolunteerCourse)          // Each Volunteer has many VolunteerCourses
+                .HasOne(vc => vc.Volunteers)               // Each VolunteerCourse has one Student
+                .WithMany(v => v.VolunteerCourse)          // Each Student has many VolunteerCourses
                 .HasForeignKey(vc => vc.VolunteerID)      // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -96,10 +98,10 @@ namespace EduLink.Data
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Configure the one-to-many relationship between Volunteer and Article
+            // Configure the one-to-many relationship between Student and Article
             modelBuilder.Entity<Article>()
-                .HasOne(a => a.Volunteer)           // Each Article has one Volunteer
-                .WithMany(v => v.Articles)          // Each Volunteer has many Articles
+                .HasOne(a => a.Volunteer)           // Each Article has one Student
+                .WithMany(v => v.Articles)          // Each Student has many Articles
                 .HasForeignKey(a => a.VolunteerID)  // Foreign key in Article entity
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -119,25 +121,15 @@ namespace EduLink.Data
                 .WithOne(f => f.Booking)                   // Each Feedback has one Booking
                 .HasForeignKey<Feedback>(f => f.BookingID) // Foreign key in Feedback entity
                 .OnDelete(DeleteBehavior.NoAction);
-
-
-
        
-
-            // Define One-To-One relationship between User and Student
-            modelBuilder.Entity<Student>()
-               .HasOne(x => x.User)
-               .WithOne(x => x.Student)
-               .HasForeignKey<Student>(x => x.UserID)
-               .OnDelete(DeleteBehavior.NoAction); ;
-            // End One-To-One relationship between User and Student
+  
 
           
 
             // Define One-To-Many relationship between Department and Student
-             modelBuilder.Entity<Student>()
+             modelBuilder.Entity<User>()
                .HasOne(x => x.Department)
-               .WithMany(x => x.Students)
+               .WithMany(x => x.Users)
                .HasForeignKey(x => x.DepartmentID);
             // End One-To-Many relationship between Department and Student
 
@@ -152,12 +144,7 @@ namespace EduLink.Data
                 .HasOne(x => x.Course)
                 .WithMany(x => x.DepartmentCourses)
                 .HasForeignKey(x => x.CourseID);
-            // End Many-To-Many relationship between Course and Department
-
-
-         
-        
-            // End One-To-Many relationship between Notification_Booking and Booking
+   
 
             // Relationship between Event and Announcement (one-to-many)
             modelBuilder.Entity<Announcement>()
@@ -180,17 +167,29 @@ namespace EduLink.Data
                 .HasOne(b => b.Student)
                 .WithMany(s => s.Bookings)
                 .HasForeignKey(b => b.StudentID);
-
-            // Define One-To-Many relationship between EcucationContent and VolunteerCourse
+            // Define One-To-Many relationship between EventContent and Event
             modelBuilder.Entity<EventContent>()
-                .HasOne(e => e.VolunteerCourse)
-                .WithMany(e => e.EductionalContent)
-                .HasForeignKey(e => e.VolunteerCourseID);
+                .HasOne(e => e.Event)
+                .WithMany(e => e.EventContents)
+                .HasForeignKey(e => e.EventID);
+            // Define One-To-Many relationship between ُEvent and Session
+            modelBuilder.Entity<Event>()
+             .HasMany(e => e.Sessions)
+             .WithOne(s => s.Event)
+             .HasForeignKey(s => s.EventID)
+             .OnDelete(DeleteBehavior.Cascade);
+            // Define One-To-Many relationship between Booking and Session
+            modelBuilder.Entity<Session>()
+                           .HasMany(s => s.Bookings)
+                           .WithOne(b => b.Session)
+                           .HasForeignKey(b => b.SessionID)
+                           .OnDelete(DeleteBehavior.Cascade);
 
-            //Seed Roles
-            SeedRoles(modelBuilder, "Admin");
-            SeedRoles(modelBuilder, "Student");
-            SeedRoles(modelBuilder, "Volunteer");
+
+            ////Seed Roles
+            //SeedRoles(modelBuilder, "Admin");
+            //SeedRoles(modelBuilder, "Student");
+            //SeedRoles(modelBuilder, "Student");
         }
 
 

@@ -11,14 +11,14 @@
 //    public class IdentityAccountService : IAccount
 //    {
 //        private readonly EduLinkDbContext _context;
-//        private readonly UserManager<User> _userManager;
-//        private readonly SignInManager<User> _signInManager;
+//        private readonly UserManager<Student> _userManager;
+//        private readonly SignInManager<Student> _signInManager;
 //        private readonly JwtTokenService _jwtTokenService;
 //        //private RoleManager<IdentityRole> _roleManager;
 
 
-//        public IdentityAccountService(EduLinkDbContext context, UserManager<User> userManager,
-//            SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager)
+//        public IdentityAccountService(EduLinkDbContext context, UserManager<Student> userManager,
+//            SignInManager<Student> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager)
 //        {
 //            _context = context;
 //            _userManager = userManager;
@@ -34,7 +34,7 @@
 //                return null;
 //            }
 
-//            var user = new User
+//            var user = new Student
 //            {
 //                UserName = registerStudentDto.UserName,
 //                Email = registerStudentDto.Email
@@ -56,8 +56,8 @@
 
 //            var student = new Student
 //            {
-//                UserID = user.Id,
-//                User = user,
+//                StudentID = user.Id,
+//                Student = user,
 //                DepartmentID = registerStudentDto.DepartmentID
 //            };
 
@@ -69,7 +69,7 @@
 
 //            return new RegisterStudentDtoResponse
 //            {
-//                StudentID = student.UserID,
+//                StudentID = student.StudentID,
 //                UserName = user.UserName,
 //                Email = user.Email,
 //                DepartmentID = student.DepartmentID,
@@ -86,13 +86,13 @@
 //                return null;
 //            }
 
-//            var user = new User
+//            var user = new Student
 //            {
 //                UserName = registerAdminDto.UserName,
 //                Email = registerAdminDto.Email
 //            };
 
-           var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
+        //   var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
 
 //            if (!result.Succeeded)
 //            {
@@ -108,7 +108,7 @@
 //            var admin = new Admin
 //            {
 //                AdminID = user.Id,
-//                User = user
+//                Student = user
 //            };
 
 //            _context.Admins.Add(admin);
@@ -135,15 +135,15 @@
 //                return false;
 //            }
 
-//            var user = await _userManager.FindByIdAsync(student.UserID);
+//            var user = await _userManager.FindByIdAsync(student.StudentID);
 //            if (user == null)
 //            {
 //                return false;
 //            }
 
-//            await _userManager.AddToRoleAsync(user, "Volunteer");
+//            await _userManager.AddToRoleAsync(user, "Student");
 
-//            var volunteer = new Volunteer
+//            var volunteer = new Student
 //            {
 
 //                StudentID = student.StudentID,

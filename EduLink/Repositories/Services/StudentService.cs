@@ -25,7 +25,7 @@
 //                  .Include(s => s.Department)
 //                  .ThenInclude(d => d.Department_Courses)
 //                  .ThenInclude(dc => dc.Course)
-//                  .FirstOrDefaultAsync(s => s.UserID == studentId);
+//                  .FirstOrDefaultAsync(s => s.StudentID == studentId);
 //            if (student == null)
 //            {
 //                return null;
@@ -59,8 +59,8 @@
 //                                VolunteerID = vc.Volunteers.VolunteerID,
 //                                SkillDescription = vc.Volunteers.SkillDescription,
 //                                Rating = vc.Volunteers.Rating,
-//                                Email = vc.Volunteers.Student.User.Email,
-//                                PhoneNumber = vc.Volunteers.Student.User.PhoneNumber
+//                                Email = vc.Volunteers.Student.Student.Email,
+//                                PhoneNumber = vc.Volunteers.Student.Student.PhoneNumber
 //                            })
 //                            .ToList();
 //            if (volunteers == null)
@@ -157,7 +157,7 @@
 //        {
 //            var studentBookings = await eduLinkDbContext.Bookings
 //          .Include(b => b.Event)
-//          .ThenInclude(r => r.Volunteer)
+//          .ThenInclude(r => r.Student)
 //          .Where(e => e.ReservationID == ReservationId && e.StudentID == StudentId)
 //          .ToListAsync();
 
@@ -165,7 +165,7 @@
 //            {
 //                StudentID = e.StudentID,
 //                SessionStatus = e.SessionStatus,
-//                VolunteerName = e.Reservation.Volunteer.Student.User.UserName, 
+//                VolunteerName = e.Reservation.Student.Student.Student.UserName, 
 //                CourseID = e.Reservation.CourseID,
 //                Date = e.Reservation.Date,
 //                StartTime = e.Reservation.StartTime,
@@ -241,7 +241,7 @@
 
 //        public async Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterDtoReq registerDTO)
 //        {
-//            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.UserID==registerDTO.StudentID);
+//            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.StudentID==registerDTO.StudentID);
 //            if (student == null)
 //            {
 //                return    new MessageResponseDTO { Message = "Student Not found", };
@@ -255,7 +255,7 @@
 
 //            if (volunteer == null)
 //            {
-//                volunteer = new Volunteer
+//                volunteer = new Student
 //                {
 //                    SkillDescription = registerDTO.SkillsDescription,
 //                    StudentID = registerDTO.StudentID,

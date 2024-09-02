@@ -69,12 +69,12 @@ namespace EduLink.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize(Roles = "Volunteer, Student")]
+        [Authorize(Roles = "Student, Student")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> Logout()
         {
             await _accountService.LogoutAsync();
-            return Ok("User has been logged out.");
+            return Ok("Student has been logged out.");
         }
     }
 }

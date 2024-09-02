@@ -1,9 +1,15 @@
-﻿namespace EduLink.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EduLink.Models
 {
     public class Article
     {
         public int ArticleID { get; set; }
+
+        [MaxLength(200)]
         public string Title { get; set; }
+
+        [MaxLength(200)]
         public string Description { get; set; }
         public string AuthorName { get; set; }
         public DateTime PublicationDate { get; set; }
