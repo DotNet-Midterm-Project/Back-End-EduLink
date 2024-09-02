@@ -173,6 +173,13 @@ namespace EduLink.Data
                 .HasOne(b => b.Student)
                 .WithMany(s => s.Bookings)
                 .HasForeignKey(b => b.StudentID);
+            // Define One-To-Many relationship between EcucationContent and VolunteerCourse
+            modelBuilder.Entity<EductionalContent>()
+                .HasOne(e => e.VolunteerCourse)
+                .WithMany(e => e.EductionalContent)
+                .HasForeignKey(e => e.VolunteerCourseID);
+
+
 
             //Seed Roles
             SeedRoles(modelBuilder, "Admin");
