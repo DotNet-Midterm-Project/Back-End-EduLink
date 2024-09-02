@@ -296,13 +296,13 @@ namespace EduLink.Repositories.Services
             }
 
         
-            var reservation = new Reservation
+            var reservation = new Event
             {
                 VolunteerID = request.VolunteerID,
                 CourseID = request.CourseID,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
-                Date = request.Date
+                EventDate = request.Date
             };
 
            

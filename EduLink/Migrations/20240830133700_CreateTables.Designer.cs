@@ -274,7 +274,7 @@ namespace EduLink.Migrations
                     b.Property<int>("CourseID")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("EventDate")
                         .HasColumnType("datetime2");
 
                     b.Property<TimeSpan>("EndTime")
@@ -310,7 +310,7 @@ namespace EduLink.Migrations
 
                     b.HasIndex("DepartmentID");
 
-                    b.ToTable("Students");
+                    b.ToTable("Student");
                 });
 
             modelBuilder.Entity("EduLink.Models.User", b =>
@@ -389,7 +389,7 @@ namespace EduLink.Migrations
                     b.Property<bool>("Availability")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsVolunteer")
+                    b.Property<bool>("Aprove")
                         .HasColumnType("bit");
 
                     b.Property<int>("Rating")
@@ -437,7 +437,7 @@ namespace EduLink.Migrations
                     b.Property<int>("Capasity")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("EventDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -752,7 +752,7 @@ namespace EduLink.Migrations
             modelBuilder.Entity("EduLink.Models.Student", b =>
                 {
                     b.HasOne("EduLink.Models.Department", "Department")
-                        .WithMany("Students")
+                        .WithMany("Student")
                         .HasForeignKey("DepartmentID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -770,13 +770,13 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.Volunteer", b =>
                 {
-                    b.HasOne("EduLink.Models.Student", "Students")
+                    b.HasOne("EduLink.Models.Student", "Student")
                         .WithOne("Volunteers")
                         .HasForeignKey("EduLink.Models.Volunteer", "StudentID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Students");
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("EduLink.Models.VolunteerCourse", b =>
@@ -902,7 +902,7 @@ namespace EduLink.Migrations
                 {
                     b.Navigation("Department_Courses");
 
-                    b.Navigation("Students");
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("EduLink.Models.Reservation", b =>

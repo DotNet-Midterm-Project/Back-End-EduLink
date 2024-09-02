@@ -17,7 +17,7 @@ namespace EduLink.Data
         public DbSet<Volunteer> Volunteers { get; set; }
         public DbSet<WorkShop> WorkShops { get; set; }
         public DbSet<Department> Departments { get; set; }
-        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Event> Reservations { get; set; }
         public DbSet<VolunteerCourse> VolunteerCourses { get; set; }
         public DbSet<EductionalContent> EductionalContents { get; set; }
         public DbSet<Department_Courses> Department_courses { get; set; }
@@ -36,7 +36,7 @@ namespace EduLink.Data
 
             // Configure the one-to-one relationship between Volunteer and Student
             modelBuilder.Entity<Volunteer>()
-                .HasOne(v => v.Students)                  // Each Volunteer has one Student
+                .HasOne(v => v.Student)                  // Each Volunteer has one Student
                 .WithOne(s => s.Volunteers)               // Each Student has one Volunteer
                 .HasForeignKey<Volunteer>(v => v.StudentID) // Foreign key in Volunteer entity
                 .OnDelete(DeleteBehavior.NoAction);
@@ -195,7 +195,7 @@ namespace EduLink.Data
             // End One-To-Many relationship between Notification_Booking and Booking
 
             //Relation Between Volunteers and Reservations (one to many) 
-            modelBuilder.Entity<Reservation>()
+            modelBuilder.Entity<Event>()
                     .HasOne(r => r.Volunteer)
                     .WithMany(v => v.Reservations)
                     .HasForeignKey(r => r.VolunteerID);
@@ -208,7 +208,7 @@ namespace EduLink.Data
                     .HasForeignKey(w => w.VolunteerID);
 
             //Relation Between Course and Reservation (one to many) 
-            modelBuilder.Entity<Reservation>()
+            modelBuilder.Entity<Event>()
             .HasOne(r => r.Course)
             .WithMany(c => c.Reservations)
             .HasForeignKey(r => r.CourseID);
@@ -228,7 +228,7 @@ namespace EduLink.Data
                 .HasForeignKey(wr => wr.StudentID);
 
             //Relation between Reservation and Booking (one to one)
-            modelBuilder.Entity<Reservation>()
+            modelBuilder.Entity<Event>()
                 .HasMany(r => r.Bookings)   // One booking can be associated with multiple bookings
                 .WithOne(b => b.Reservation) // One booking is associated with one reservation
                 .HasForeignKey(b => b.ReservationID)  
