@@ -7,5 +7,7 @@
         public int CourseID { get; set; }
         public Volunteer Volunteers { get; set; }  
         public Course Courses { get; set; }  
+        public ICollection<EductionalContent> EductionalContent { get; set; } = new HashSet<EductionalContent>();
+        
     }
 }
