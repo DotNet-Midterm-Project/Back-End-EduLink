@@ -2,7 +2,7 @@
 {
     public class RegisterStudentResDTO
     {
-        public string StudentID { get; set; }
+        public int StudentID { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
         public int DepartmentID { get; set; }
