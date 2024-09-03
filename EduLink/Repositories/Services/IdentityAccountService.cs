@@ -11,10 +11,10 @@
 //    public class IdentityAccountService : IAccount
 //    {
 //        private readonly EduLinkDbContext _context;
-//        private readonly UserManager<Student> _userManager;
-//        private readonly SignInManager<Student> _signInManager;
+//        private readonly UserManager<User> _userManager;
+//        private readonly SignInManager<User> _signInManager;
 //        private readonly JwtTokenService _jwtTokenService;
-//        //private RoleManager<IdentityRole> _roleManager;
+//        private RoleManager<IdentityRole> _roleManager;
 
 
 //        public IdentityAccountService(EduLinkDbContext context, UserManager<Student> userManager,
@@ -24,17 +24,17 @@
 //            _userManager = userManager;
 //            _signInManager = signInManager;
 //            _jwtTokenService = jwtTokenService;
-//            //_roleManager = roleManager;
+//            _roleManager = roleManager;
 //        }
 
-//        public async Task<RegisterStudentDtoResponse> RegisterStudentAsync(RegisterStudentDtoRequest registerStudentDto, ModelStateDictionary modelState)
+//        public async Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterStudentReqDTO registerStudentDto, ModelStateDictionary modelState)
 //        {
 //            if (!modelState.IsValid)
 //            {
 //                return null;
 //            }
 
-//            var user = new Student
+//            var user = new User
 //            {
 //                UserName = registerStudentDto.UserName,
 //                Email = registerStudentDto.Email
@@ -51,7 +51,7 @@
 //                return null;
 //            }
 
-//            //if (await _roleManager.RoleExistsAsync("Student"))
+//            if (await _roleManager.RoleExistsAsync("Student"))
 //                await _userManager.AddToRoleAsync(user, "Student");
 
 //            var student = new Student
@@ -79,20 +79,20 @@
 //            };
 //        }
 
-//        public async Task<RegisterAdminDtoResponse> RegisterAdminAsync(RegisterAdminDtoRequest registerAdminDto, ModelStateDictionary modelState)
-//        {
+//        public async Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterAdminReqDTO registerAdminDto, ModelStateDictionary modelState)
+//        {Student
 //            if (!modelState.IsValid)
 //            {
 //                return null;
 //            }
 
-//            var user = new Student
+//            var user = new 
 //            {
 //                UserName = registerAdminDto.UserName,
 //                Email = registerAdminDto.Email
 //            };
 
-        //   var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
+//            var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
 
 //            if (!result.Succeeded)
 //            {
@@ -105,13 +105,9 @@
 
 //            await _userManager.AddToRoleAsync(user, "Admin");
 
-//            var admin = new Admin
-//            {
-//                AdminID = user.Id,
-//                Student = user
-//            };
+          
 
-//            _context.Admins.Add(admin);
+          
 //            await _context.SaveChangesAsync();
 
 //            var roles = await _userManager.GetRolesAsync(user);
@@ -157,7 +153,7 @@
 //            return true;
 //        }
 
-//        public async Task<LoginDtoResponse> LoginAsync(LoginDtoRequest loginDto)
+//        public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)
 //        {
 //            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 //            if (user == null)
@@ -172,9 +168,10 @@
 //            }
 
 //            var roles = await _userManager.GetRolesAsync(user);
+
 //            var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
 
-//            return new LoginDtoResponse
+//            return new LoginResDTO
 //            {
 //                Token = token,
 //                UserId = user.Id,

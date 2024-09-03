@@ -1,6 +1,6 @@
 ﻿namespace EduLink.Models.DTO.Response
 {
-    public class VolunteerDtoResponse
+    public class VolunteerResDTO
     {
         public int Rating { get; set; }
         public int VolunteerID { get; set; }

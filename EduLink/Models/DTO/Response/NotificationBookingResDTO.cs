@@ -1,6 +1,6 @@
 ﻿namespace EduLink.Models.DTO.Response
 {
-    public class NotificationBookingDtoResponse
+    public class NotificationBookingResDTO
     {
         public int NotificationID { get; set; }
         public string Message { get; set; }

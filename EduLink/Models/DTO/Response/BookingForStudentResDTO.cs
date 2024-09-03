@@ -1,6 +1,6 @@
 ﻿namespace EduLink.Models.DTO.Response
 {
-    public class BookingForStudentDtoResponse
+    public class BookingForStudentResDTO
     {
         public string StudentID { get; set; }
         public string SessionStatus { get; set; }

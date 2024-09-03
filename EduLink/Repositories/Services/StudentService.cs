@@ -45,7 +45,7 @@
 //            var course = await eduLinkDbContext.Courses
 //                   .Include(c => c.volunteerCourses)
 //                   .ThenInclude(vc => vc.Volunteers)
-//                   .FirstOrDefaultAsync(c => c.CourseID == courseId);
+//                   .FirstOrDefaultAsync(c => c.EventID == courseId);
 
 //            if (course == null)
 //            {
@@ -73,12 +73,12 @@
 //        public async Task<List<EducationalContentDtoResponse>> GeteducationalcontentAsync(int VolunteerId, int courseId)
 //        {
 //            var educatoinalContent = await eduLinkDbContext.EductionalContents
-//                .Where(e => e.CourseID == courseId && e.VolunteerID == VolunteerId).ToListAsync();
+//                .Where(e => e.EventID == courseId && e.VolunteerID == VolunteerId).ToListAsync();
 
 //            var EducationalResponse = educatoinalContent
 //                    .Select(e => new EducationalContentDtoResponse
 //                    {
-//                        CourseID = e.CourseID,
+//                        EventID = e.EventID,
 //                        VolunteerID = e.VolunteerID,
 //                        ContentDescription = e.ContentDescription,
 //                        ContentType = e.ContentType,
@@ -94,7 +94,7 @@
 //        public async Task<List<ReservationDtoResponse>> GetReservationForVolunteerAsync(int VolunteerId, int courseId)
 //        {
 //            var Reservation = await eduLinkDbContext.Events
-//                .Where(e => e.VolunteerID == VolunteerId && e.CourseID == courseId)
+//                .Where(e => e.VolunteerID == VolunteerId && e.EventID == courseId)
 //                .ToListAsync();
 //            if (Reservation == null)
 //            {
@@ -104,7 +104,7 @@
 //            var ReservationResponse = Reservation
 //                .Select(e => new ReservationDtoResponse
 //                {
-//                    CourseID = e.CourseID,
+//                    EventID = e.EventID,
 //                    VolunteerID = e.VolunteerID,
 //                    Date = e.Date,
 //                    EndTime = e.EndTime,
@@ -166,7 +166,7 @@
 //                StudentID = e.StudentID,
 //                SessionStatus = e.SessionStatus,
 //                VolunteerName = e.Reservation.Student.Student.Student.UserName, 
-//                CourseID = e.Reservation.CourseID,
+//                EventID = e.Reservation.EventID,
 //                Date = e.Reservation.Date,
 //                StartTime = e.Reservation.StartTime,
 //                EndTime = e.Reservation.EndTime,
@@ -239,7 +239,7 @@
 //        }
 
 
-//        public async Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterDtoReq registerDTO)
+//        public async Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterReqDTO registerDTO)
 //        {
 //            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.StudentID==registerDTO.StudentID);
 //            if (student == null)
@@ -279,12 +279,12 @@
 //            foreach (var courseId in registerDTO.CoursesID)
 //            {
 //                // Check if the volunteer is already associated with the course
-//                if (!volunteer.VolunteerCourse.Any(vc => vc.CourseID == courseId))
+//                if (!volunteer.VolunteerCourse.Any(vc => vc.EventID == courseId))
 //                {
 //                    volunteer.VolunteerCourse.Add(new VolunteerCourse
 //                    {
 //                        VolunteerID = volunteer.VolunteerID,
-//                        CourseID = courseId
+//                        EventID = courseId
 //                    });
 //                }
 //            }

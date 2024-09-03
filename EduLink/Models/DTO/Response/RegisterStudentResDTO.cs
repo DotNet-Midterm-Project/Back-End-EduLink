@@ -1,10 +1,11 @@
 ﻿namespace EduLink.Models.DTO.Response
 {
-    public class RegisterAdminDtoResponse
+    public class RegisterStudentResDTO
     {
-        public string AdminID { get; set; }
+        public string StudentID { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
+        public int DepartmentID { get; set; }
         public string Token { get; set; }
         public IList<string> Roles { get; set; }
     }

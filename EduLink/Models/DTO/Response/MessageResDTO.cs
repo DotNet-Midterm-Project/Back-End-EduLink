@@ -1,6 +1,6 @@
 ﻿namespace EduLink.Models.DTO.Response
 {
-    public class MessageResponseDTO
+    public class MessageResDTO
     {
         public string Message { get; set; }
     }

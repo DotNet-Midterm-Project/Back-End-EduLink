@@ -1,6 +1,6 @@
 ﻿namespace EduLink.Models.DTO.Request
 {
-    public class FeedbackDtoRequest
+    public class FeedbackReqDTO
     {
         public int BookingId { get; set; }
 

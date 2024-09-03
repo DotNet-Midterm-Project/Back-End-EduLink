@@ -126,7 +126,7 @@ namespace EduLink.Migrations
                         name: "FK_DepartmentCourses_Courses_CourseID",
                         column: x => x.CourseID,
                         principalTable: "Courses",
-                        principalColumn: "CourseID",
+                        principalColumn: "EventID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DepartmentCourses_Departments_DepartmentID",
@@ -301,7 +301,7 @@ namespace EduLink.Migrations
                         name: "FK_VolunteerCourses_Courses_CourseID",
                         column: x => x.CourseID,
                         principalTable: "Courses",
-                        principalColumn: "CourseID");
+                        principalColumn: "EventID");
                     table.ForeignKey(
                         name: "FK_VolunteerCourses_Volunteers_VolunteerID",
                         column: x => x.VolunteerID,
@@ -337,7 +337,7 @@ namespace EduLink.Migrations
                         name: "FK_Events_Courses_CourseID",
                         column: x => x.CourseID,
                         principalTable: "Courses",
-                        principalColumn: "CourseID");
+                        principalColumn: "EventID");
                     table.ForeignKey(
                         name: "FK_Events_VolunteerCourses_VolunteerCoursID",
                         column: x => x.VolunteerCoursID,
@@ -551,7 +551,7 @@ namespace EduLink.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Events_CourseID",
                 table: "Events",
-                column: "CourseID");
+                column: "EventID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_VolunteerCoursID",
@@ -583,7 +583,7 @@ namespace EduLink.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_VolunteerCourses_CourseID",
                 table: "VolunteerCourses",
-                column: "CourseID");
+                column: "EventID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VolunteerCourses_VolunteerID",

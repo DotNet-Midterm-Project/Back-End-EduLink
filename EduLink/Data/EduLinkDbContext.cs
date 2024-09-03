@@ -73,7 +73,7 @@ namespace EduLink.Data
                 .HasOne(s => s.User)                  // Each Student has one Student
                 .WithOne(u => u.Student)               // Each Student has one Student
                 .HasForeignKey<Student>(s => s.UserID) // Foreign key in Student entity
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 
@@ -82,7 +82,7 @@ namespace EduLink.Data
                 .HasOne(v => v.Student)                  // Each Student has one Student
                 .WithOne(s => s.Volunteer)               // Each Student has one Student
                 .HasForeignKey<Volunteer>(v => v.StudentID) // Foreign key in Student entity
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
         
             // Configure the many-to-many relationship between Student and Course via VolunteerCourse
@@ -98,19 +98,19 @@ namespace EduLink.Data
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Configure the one-to-many relationship between Student and Article
+            // Configure the one-to-many relationship between Volunteer and Article
             modelBuilder.Entity<Article>()
                 .HasOne(a => a.Volunteer)           // Each Article has one Student
                 .WithMany(v => v.Articles)          // Each Student has many Articles
                 .HasForeignKey(a => a.VolunteerID)  // Foreign key in Article entity
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relationship between VolunteerCourse and Event (one-to-many)
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.VolunteerCourse)
                 .WithMany(vc => vc.Events)
                 .HasForeignKey(e => e.VolunteerCoursID)
-                .OnDelete(DeleteBehavior.NoAction);  // Use Cascade or SetNull depending on your needs
+                .OnDelete(DeleteBehavior.Cascade);  // Use Cascade or SetNull depending on your needs
 
 
         
@@ -120,30 +120,31 @@ namespace EduLink.Data
                 .HasOne(b => b.Feedbacks)                  // Each Booking has one Feedback
                 .WithOne(f => f.Booking)                   // Each Feedback has one Booking
                 .HasForeignKey<Feedback>(f => f.BookingID) // Foreign key in Feedback entity
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
        
   
 
           
 
-            // Define One-To-Many relationship between Department and Student
+            // Define One-To-Many relationship between Department and User
              modelBuilder.Entity<User>()
                .HasOne(x => x.Department)
                .WithMany(x => x.Users)
-               .HasForeignKey(x => x.DepartmentID);
-            // End One-To-Many relationship between Department and Student
+               .HasForeignKey(x => x.DepartmentID)
+               .OnDelete(DeleteBehavior.Cascade);
+            // End One-To-Many relationship between Department and User
 
             // Define Many-To-Many relationship between Department and Course
             modelBuilder.Entity<DepartmentCourses>().HasKey(x => new { x.CourseID, x.DepartmentID }); // Set composite key for Department_Courses entity
             modelBuilder.Entity<DepartmentCourses>()
                 .HasOne(x => x.Department)
                 .WithMany(x => x.Department_Courses)
-                .HasForeignKey(x => x.DepartmentID);
+                .HasForeignKey(x => x.DepartmentID).OnDelete(DeleteBehavior.NoAction); 
                 
             modelBuilder.Entity<DepartmentCourses>()
                 .HasOne(x => x.Course)
                 .WithMany(x => x.DepartmentCourses)
-                .HasForeignKey(x => x.CourseID);
+                .HasForeignKey(x => x.CourseID).OnDelete(DeleteBehavior.NoAction);
    
 
             // Relationship between Event and Announcement (one-to-many)
@@ -151,7 +152,7 @@ namespace EduLink.Data
                 .HasOne(a => a.Event)
                 .WithMany(e => e.Announcements)
                 .HasForeignKey(a => a.EventID)
-                .OnDelete(DeleteBehavior.NoAction);  
+                .OnDelete(DeleteBehavior.Cascade);  
             // Use Cascade or Restrict depending on your needs
 
 
@@ -160,18 +161,20 @@ namespace EduLink.Data
                 .HasMany(r => r.Bookings)   // One booking can be associated with multiple bookings
                 .WithOne(b => b.Event) // One booking is associated with one Event
                 .HasForeignKey(b => b.EventID)  
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation between Student and Booking(one to many)
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Student)
                 .WithMany(s => s.Bookings)
-                .HasForeignKey(b => b.StudentID);
+                .HasForeignKey(b => b.StudentID)
+                .OnDelete(DeleteBehavior.Cascade);
             // Define One-To-Many relationship between EventContent and Event
             modelBuilder.Entity<EventContent>()
                 .HasOne(e => e.Event)
                 .WithMany(e => e.EventContents)
-                .HasForeignKey(e => e.EventID);
+                .HasForeignKey(e => e.EventID)
+                .OnDelete(DeleteBehavior.Cascade);
             // Define One-To-Many relationship between ُEvent and Session
             modelBuilder.Entity<Event>()
              .HasMany(e => e.Sessions)
@@ -186,10 +189,10 @@ namespace EduLink.Data
                            .OnDelete(DeleteBehavior.Cascade);
 
 
-            ////Seed Roles
-            //SeedRoles(modelBuilder, "Admin");
-            //SeedRoles(modelBuilder, "Student");
-            //SeedRoles(modelBuilder, "Student");
+            //Seed Roles
+            SeedRoles(modelBuilder, "Admin");
+            SeedRoles(modelBuilder, "Student");
+            SeedRoles(modelBuilder, "volunteer");
         }
 
 

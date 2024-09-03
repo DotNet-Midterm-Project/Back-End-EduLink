@@ -9,7 +9,7 @@ namespace EduLink.Models
         [MaxLength(200)]
         public string Title { get; set; }
 
-        [MaxLength(200)]
+        [MaxLength(2000)]
         public string Description { get; set; }
         public string AuthorName { get; set; }
         public DateTime PublicationDate { get; set; }
