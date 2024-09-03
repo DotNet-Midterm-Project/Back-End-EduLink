@@ -80,6 +80,7 @@ namespace EduLink.Repositories.Services
             if (role == "Volunteer" && roleData is Volunteer volunteer)
             {
                 claims.Add(new Claim("VolunteerID", volunteer.VolunteerID.ToString()));
+                claims.Add(new Claim("StudentID", volunteer.StudentID.ToString()));
                 claims.Add(new Claim("Availability", volunteer.Availability.ToString()));
                 claims.Add(new Claim("SkillDescription", volunteer.SkillDescription ?? ""));
                 // Add other relevant claims...
@@ -98,6 +99,31 @@ namespace EduLink.Repositories.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<string> GenerateTokenWithAdminClaims(User user, TimeSpan expiryDuration)
+        {
+            // Create user claims
+            var userPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
+            if (userPrincipal == null)
+            {
+                return null;
+            }
+
+            var claims = userPrincipal.Claims.ToList();
+
+            // Add custom admin-specific claims
+            claims.Add(new Claim("IsAdmin", user.IsAdmin.ToString()));
+
+            var signInKey = GetSecurityKey(_configuration);
+
+            var jwtToken = new JwtSecurityToken(
+                expires: DateTime.UtcNow.Add(expiryDuration),
+                signingCredentials: new SigningCredentials(signInKey, SecurityAlgorithms.HmacSha256),
+                claims: claims
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(jwtToken);
         }
 
 
