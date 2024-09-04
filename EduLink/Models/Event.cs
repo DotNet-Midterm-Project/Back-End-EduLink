@@ -7,6 +7,7 @@ namespace EduLink.Models
         Scheduled,
         Ongoing,
         Completed,
+        Clode,
         Cancelled
     }
 
@@ -44,6 +45,7 @@ namespace EduLink.Models
         public int Capacity { get; set; }  // Correct spelling from 'Capasity' to 'Capacity'
         public int EventType { get; set; }
         public string? EventAddress { get; set; }
+        public int SessionCount { get; set; }
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
         // Add this collection to represent the one-to-many relationship with Announcements

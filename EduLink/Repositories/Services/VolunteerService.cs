@@ -84,7 +84,7 @@
 //        {
 //            VolunteerID = dto.VolunteerID,
 //            Title = dto.Title,
-//            Description = dto.Description,
+//            ArticaleContent = dto.ArticaleContent,
 //            PublicationDate = dto.PublicationDate,
 //            AuthorName = dto.AuthorName
 //        };
@@ -199,7 +199,7 @@
 //            {
 //                VolunteerID = addWorkshopRequest.VolunteerID,
 //                Title = addWorkshopRequest.Title,
-//                Description = addWorkshopRequest.Description,
+//                ArticaleContent = addWorkshopRequest.ArticaleContent,
 //                Date = addWorkshopRequest.Date,
 //                SessionLink = addWorkshopRequest.SessionLink,
 //                Capasity = addWorkshopRequest.Capasity
@@ -245,7 +245,7 @@
 //               .Select(w => new WorkshopResDTO
 //               {
 //                   Title = w.Title,
-//                   Description = w.Description,
+//                   ArticaleContent = w.ArticaleContent,
 //                   VolunteerID = w.VolunteerID,
 //                   Date = w.Date,
 //                   SessionLink = w.SessionLink,
@@ -286,7 +286,7 @@
 //            return new ArticleResDTO
 //            {
 //                Title = article.Title,
-//                Description = article.Description,
+//                ArticaleContent = article.ArticaleContent,
 //                AuthorName = article.AuthorName,
 //                VolunteerID = article.VolunteerID,
 //                PublicationDate = article.PublicationDate

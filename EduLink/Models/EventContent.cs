@@ -13,7 +13,9 @@ namespace EduLink.Models
         public Content ContentType { get; set; }
         [MaxLength(1000)]
         public string ContentDescription { get; set; }
-  
+        [MaxLength(2000)]
+        public string ContentAdress { get; set; }
+
 
 
     }

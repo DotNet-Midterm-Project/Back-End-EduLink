@@ -46,7 +46,7 @@
 //            {
 //                foreach (var error in result.Errors)
 //                {
-//                    modelState.AddModelError("", error.Description);
+//                    modelState.AddModelError("", error.ArticaleContent);
 //                }
 //                return null;
 //            }
@@ -98,7 +98,7 @@
 //            {
 //                foreach (var error in result.Errors)
 //                {
-//                    modelState.AddModelError("", error.Description);
+//                    modelState.AddModelError("", error.ArticaleContent);
 //                }
 //                return null;
 //            }

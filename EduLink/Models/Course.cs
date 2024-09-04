@@ -8,6 +8,9 @@ namespace EduLink.Models
         public int CourseID { get; set; }
         [MaxLength(200)]
         public string CourseName { get; set; }
+        [MaxLength(1000)]
+        public string CourseDescription { get; set; }
+
 
         public ICollection<DepartmentCourses> DepartmentCourses { get; set; } = new List<DepartmentCourses>();
         public ICollection<Event> Events { get; set; }
