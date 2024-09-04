@@ -1,8 +1,12 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using EduLink.Models;
+using EduLink.Models.DTO.Request;
 using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace EduLink.Controllers
 {
@@ -11,6 +15,7 @@ namespace EduLink.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccount _accountService;
+        private readonly UserManager<User> _userManager;
 
         public AccountController(IAccount accountService)
         {
@@ -69,12 +74,33 @@ namespace EduLink.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize(Roles = "Student, Student")]
-        [Authorize(Roles = "Student")]
         public async Task<IActionResult> Logout()
         {
             await _accountService.LogoutAsync();
             return Ok("Student has been logged out.");
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string email, string code)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
+            {
+                return BadRequest("Data are empty or null");
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return BadRequest("User not found.");
+
+            var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            // Log detailed result information
+            if (result.Succeeded)
+                return Ok("Email confirmed successfully. You can now log in.");
+
+            return BadRequest("Error confirming email.");
         }
     }
 }

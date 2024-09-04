@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail.Model;
 using System.Security.Claims;
+using System.Text;
 
 namespace EduLink.Repositories.Services
 {
@@ -19,15 +22,17 @@ namespace EduLink.Repositories.Services
         private readonly SignInManager<User> _signInManager;
         private readonly JwtTokenService _jwtTokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly EmailService _emailService;
 
         public IdentityAccountService(EduLinkDbContext context, UserManager<User> userManager,
-            SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager)
+            SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager, EmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
             _roleManager = roleManager;
+            _emailService = emailService;
         }
 
         public async Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState)
@@ -68,6 +73,25 @@ namespace EduLink.Repositories.Services
                 await _userManager.AddToRoleAsync(user, "Student");
             }
 
+            //Here sending verifing email
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            //Change this when the server is live.
+            var baseUrl = "http://localhost:5085/api/Account";
+            var confirmationLink = $"{baseUrl}/confirm-email?email={user.Email}&code={code}";
+            
+            var subject = "Confirm your email";
+            //with html
+            var emailDescription = $@"
+                <p>Hello,</p>
+                <p>Please confirm your email address by clicking the following link:</p>
+                <p><a href='{confirmationLink}'>Confirm Email</a></p>
+                <p>Thank you!</p>";
+
+            await _emailService.SendEmailAsync(user.Email, subject, emailDescription);
+
+
             var student = new Student
             {
                 UserID = user.Id,
@@ -79,7 +103,7 @@ namespace EduLink.Repositories.Services
             await _context.SaveChangesAsync();
 
             var roles = await _userManager.GetRolesAsync(user);
-            var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
+            //var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
 
             return new RegisterStudentResDTO
             {
@@ -110,7 +134,7 @@ namespace EduLink.Repositories.Services
                 Gender = registerAdminDto.Gender,
                 PhoneNumber = registerAdminDto.PhoneNumber,
                 DepartmentID = registerAdminDto.DepartmentID,
-
+                EmailConfirmed = true,
 
             };
 
@@ -150,6 +174,8 @@ namespace EduLink.Repositories.Services
             {
                 return null;
             }
+            if (!user.EmailConfirmed)
+                return null;
 
             //I am not sure about this.
             //var result = await _signInManager.PasswordSignInAsync(user.UserName, loginDto.Password, false, false);
