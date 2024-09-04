@@ -40,6 +40,7 @@ namespace EduLink
 
             //For JWT Later
             builder.Services.AddScoped<JwtTokenService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
 
             // Swagger Config
