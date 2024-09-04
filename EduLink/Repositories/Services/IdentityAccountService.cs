@@ -3,9 +3,12 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EduLink.Repositories.Services
 {
@@ -27,7 +30,7 @@ namespace EduLink.Repositories.Services
             _roleManager = roleManager;
         }
 
-        public async Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterStudentReqDTO registerStudentDto, ModelStateDictionary modelState)
+        public async Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState)
         {
             if (!modelState.IsValid)
             {
@@ -38,7 +41,15 @@ namespace EduLink.Repositories.Services
             {
                 UserName = registerStudentDto.UserName,
                 Email = registerStudentDto.Email,
-                IsAdmin = false // Explicitly setting IsAdmin to false for students
+                IsAdmin = false, // Explicitly setting IsAdmin to false for students
+                IsActived = true,
+                IsLocked = false,
+                Skills = registerStudentDto.Skills,
+                Gender = registerStudentDto.Gender,
+                PhoneNumber = registerStudentDto.PhoneNumber,
+                DepartmentID = registerStudentDto.DepartmentID,
+
+                
             };
 
             var result = await _userManager.CreateAsync(user, registerStudentDto.Password);
@@ -81,7 +92,7 @@ namespace EduLink.Repositories.Services
             };
         }
 
-        public async Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterAdminReqDTO registerAdminDto, ModelStateDictionary modelState)
+        public async Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterUserReqDTO registerAdminDto, ModelStateDictionary modelState)
         {
             if (!modelState.IsValid)
             {
@@ -92,7 +103,15 @@ namespace EduLink.Repositories.Services
             {
                 UserName = registerAdminDto.UserName,
                 Email = registerAdminDto.Email,
-                IsAdmin = true // Explicitly setting IsAdmin to true for admins
+                IsAdmin = true, // Explicitly setting IsAdmin to false for students
+                IsActived = true,
+                IsLocked = false,
+                Skills = registerAdminDto.Skills,
+                Gender = registerAdminDto.Gender,
+                PhoneNumber = registerAdminDto.PhoneNumber,
+                DepartmentID = registerAdminDto.DepartmentID,
+
+
             };
 
             var result = await _userManager.CreateAsync(user, registerAdminDto.Password);

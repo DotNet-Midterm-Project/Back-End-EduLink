@@ -6,9 +6,9 @@ namespace EduLink.Repositories.Interfaces
 {
     public interface IAccount
     {
-        Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterStudentReqDTO registerStudentDto, ModelStateDictionary modelState);
+        Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState);
         //Maybe Move this to Admin Routes (This will be used once)
-        Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterAdminReqDTO registerAdminDto, ModelStateDictionary modelState);
+        Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterUserReqDTO registerAdminDto, ModelStateDictionary modelState);
         
         //Move this to Student routes
         Task<bool> AddStudentToVolunteerRoleAsync(string studentID);
