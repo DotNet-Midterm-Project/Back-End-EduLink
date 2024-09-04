@@ -18,7 +18,7 @@ namespace EduLink.Controllers
         }
 
         [HttpPost("register-student")]
-        public async Task<IActionResult> RegisterStudent(RegisterStudentReqDTO registerStudentDto)
+        public async Task<IActionResult> RegisterStudent(RegisterUserReqDTO registerStudentDto)
         {
             var student = await _accountService.RegisterStudentAsync(registerStudentDto, ModelState);
             if (student == null)
@@ -31,7 +31,7 @@ namespace EduLink.Controllers
 
         [HttpPost("register-admin")]
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RegisterAdmin(RegisterAdminReqDTO registerAdminDto)
+        public async Task<IActionResult> RegisterAdmin(RegisterUserReqDTO registerAdminDto)
         {
             var admin = await _accountService.RegisterAdminAsync(registerAdminDto, ModelState);
             if (admin == null)
