@@ -8,16 +8,16 @@ namespace EduLink.Repositories.Interfaces
     {
 
 
-        Task<List<DepartmentCoursesDtoResponse>> GetCoursesByStudentDepartmentAsync(string StudentId);
-        Task<List<VolunteerDtoResponse>> GetCourseVolunteerAsync(int CourseId);
+        Task<List<DepartmentCoursesResDTO>> GetCoursesByStudentDepartmentAsync(string StudentId);
+        Task<List<VolunteerResDTO>> GetCourseVolunteerAsync(int CourseId);
 
-        Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterDtoReq registerDTO);
-        Task<List<EducationalContentDtoResponse>> GeteducationalcontentAsync(int VolunteerId, int courseId);
-        Task<List<ReservationDtoResponse>> GetReservationForVolunteerAsync(int VolunteerId, int courseId);
+        Task<MessageResDTO> RegisterVolunteerAsync(VolunteerRegisterReqDTO registerDTO);
+        Task<List<EventContentResDTO>> GeteducationalcontentAsync(int VolunteerId, int courseId);
+        Task<List<ReservationResDTO>> GetReservationForVolunteerAsync(int VolunteerId, int courseId);
         Task<String> AddBookingAsync(int ReservationId , string studentId);
-        Task<List<BookingForStudentDtoResponse>> GetBookingAsync(string StudentId, int ReservationId);
-        Task<string> AddFeedbackAsync(FeedbackDtoRequest bookingDtoRequest);
+        Task<List<BookingForStudentResDTO>> GetBookingAsync(string StudentId, int ReservationId);
+        Task<string> AddFeedbackAsync(FeedbackReqDTO bookingDtoRequest);
         Task<string> WorkshopsRegistrationAsync(string StudentId, int WorkshopID);
-        Task<List<NotificationBookingDtoResponse>> GetNotificationsByStudentAsync(string studentId);
+        Task<List<NotificationBookingResDTO>> GetNotificationsByStudentAsync(string studentId);
     }
 }

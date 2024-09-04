@@ -6,21 +6,21 @@ namespace EduLink.Repositories.Interfaces
     public interface IVolunteer
     {
 
-        Task<List<VolunteerCourseDTO>> GetVolunteerCoursesAsync(int volunteerID);
-        Task<MessageResponseDTO> AddEducationalContentAsync(EducationalContentDtoReq dto);
-        Task<GetEducationalContentResponseDTO> GetEducationalContentForEachCourseAsync(int volunteerID, int courseID);
-        Task<MessageResponseDTO> AddArticleAsync(ArticleDTO dto);
-        Task<MessageResponseDTO> DeleteArticleAsync(int volunteerId, int articleId);
-        Task<ArticleResponseDTO> GetArticleByIdAsync(int volunteerId, int articleId);
-        Task<MessageResponseDTO> AddReservationAsync(AddReservationRequestDTO request);
+        Task<List<VolunteerCourseResDTO>> GetVolunteerCoursesAsync(int volunteerID);
+        Task<MessageResDTO> AddEventContentAsync(EventContetnReqDTO dto);
+        Task<IEnumerable<EventContentResDTO>> GetEventContentsAsync(int volunteerID, int eventID);
+        Task<MessageResDTO> AddArticleAsync(ArticleReqDTO dto);
+        Task<MessageResDTO> DeleteArticleAsync(int volunteerId, int articleId);
+        Task<ArticleResDTO> GetArticleByIdAsync(int volunteerId, int articleId);
+        Task<MessageResDTO> AddReservationAsync(AddReservationReqDTO request);
 
         //
-        Task<List<ReservationDtoResponse>> GetAllReservationAsync(ReservationReqDTO reservationRequest);
-        Task<MessageResponseDTO> DeleteReservationAsync(DeleteReservationDTO deleteReservationRequest);
-        Task<MessageResponseDTO> UpdateReservationAsync(UpdateReservationReqDTO updateReservationRequest);
-        Task<MessageResponseDTO> AddWorkshopAsync(AddWorkshopReqDTO addWorkshopRequest);
-        Task<MessageResponseDTO> DeleteWorkshopAsync(DeleteWorkshopReqDTO deleteWorkshopRequest);
-        Task<List<WorkshopResDTO>> GetAllWorkshopsAsync(GetAllWorkshopsReqDTO getAllWorkshopsRequest);
+        Task<List<ReservationResDTO>> GetAllReservationAsync(ReservationReqDTO reservationRequest);
+     //   Task<MessageResDTO> DeleteReservationAsync(DeleteReservationReqDTO deleteReservationRequest);
+        Task<MessageResDTO> UpdateReservationAsync(UpdateReservationReqDTO updateReservationRequest);
+        Task<MessageResDTO> AddWorkshopAsync(AddWorkshopReqDTO addWorkshopRequest);
+        Task<MessageResDTO> DeleteWorkshopAsync(DeleteWorkshopReqDTO deleteWorkshopRequest);
+       // Task<List<WorkshopResDTO>> GetAllWorkshopsAsync(GetAllWorkshopsReqDTO getAllWorkshopsRequest);
         Task<List<GetWorkshopNotificationRespDTO>> GetWorkshopNotificationsAsync();
     }
 }

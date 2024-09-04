@@ -21,7 +21,7 @@ namespace EduLink.Controllers
             this.student = student;
         }
         [HttpGet("getAllCourse/{StudentID}")]
-        public async Task<ActionResult<List<DepartmentCoursesDtoResponse>>> GetAllCoursesByStudentDepartmentAsync([FromHeader] string Authorization, [FromRoute] string StudentID)
+        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetAllCoursesByStudentDepartmentAsync([FromHeader] string Authorization, [FromRoute] string StudentID)
         {
             // Validate the authorization token
             if (Authorization != "Bearer JWT_token_here")
@@ -37,8 +37,8 @@ namespace EduLink.Controllers
             }
             return Ok(Course);
         }
-        [HttpGet("GetCourseVolunteers/{CourseID}")]
-        public async Task<ActionResult<List<DepartmentCoursesDtoResponse>>> GetAllCoursesByStudentDepartmentAsync([FromHeader] string Authorization, [FromRoute] int CourseID)
+        [HttpGet("GetCourseVolunteers/{EventID}")]
+        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetAllCoursesByStudentDepartmentAsync([FromHeader] string Authorization, [FromRoute] int CourseID)
         {
             // Validate the authorization token
             if (Authorization != "Bearer JWT_token_here")
@@ -51,7 +51,7 @@ namespace EduLink.Controllers
             return Ok(Course);
         }
         [HttpGet("GetEducationalContent/{VolunteerID}/{courseID}")]
-        public async Task<ActionResult<List<EducationalContentDtoResponse>>> GetEducationalContent([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
+        public async Task<ActionResult<List<EventContentResDTO>>> GetEducationalContent([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
         {
             // Validate the authorization token
             if (Authorization != "Bearer JWT_token_here")
@@ -69,7 +69,7 @@ namespace EduLink.Controllers
             return Ok(EducationalContent);
         }
         [HttpGet("GetReservations/{VolunteerID}/{courseID}")]
-        public async Task<ActionResult<List<ReservationDtoResponse>>> GetReservations([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
+        public async Task<ActionResult<List<ReservationResDTO>>> GetReservations([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
         {
             if (Authorization != "Bearer JWT_token_here")
                 return Unauthorized();
@@ -107,7 +107,7 @@ namespace EduLink.Controllers
 
         }
         [HttpGet("/getbooking/{StudentID}/{ReservationID}")]
-        public async Task<ActionResult<List<BookingForStudentDtoResponse>>> getbookingStudent([FromHeader] string Authorization,[FromRoute] string StudentID ,[FromRoute] int ReservationID)
+        public async Task<ActionResult<List<BookingForStudentResDTO>>> getbookingStudent([FromHeader] string Authorization,[FromRoute] string StudentID ,[FromRoute] int ReservationID)
         {
             if (Authorization != "Bearer JWT_token_here")
                 return Unauthorized();
@@ -124,7 +124,7 @@ namespace EduLink.Controllers
 
         }
         [HttpPost("addFeedBack")]
-        public async Task<ActionResult<string>> AddFeedBack([FromHeader] string Authorization, FeedbackDtoRequest feedback) {
+        public async Task<ActionResult<string>> AddFeedBack([FromHeader] string Authorization, FeedbackReqDTO feedback) {
             if (Authorization != "Bearer JWT_token_here")
                 return Unauthorized();
             var Feedback = await student.AddFeedbackAsync(feedback);
@@ -149,7 +149,7 @@ namespace EduLink.Controllers
 
         [HttpPost("Register/Volinteer")]
        // [Authorize]
-        public async Task<IActionResult> RegisterVolunteer([FromBody] VolunteerRegisterDtoReq registerDTO)
+        public async Task<IActionResult> RegisterVolunteer([FromBody] VolunteerRegisterReqDTO registerDTO)
         {
             //if (!ModelState.IsValid)
             //{

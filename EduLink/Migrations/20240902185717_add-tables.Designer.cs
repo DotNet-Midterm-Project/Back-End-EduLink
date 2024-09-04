@@ -4,6 +4,7 @@ using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    partial class EduLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240902185717_add-tables")]
+    partial class addtables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,14 +67,14 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ArticleID"));
 
-                    b.Property<string>("ArticaleContent")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
                     b.Property<string>("AuthorName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ArticaleContent")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
@@ -127,23 +130,18 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.Course", b =>
                 {
-                    b.Property<int>("CourseID")
+                    b.Property<int>("EventID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourseID"));
-
-                    b.Property<string>("CourseDescription")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventID"));
 
                     b.Property<string>("CourseName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("CourseID");
+                    b.HasKey("EventID");
 
                     b.ToTable("Courses");
                 });
@@ -173,13 +171,13 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.DepartmentCourses", b =>
                 {
-                    b.Property<int>("CourseID")
+                    b.Property<int>("EventID")
                         .HasColumnType("int");
 
                     b.Property<int>("DepartmentID")
                         .HasColumnType("int");
 
-                    b.HasKey("CourseID", "DepartmentID");
+                    b.HasKey("EventID", "DepartmentID");
 
                     b.HasIndex("DepartmentID");
 
@@ -197,7 +195,7 @@ namespace EduLink.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CourseID")
+                    b.Property<int?>("EventID")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("EndTime")
@@ -228,9 +226,6 @@ namespace EduLink.Migrations
                     b.Property<int>("Location")
                         .HasColumnType("int");
 
-                    b.Property<int>("SessionCount")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("datetimeoffset");
 
@@ -247,7 +242,7 @@ namespace EduLink.Migrations
 
                     b.HasKey("EventID");
 
-                    b.HasIndex("CourseID");
+                    b.HasIndex("EventID");
 
                     b.HasIndex("VolunteerCoursID");
 
@@ -263,11 +258,6 @@ namespace EduLink.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContentID"));
-
-                    b.Property<string>("ContentAdress")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("ContentDescription")
                         .IsRequired()
@@ -327,9 +317,6 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionID"));
 
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
-
                     b.Property<string>("Details")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -341,9 +328,6 @@ namespace EduLink.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("EventID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SessionStatus")
                         .HasColumnType("int");
 
                     b.Property<string>("StartDate")
@@ -519,7 +503,7 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VolunteerCourseID"));
 
-                    b.Property<int>("CourseID")
+                    b.Property<int>("EventID")
                         .HasColumnType("int");
 
                     b.Property<int>("VolunteerID")
@@ -527,7 +511,7 @@ namespace EduLink.Migrations
 
                     b.HasKey("VolunteerCourseID");
 
-                    b.HasIndex("CourseID");
+                    b.HasIndex("EventID");
 
                     b.HasIndex("VolunteerID");
 
@@ -559,29 +543,6 @@ namespace EduLink.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "admin",
-                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000000",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = "student",
-                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000000",
-                            Name = "Student",
-                            NormalizedName = "STUDENT"
-                        },
-                        new
-                        {
-                            Id = "volunteer",
-                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000000",
-                            Name = "volunteer",
-                            NormalizedName = "VOLUNTEER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -695,7 +656,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Event", "Event")
                         .WithMany("Announcements")
                         .HasForeignKey("EventID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Event");
@@ -706,7 +667,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Volunteer", "Volunteer")
                         .WithMany("Articles")
                         .HasForeignKey("VolunteerID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Volunteer");
@@ -717,7 +678,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Event", "Event")
                         .WithMany("Bookings")
                         .HasForeignKey("EventID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("EduLink.Models.Session", "Session")
@@ -743,14 +704,14 @@ namespace EduLink.Migrations
                 {
                     b.HasOne("EduLink.Models.Course", "Course")
                         .WithMany("DepartmentCourses")
-                        .HasForeignKey("CourseID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasForeignKey("EventID")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("EduLink.Models.Department", "Department")
                         .WithMany("Department_Courses")
                         .HasForeignKey("DepartmentID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -762,12 +723,12 @@ namespace EduLink.Migrations
                 {
                     b.HasOne("EduLink.Models.Course", null)
                         .WithMany("Events")
-                        .HasForeignKey("CourseID");
+                        .HasForeignKey("EventID");
 
                     b.HasOne("EduLink.Models.VolunteerCourse", "VolunteerCourse")
                         .WithMany("Events")
                         .HasForeignKey("VolunteerCoursID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("EduLink.Models.Volunteer", null)
@@ -793,7 +754,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Booking", "Booking")
                         .WithOne("Feedbacks")
                         .HasForeignKey("EduLink.Models.Feedback", "BookingID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Booking");
@@ -815,7 +776,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.User", "User")
                         .WithOne("Student")
                         .HasForeignKey("EduLink.Models.Student", "UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -837,7 +798,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Student", "Student")
                         .WithOne("Volunteer")
                         .HasForeignKey("EduLink.Models.Volunteer", "StudentID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Student");
@@ -847,7 +808,7 @@ namespace EduLink.Migrations
                 {
                     b.HasOne("EduLink.Models.Course", "Courses")
                         .WithMany("volunteerCourses")
-                        .HasForeignKey("CourseID")
+                        .HasForeignKey("EventID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 

@@ -1,10 +1,14 @@
-﻿using EduLink.Data;
+using EduLink.Data;
 using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EduLink.Repositories.Services
 {
@@ -14,8 +18,7 @@ namespace EduLink.Repositories.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly JwtTokenService _jwtTokenService;
-        //private RoleManager<IdentityRole> _roleManager;
-
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public IdentityAccountService(EduLinkDbContext context, UserManager<User> userManager,
             SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager)
@@ -24,10 +27,10 @@ namespace EduLink.Repositories.Services
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
-            //_roleManager = roleManager;
+            _roleManager = roleManager;
         }
 
-        public async Task<RegisterStudentDtoResponse> RegisterStudentAsync(RegisterStudentDtoRequest registerStudentDto, ModelStateDictionary modelState)
+        public async Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState)
         {
             if (!modelState.IsValid)
             {
@@ -37,7 +40,16 @@ namespace EduLink.Repositories.Services
             var user = new User
             {
                 UserName = registerStudentDto.UserName,
-                Email = registerStudentDto.Email
+                Email = registerStudentDto.Email,
+                IsAdmin = false, // Explicitly setting IsAdmin to false for students
+                IsActived = true,
+                IsLocked = false,
+                Skills = registerStudentDto.Skills,
+                Gender = registerStudentDto.Gender,
+                PhoneNumber = registerStudentDto.PhoneNumber,
+                DepartmentID = registerStudentDto.DepartmentID,
+
+                
             };
 
             var result = await _userManager.CreateAsync(user, registerStudentDto.Password);
@@ -51,14 +63,16 @@ namespace EduLink.Repositories.Services
                 return null;
             }
 
-            //if (await _roleManager.RoleExistsAsync("Student"))
+            if (await _roleManager.RoleExistsAsync("Student"))
+            {
                 await _userManager.AddToRoleAsync(user, "Student");
+            }
 
             var student = new Student
             {
-                StudentID = user.Id,
+                UserID = user.Id,
                 User = user,
-                DepartmentID = registerStudentDto.DepartmentID
+                // Other student properties...
             };
 
             _context.Students.Add(student);
@@ -67,19 +81,18 @@ namespace EduLink.Repositories.Services
             var roles = await _userManager.GetRolesAsync(user);
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
 
-            return new RegisterStudentDtoResponse
+            return new RegisterStudentResDTO
             {
                 StudentID = student.StudentID,
                 UserName = user.UserName,
                 Email = user.Email,
-                DepartmentID = student.DepartmentID,
-                Token = token,  // Return the generated token
+                DepartmentID = user.DepartmentID,
+                Token = token,
                 Roles = roles
-
             };
         }
 
-        public async Task<RegisterAdminDtoResponse> RegisterAdminAsync(RegisterAdminDtoRequest registerAdminDto, ModelStateDictionary modelState)
+        public async Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterUserReqDTO registerAdminDto, ModelStateDictionary modelState)
         {
             if (!modelState.IsValid)
             {
@@ -89,7 +102,16 @@ namespace EduLink.Repositories.Services
             var user = new User
             {
                 UserName = registerAdminDto.UserName,
-                Email = registerAdminDto.Email
+                Email = registerAdminDto.Email,
+                IsAdmin = true, // Explicitly setting IsAdmin to false for students
+                IsActived = true,
+                IsLocked = false,
+                Skills = registerAdminDto.Skills,
+                Gender = registerAdminDto.Gender,
+                PhoneNumber = registerAdminDto.PhoneNumber,
+                DepartmentID = registerAdminDto.DepartmentID,
+
+
             };
 
             var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
@@ -103,59 +125,25 @@ namespace EduLink.Repositories.Services
                 return null;
             }
 
-            await _userManager.AddToRoleAsync(user, "Admin");
-
-            var admin = new Admin
+            if (await _roleManager.RoleExistsAsync("Admin"))
             {
-                AdminID = user.Id,
-                User = user
-            };
-
-            _context.Admins.Add(admin);
-            await _context.SaveChangesAsync();
+                await _userManager.AddToRoleAsync(user, "Admin");
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
 
-            return new RegisterAdminDtoResponse
+            return new RegisterAdminResDTO
             {
-                AdminID = admin.AdminID,
+                AdminID = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                Token = token,  // Return the generated token
+                Token = token,
                 Roles = roles
             };
         }
 
-        public async Task<bool> AddStudentToVolunteerRoleAsync(string StudentID)
-        {
-            var student = await _context.Students.FindAsync(StudentID);
-            if (student == null)
-            {
-                return false;
-            }
-
-            var user = await _userManager.FindByIdAsync(student.StudentID);
-            if (user == null)
-            {
-                return false;
-            }
-
-            await _userManager.AddToRoleAsync(user, "Volunteer");
-
-            var volunteer = new Volunteer
-            {
-                StudentID = student.StudentID,
-                Students = student
-            };
-
-            _context.Volunteers.Add(volunteer);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async Task<LoginDtoResponse> LoginAsync(LoginDtoRequest loginDto)
+        public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
@@ -163,16 +151,47 @@ namespace EduLink.Repositories.Services
                 return null;
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, loginDto.Password, false, false);
+            //I am not sure about this.
+            //var result = await _signInManager.PasswordSignInAsync(user.UserName, loginDto.Password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
             if (!result.Succeeded)
             {
                 return null;
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
+            string token = null;
 
-            return new LoginDtoResponse
+            if (user.IsAdmin)
+            {
+                // Admin-specific token generation logic
+                token = await _jwtTokenService.GenerateTokenWithAdminClaims(user, TimeSpan.FromMinutes(120));
+            }
+            else if (roles.Contains("Volunteer"))
+            {
+                // Volunteer-specific logic
+                var volunteer = await _context.Volunteers.Include(v => v.Student).FirstOrDefaultAsync(v => v.Student.UserID == user.Id);
+                if (volunteer != null)
+                {
+                    token = await _jwtTokenService.GenerateTokenWithRoleData(user, "Volunteer", volunteer, TimeSpan.FromMinutes(60));
+                }
+            }
+            else if (roles.Contains("Student"))
+            {
+                // Student-specific logic
+                var student = await _context.Students.FirstOrDefaultAsync(s => s.UserID == user.Id);
+                if (student != null)
+                {
+                    token = await _jwtTokenService.GenerateTokenWithRoleData(user, "Student", student, TimeSpan.FromMinutes(60));
+                }
+            }
+            else
+            {
+                // Default token logic
+                token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
+            }
+
+            return new LoginResDTO
             {
                 Token = token,
                 UserId = user.Id,
@@ -182,11 +201,35 @@ namespace EduLink.Repositories.Services
             };
         }
 
+        public async Task<bool> AddStudentToVolunteerRoleAsync(string studentID)
+        {
+            // Find the user by ID
+            var user = await _userManager.FindByIdAsync(studentID);
+            if (user == null)
+            {
+                return false; // User not found, return false immediately
+            }
+
+            // Ensure the role exists before adding the user to the role
+            if (await _roleManager.RoleExistsAsync("Volunteer"))
+            {
+                // Add the user to the 'Volunteer' role
+                var result = await _userManager.AddToRoleAsync(user, "Volunteer");
+                //await _context.SaveChangesAsync();
+
+                // Return true if adding the role succeeded
+                return result.Succeeded;
+            }
+
+            // Return false if the role doesn't exist
+            return false;
+        }
+
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
         }
 
-
     }
 }
+
