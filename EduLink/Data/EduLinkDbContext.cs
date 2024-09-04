@@ -28,7 +28,27 @@ namespace EduLink.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-        
+
+
+
+            modelBuilder.Entity<User>()
+           .Property(u => u.TempCode)
+           .IsRequired(false);
+    
+
+            modelBuilder.Entity<Volunteer>()
+             .Property(v => v.Rating)
+            .IsRequired(false);
+            modelBuilder.Entity<Volunteer>()
+          .Property(v => v.RatingAcount)
+         .IsRequired(false);
+          
+            modelBuilder.Entity<Booking>()
+         .Property(b => b.SessionID)
+         .IsRequired(false);
+          
+
+
             // Configure the primary key for the Student entity
             modelBuilder.Entity<Volunteer>()
                 .HasKey(v => v.VolunteerID);
@@ -87,13 +107,13 @@ namespace EduLink.Data
         
             // Configure the many-to-many relationship between Student and Course via VolunteerCourse
             modelBuilder.Entity<VolunteerCourse>()
-                .HasOne(vc => vc.Volunteers)               // Each VolunteerCourse has one Student
+                .HasOne(vc => vc.Volunteer)               // Each VolunteerCourse has one Student
                 .WithMany(v => v.VolunteerCourse)          // Each Student has many VolunteerCourses
                 .HasForeignKey(vc => vc.VolunteerID)      // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<VolunteerCourse>()
-                .HasOne(vc => vc.Courses)                  // Each VolunteerCourse has one Course
+                .HasOne(vc => vc.Course)                  // Each VolunteerCourse has one Course
                 .WithMany(c => c.volunteerCourses)         // Each Course has many VolunteerCourses
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
                 .OnDelete(DeleteBehavior.NoAction);
@@ -152,7 +172,7 @@ namespace EduLink.Data
                 .HasOne(a => a.Event)
                 .WithMany(e => e.Announcements)
                 .HasForeignKey(a => a.EventID)
-                .OnDelete(DeleteBehavior.Cascade);  
+                .OnDelete(DeleteBehavior.NoAction);  
             // Use Cascade or Restrict depending on your needs
 
 
@@ -192,7 +212,7 @@ namespace EduLink.Data
             //Seed Roles
             SeedRoles(modelBuilder, "Admin");
             SeedRoles(modelBuilder, "Student");
-            SeedRoles(modelBuilder, "volunteer");
+            SeedRoles(modelBuilder, "Volunteer");
         }
 
 

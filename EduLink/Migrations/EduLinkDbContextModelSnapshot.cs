@@ -64,7 +64,7 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ArticleID"));
 
-                    b.Property<string>("ArticaleContent")
+                    b.Property<string>("ArticleContent")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -108,7 +108,7 @@ namespace EduLink.Migrations
                     b.Property<int>("EventID")
                         .HasColumnType("int");
 
-                    b.Property<int>("SessionID")
+                    b.Property<int?>("SessionID")
                         .HasColumnType("int");
 
                     b.Property<int>("StudentID")
@@ -206,9 +206,6 @@ namespace EduLink.Migrations
                     b.Property<string>("EventAddress")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("EventContetntID")
-                        .HasColumnType("int");
-
                     b.Property<string>("EventDescription")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -228,7 +225,7 @@ namespace EduLink.Migrations
                     b.Property<int>("Location")
                         .HasColumnType("int");
 
-                    b.Property<int>("SessionCount")
+                    b.Property<int?>("SessionCount")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("StartTime")
@@ -304,7 +301,6 @@ namespace EduLink.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -335,10 +331,9 @@ namespace EduLink.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("EndDate")
-                        .IsRequired()
+                    b.Property<DateTimeOffset>("EndDate")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("EventID")
                         .HasColumnType("int");
@@ -346,10 +341,9 @@ namespace EduLink.Migrations
                     b.Property<int>("SessionStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("StartDate")
-                        .IsRequired()
+                    b.Property<DateTimeOffset>("StartDate")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("SessionID");
 
@@ -446,7 +440,6 @@ namespace EduLink.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("TempCode")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -489,10 +482,10 @@ namespace EduLink.Migrations
                     b.Property<int>("Availability")
                         .HasColumnType("int");
 
-                    b.Property<float>("Rating")
+                    b.Property<float?>("Rating")
                         .HasColumnType("real");
 
-                    b.Property<int>("RatingAcount")
+                    b.Property<int?>("RatingAcount")
                         .HasColumnType("int");
 
                     b.Property<string>("SkillDescription")
@@ -579,7 +572,7 @@ namespace EduLink.Migrations
                         {
                             Id = "volunteer",
                             ConcurrencyStamp = "00000000-0000-0000-0000-000000000000",
-                            Name = "volunteer",
+                            Name = "Volunteer",
                             NormalizedName = "VOLUNTEER"
                         });
                 });
@@ -695,7 +688,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Event", "Event")
                         .WithMany("Announcements")
                         .HasForeignKey("EventID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Event");
@@ -845,21 +838,21 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.VolunteerCourse", b =>
                 {
-                    b.HasOne("EduLink.Models.Course", "Courses")
+                    b.HasOne("EduLink.Models.Course", "Course")
                         .WithMany("volunteerCourses")
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("EduLink.Models.Volunteer", "Volunteers")
+                    b.HasOne("EduLink.Models.Volunteer", "Volunteer")
                         .WithMany("VolunteerCourse")
                         .HasForeignKey("VolunteerID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Courses");
+                    b.Navigation("Course");
 
-                    b.Navigation("Volunteers");
+                    b.Navigation("Volunteer");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

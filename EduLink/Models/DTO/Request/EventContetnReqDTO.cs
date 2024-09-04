@@ -16,6 +16,7 @@ namespace EduLink.Models.DTO.Request
 
       
         public string ContentDescription { get; set; }
+        public string ContentAdress { get; set; }
     }
 
 }

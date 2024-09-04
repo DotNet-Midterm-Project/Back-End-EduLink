@@ -46,7 +46,7 @@ namespace EduLink.Controllers
             var Course = await student.GetCourseVolunteerAsync(CourseID);
             if (Course == null)
             {
-                return NotFound("The Courses Not Found");
+                return NotFound("The Course Not Found");
             }
             return Ok(Course);
         }
@@ -69,7 +69,7 @@ namespace EduLink.Controllers
             return Ok(EducationalContent);
         }
         [HttpGet("GetReservations/{VolunteerID}/{courseID}")]
-        public async Task<ActionResult<List<ReservationResDTO>>> GetReservations([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
+        public async Task<ActionResult<List<EventResDTO>>> GetReservations([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
         {
             if (Authorization != "Bearer JWT_token_here")
                 return Unauthorized();
