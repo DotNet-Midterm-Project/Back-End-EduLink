@@ -723,7 +723,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Session", "Session")
                         .WithMany("Bookings")
                         .HasForeignKey("SessionID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("EduLink.Models.Student", "Student")

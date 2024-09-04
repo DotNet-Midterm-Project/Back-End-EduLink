@@ -186,7 +186,7 @@ namespace EduLink.Data
                            .HasMany(s => s.Bookings)
                            .WithOne(b => b.Session)
                            .HasForeignKey(b => b.SessionID)
-                           .OnDelete(DeleteBehavior.Cascade);
+                           .OnDelete(DeleteBehavior.NoAction);
 
 
             //Seed Roles
