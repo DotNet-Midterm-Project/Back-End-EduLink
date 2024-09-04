@@ -13,7 +13,7 @@ namespace EduLink.Repositories.Interfaces
 
         Task<MessageResDTO> RegisterVolunteerAsync(VolunteerRegisterReqDTO registerDTO);
         Task<List<EventContentResDTO>> GeteducationalcontentAsync(int VolunteerId, int courseId);
-        Task<List<ReservationResDTO>> GetReservationForVolunteerAsync(int VolunteerId, int courseId);
+        Task<List<EventResDTO>> GetReservationForVolunteerAsync(int VolunteerId, int courseId);
         Task<String> AddBookingAsync(int ReservationId , string studentId);
         Task<List<BookingForStudentResDTO>> GetBookingAsync(string StudentId, int ReservationId);
         Task<string> AddFeedbackAsync(FeedbackReqDTO bookingDtoRequest);

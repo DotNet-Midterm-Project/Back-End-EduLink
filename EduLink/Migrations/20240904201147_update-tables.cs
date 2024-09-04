@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduLink.Migrations
 {
     /// <inheritdoc />
-    public partial class addTables : Migration
+    public partial class updatetables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -86,7 +86,7 @@ namespace EduLink.Migrations
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     IsLocked = table.Column<bool>(type: "bit", nullable: false),
                     Skills = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    TempCode = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    TempCode = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     IsActived = table.Column<bool>(type: "bit", nullable: false),
                     TempCodeExpire = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -249,8 +249,8 @@ namespace EduLink.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentID = table.Column<int>(type: "int", nullable: false),
                     SkillDescription = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Rating = table.Column<float>(type: "real", nullable: false),
-                    RatingAcount = table.Column<int>(type: "int", nullable: false),
+                    Rating = table.Column<float>(type: "real", nullable: true),
+                    RatingAcount = table.Column<int>(type: "int", nullable: true),
                     Availability = table.Column<int>(type: "int", nullable: false),
                     Aprrove = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -272,7 +272,7 @@ namespace EduLink.Migrations
                     ArticleID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ArticaleContent = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    ArticleContent = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     AuthorName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PublicationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     VolunteerID = table.Column<int>(type: "int", nullable: false),
@@ -322,7 +322,6 @@ namespace EduLink.Migrations
                     VolunteerCoursID = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Location = table.Column<int>(type: "int", nullable: false),
-                    EventContetntID = table.Column<int>(type: "int", nullable: false),
                     StartTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     EndTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     EventDescription = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
@@ -331,7 +330,7 @@ namespace EduLink.Migrations
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     EventType = table.Column<int>(type: "int", nullable: false),
                     EventAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SessionCount = table.Column<int>(type: "int", nullable: false),
+                    SessionCount = table.Column<int>(type: "int", nullable: true),
                     CourseID = table.Column<int>(type: "int", nullable: true),
                     VolunteerID = table.Column<int>(type: "int", nullable: true)
                 },
@@ -375,8 +374,7 @@ namespace EduLink.Migrations
                         name: "FK_Announcement_Events_EventID",
                         column: x => x.EventID,
                         principalTable: "Events",
-                        principalColumn: "EventID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "EventID");
                 });
 
             migrationBuilder.CreateTable(
@@ -409,8 +407,8 @@ namespace EduLink.Migrations
                     SessionID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EventID = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    EndDate = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    StartDate = table.Column<DateTimeOffset>(type: "datetimeoffset", maxLength: 100, nullable: false),
+                    EndDate = table.Column<DateTimeOffset>(type: "datetimeoffset", maxLength: 100, nullable: false),
                     Details = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     SessionStatus = table.Column<int>(type: "int", nullable: false)
@@ -434,7 +432,7 @@ namespace EduLink.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentID = table.Column<int>(type: "int", nullable: false),
                     EventID = table.Column<int>(type: "int", nullable: false),
-                    SessionID = table.Column<int>(type: "int", nullable: false),
+                    SessionID = table.Column<int>(type: "int", nullable: true),
                     BookingStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -467,7 +465,7 @@ namespace EduLink.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BookingID = table.Column<int>(type: "int", nullable: false),
                     Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    Comment = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -487,7 +485,7 @@ namespace EduLink.Migrations
                 {
                     { "admin", "00000000-0000-0000-0000-000000000000", "Admin", "ADMIN" },
                     { "student", "00000000-0000-0000-0000-000000000000", "Student", "STUDENT" },
-                    { "volunteer", "00000000-0000-0000-0000-000000000000", "volunteer", "VOLUNTEER" }
+                    { "volunteer", "00000000-0000-0000-0000-000000000000", "Volunteer", "VOLUNTEER" }
                 });
 
             migrationBuilder.CreateIndex(

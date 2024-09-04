@@ -8,7 +8,7 @@ namespace EduLink.Models
         public int BookingID { get; set; }
         public int Rating { get; set; }
         [MaxLength(200)]
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
         public Booking Booking { get; set; }   
     }
 }

@@ -42,9 +42,9 @@
 
 //        public async Task<List<VolunteerDtoResponse>> GetCourseVolunteerAsync(int courseId)
 //        {
-//            var course = await eduLinkDbContext.Courses
+//            var course = await eduLinkDbContext.Course
 //                   .Include(c => c.volunteerCourses)
-//                   .ThenInclude(vc => vc.Volunteers)
+//                   .ThenInclude(vc => vc.Volunteer)
 //                   .FirstOrDefaultAsync(c => c.EventID == courseId);
 
 //            if (course == null)
@@ -56,11 +56,11 @@
 //            var volunteers = course.volunteerCourses
 //                            .Select(vc => new VolunteerDtoResponse
 //                            {
-//                                VolunteerID = vc.Volunteers.VolunteerID,
-//                                SkillDescription = vc.Volunteers.SkillDescription,
-//                                Rating = vc.Volunteers.Rating,
-//                                Email = vc.Volunteers.Student.Student.Email,
-//                                PhoneNumber = vc.Volunteers.Student.Student.PhoneNumber
+//                                VolunteerID = vc.Volunteer.VolunteerID,
+//                                SkillDescription = vc.Volunteer.SkillDescription,
+//                                Rating = vc.Volunteer.Rating,
+//                                Email = vc.Volunteer.Student.Student.Email,
+//                                PhoneNumber = vc.Volunteer.Student.Student.PhoneNumber
 //                            })
 //                            .ToList();
 //            if (volunteers == null)
@@ -248,7 +248,7 @@
                    
 //            }
 //            // Fetch the volunteer if they exist, otherwise create a new one
-//            var volunteer = await eduLinkDbContext.Volunteers
+//            var volunteer = await eduLinkDbContext.Volunteer
 //                              .Include(v => v.VolunteerCourse)
 //                               .FirstOrDefaultAsync(v => v.StudentID == registerDTO.StudentID);
 
@@ -265,7 +265,7 @@
 //            VolunteerCourse = new List<VolunteerCourse>()
 //                };
 
-//                await eduLinkDbContext.Volunteers.AddAsync(volunteer);
+//                await eduLinkDbContext.Volunteer.AddAsync(volunteer);
 //            }
 //            else
 //            {

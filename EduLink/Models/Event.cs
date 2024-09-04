@@ -7,7 +7,7 @@ namespace EduLink.Models
         Scheduled,
         Ongoing,
         Completed,
-        Clode,
+        Closed,
         Cancelled
     }
 
@@ -32,7 +32,7 @@ namespace EduLink.Models
         [MaxLength(500)]
         public string Title { get; set; }
         public EventLocation Location { get; set; }
-        public int EventContetntID { get; set; }
+     // public int EventContetntID { get; set; }
         public  ICollection<EventContent> EventContents { get; set; }
 
         public DateTimeOffset StartTime { get; set; }
@@ -43,9 +43,9 @@ namespace EduLink.Models
         public string EventDetailes { get; set; }
         public EventStatus EventStatus { get; set; }
         public int Capacity { get; set; }  // Correct spelling from 'Capasity' to 'Capacity'
-        public int EventType { get; set; }
+        public EventType EventType { get; set; }
         public string? EventAddress { get; set; }
-        public int SessionCount { get; set; }
+        public int? SessionCount { get; set; }
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
         // Add this collection to represent the one-to-many relationship with Announcements
