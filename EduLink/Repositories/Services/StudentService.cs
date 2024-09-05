@@ -87,13 +87,13 @@ namespace EduLink.Repositories.Services
             var StudentBooks = await eduLinkDbContext.Bookings
        .Include(b => b.Event)
            .ThenInclude(e => e.VolunteerCourse)
-               .ThenInclude(vc => vc.Courses)
+               .ThenInclude(vc => vc.Course)
        .Where(b => b.StudentID == StudentId)
        .ToListAsync();
             var BookingDto = StudentBooks.Select(b => new BookingForStudentResDTO
             {
                 EventTitle = b.Event.Title,
-                CourseName = b.Event.VolunteerCourse.Courses.CourseName,
+                CourseName = b.Event.VolunteerCourse.Course.CourseName,
                 EventLocation = b.Event.Location.ToString(), 
                 StartTime = b.Event.StartTime,
                 EndTime = b.Event.EndTime,
@@ -271,7 +271,7 @@ namespace EduLink.Repositories.Services
             }
 
            
-            if (session.SessionStatus != SessionStatus.open)
+            if (session.SessionStatus != SessionStatus.Open)
             {
                 return "Session is not available for booking.";
             }
