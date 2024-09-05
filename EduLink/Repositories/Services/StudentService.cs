@@ -21,40 +21,52 @@ namespace EduLink.Repositories.Services
 
         public async Task<List<DepartmentCoursesResDTO>> GetCoursesByStudentDepartmentAsync(int studentId)
         {
-            var UserId = await eduLinkDbContext.Students
-              .Where(s => s.StudentID == studentId).Select(e => e.UserID).FirstOrDefaultAsync();
-            if (UserId == null)
-            {
-                return new List<DepartmentCoursesResDTO>();
-
-            }
-            var UserDeparmentId = await eduLinkDbContext.Users
-                .Where(e => e.Id == UserId).Select(e => e.DepartmentID)
+            // Fetch the UserID for the given student
+            var userId = await eduLinkDbContext.Students
+                .Where(s => s.StudentID == studentId)
+                .Select(e => e.UserID)
                 .FirstOrDefaultAsync();
 
-
-            if (UserDeparmentId == null)
+            if (userId == null)
             {
                 return new List<DepartmentCoursesResDTO>();
             }
-            var DepartmentCourses = await eduLinkDbContext.Departments
-            .Where(d => d.DepartmentID == UserDeparmentId)
+
+            // Fetch the DepartmentID for the user
+            var userDepartmentId = await eduLinkDbContext.Users
+                .Where(e => e.Id == userId)
+                .Select(e => e.DepartmentID)
+                .FirstOrDefaultAsync();
+
+            if (userDepartmentId == null)
+            {
+                return new List<DepartmentCoursesResDTO>();
+            }
+
+            // Fetch the courses for the department
+                    var departmentCourses = await eduLinkDbContext.Departments
+            .Where(d => d.DepartmentID == userDepartmentId)
             .SelectMany(d => d.Department_Courses)
+            .Include(dc => dc.Course) // Eagerly load the Course
             .ToListAsync();
 
-            var DepartmentDto = DepartmentCourses.Select(dc => new DepartmentCoursesResDTO
+            if (departmentCourses == null || !departmentCourses.Any())
+            {
+                return new List<DepartmentCoursesResDTO>();
+            }
+
+            // Map the department courses to DTO
+            var departmentDto = departmentCourses.Select(dc => new DepartmentCoursesResDTO
             {
                 CourseId = dc.CourseID,
-                Course_Name = dc.Course.CourseName
+                Course_Name = dc.Course.CourseName // Ensure Course is not null
             }).ToList();
 
-
-            return DepartmentDto;
-
+            return departmentDto;
         }
 
 
-        public async Task<List<VolunteerResDTO>> GetCourseVolunteerAsync(int courseId)
+        public async Task<List<VolunteerResDTO>> GetCourseVolunteersAsync(int courseId)
         {
             // Retrieve the list of Volunteer IDs associated with the specified Course ID
             var volunteers = await eduLinkDbContext.VolunteerCourses
@@ -85,11 +97,11 @@ namespace EduLink.Repositories.Services
         public async Task<List<BookingForStudentResDTO>> GetBookingForStudentAsync(int StudentId)
         {
             var StudentBooks = await eduLinkDbContext.Bookings
-       .Include(b => b.Event)
-           .ThenInclude(e => e.VolunteerCourse)
+              .Include(b => b.Event)
+               .ThenInclude(e => e.VolunteerCourse)
                .ThenInclude(vc => vc.Course)
-       .Where(b => b.StudentID == StudentId)
-       .ToListAsync();
+                 .Where(b => b.StudentID == StudentId)
+                 .ToListAsync();
             var BookingDto = StudentBooks.Select(b => new BookingForStudentResDTO
             {
                 EventTitle = b.Event.Title,
@@ -106,8 +118,8 @@ namespace EduLink.Repositories.Services
         public async Task<string> DeleteBookingAsynct(int StudentId, int BookingId)
         {
             var booking = await eduLinkDbContext.Bookings
-      .Where(e => e.StudentID == StudentId && e.BookingID == BookingId)
-      .FirstOrDefaultAsync();
+              .Where(e => e.StudentID == StudentId && e.BookingID == BookingId)
+              .FirstOrDefaultAsync();
 
             
             if (booking != null)
@@ -118,7 +130,7 @@ namespace EduLink.Repositories.Services
             }
 
 
-            return "Booking not found";
+            return null;
         }
 
         public async Task<string> AddFeedbackAsync(FeedbackReqDTO bookingDtoRequest)
@@ -129,7 +141,7 @@ namespace EduLink.Repositories.Services
                 return null;
 
             if (booking.BookingStatus.ToString() != "Completed")
-                return "Cannot add feedback for this book ";
+                return null;
 
             var Feedback = new Feedback
             {
@@ -267,13 +279,13 @@ namespace EduLink.Repositories.Services
 
             if (session == null)
             {
-                return "Session not found.";
+                return null;
             }
 
            
             if (session.SessionStatus != SessionStatus.Open)
             {
-                return "Session is not available for booking.";
+                return null;
             }
 
             if (session.Capacity <= 0)
@@ -302,11 +314,11 @@ namespace EduLink.Repositories.Services
             var workshop = await eduLinkDbContext.Events.FindAsync(workshopID);            
             if (workshop == null || workshop.EventType != EventType.Workshop)
             {
-                return "Workshop not found or is not a valid workshop.";
+                return null;
             }           
             if (workshop.Capacity <= 0)
             {
-                return "Workshop is fully booked.";
+                return null;
             }            
             var booking = new Booking
             {

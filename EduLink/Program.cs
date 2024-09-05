@@ -15,36 +15,55 @@ namespace EduLink
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddControllers();
 
             // Configure JSON options to handle object cycles
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 });
 
-
-
             // Get the connection string settings 
-            string ConnectionStringVar = builder.Configuration.GetConnectionString("DefaultConnection");
+            string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-            builder.Services.AddDbContext<EduLinkDbContext>(opt => opt.UseSqlServer(ConnectionStringVar));
+            // Configure database context
+            builder.Services.AddDbContext<EduLinkDbContext>(opt => opt.UseSqlServer(connectionString));
 
-            // Register repositories
-            //Ex:
-            //builder.Services.AddScoped<IVolunteer, VolunteerService>();
-
+            // Register services
+            builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IAccount, IdentityAccountService>();
+            builder.Services.AddScoped<HelperService>();
             builder.Services.AddScoped<IStudent, StudentService>();
+
+            builder.Services.AddScoped<IVolunteer, VolunteerService>();
+
             builder.Services.AddScoped<IAdmin, AdminService>();
 
-            //For JWT Later
             builder.Services.AddScoped<JwtTokenService>();
-            builder.Services.AddScoped<IEmailService, EmailService>();
 
+            // Configure Identity
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
+            {
+                // Add custom options if needed
+                // options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+                // options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
+            })
+            .AddEntityFrameworkStores<EduLinkDbContext>()
+            .AddDefaultTokenProviders(); // Ensure default token providers are registered
 
-            // Swagger Config
+            // Configure authentication
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = JwtTokenService.ValidateToken(builder.Configuration);
+            });
+
+            // Configure Swagger
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -53,7 +72,6 @@ namespace EduLink
                     Version = "v1",
                     Description = "API for managing student, volunteer, and courses in the EduLink Platform"
                 });
-                //HERE For JWT
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -65,54 +83,28 @@ namespace EduLink
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
-                    });
-
-            });
-
-            //Configure Identity
-            builder.Services.AddIdentity<User, IdentityRole>()
-                   .AddEntityFrameworkStores<EduLinkDbContext>();
-            builder.Services.AddControllers().AddJsonOptions(options =>
+        {
             {
-                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
             });
-
-            // add auth service to the app using jwt
-
-            builder.Services.AddAuthentication(
-                options =>
-                {
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                }
-                ).AddJwtBearer(
-                options =>
-                {
-                    options.TokenValidationParameters = JwtTokenService.ValidateToken(builder.Configuration);
-                });
-
 
             var app = builder.Build();
 
-            // Use Swagger Service
-            app.UseSwagger(
-             options =>
-             {
-                 options.RouteTemplate = "api/{documentName}/swagger.json";
-             });
+            // Use Swagger
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = "api/{documentName}/swagger.json";
+            });
 
             app.UseSwaggerUI(options =>
             {
@@ -120,7 +112,7 @@ namespace EduLink
                 options.RoutePrefix = "EduLink";
             });
 
-            // Add redirection from root URL to Swagger UI
+            // Redirect root URL to Swagger UI
             app.Use(async (context, next) =>
             {
                 if (context.Request.Path == "/")
@@ -133,15 +125,12 @@ namespace EduLink
                 }
             });
 
-            //Authentication
+            // Authentication and Authorization
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 
-            //app.MapGet("/", () => "Hello World!");
-
             app.Run();
-
         }
     }
 }

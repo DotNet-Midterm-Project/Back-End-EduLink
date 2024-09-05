@@ -49,7 +49,7 @@ namespace EduLink.Controllers
             return Unauthorized("Invalid token.");
 
         }
-        [HttpGet("Post")]
+        [HttpPost("BookingWorkshop")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> BookingWorkshop( int workshopID)
         {
@@ -74,7 +74,7 @@ namespace EduLink.Controllers
             }
             return Unauthorized("Invalid token.");
         }
-        [HttpGet("getAllCourse")]
+        [HttpPost("BookSession")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> BookSession(int sessionId)
         {
@@ -104,17 +104,17 @@ namespace EduLink.Controllers
 
         [HttpGet("GetCourseVolunteers/{CourseID}")]
         [Authorize(Roles = "Student")]
-        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetCourseVolunteerAsync([FromBody] int CourseID)
+        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetCourseVolunteer([FromRoute] int CourseID)
         {
-            var Course = await student.GetCourseVolunteerAsync(CourseID);
-            if (Course == null)
+            var Course = await student.GetCourseVolunteersAsync(CourseID);
+            if (Course.Count == 0)
             {
                 return NotFound("The Course Not Found");
             }
             return Ok(Course);
         }
   
-        [HttpGet("/Getbooking")]
+        [HttpGet("GetBookingStudent")]
         [Authorize(Roles = "Student")]
 
         public async Task<IActionResult> GetBookingStudent()
@@ -133,7 +133,7 @@ namespace EduLink.Controllers
                 var result = await student.GetBookingForStudentAsync(studentID);
                 if (result == null || result.Count == 0)
                 {
-                    return NotFound("No courses found for the specified Department.");
+                    return NotFound("No Booking Found");
                 }
 
                 return Ok(result);
@@ -152,9 +152,9 @@ namespace EduLink.Controllers
             return Ok(Feedback);
                 
         }
-        [HttpDelete]
-       // [Authorize(Roles = "Student")]
-        public async Task<IActionResult> DeleteBooking([FromBody] int BookingID)
+        [HttpDelete("Delete_Booking/{BookingID}")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> DeleteBooking([FromRoute] int BookingID)
         {
             if (User.Identity is ClaimsIdentity identity)
             {
