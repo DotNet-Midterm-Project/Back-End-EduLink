@@ -29,7 +29,7 @@ namespace EduLink.Repositories.Services
             };
 
 
-            eduLinkDbContext.Courses.Add(course);
+           await eduLinkDbContext.Courses.AddAsync(course);
 
 
             await eduLinkDbContext.SaveChangesAsync();
@@ -60,7 +60,7 @@ namespace EduLink.Repositories.Services
             };
 
 
-            eduLinkDbContext.DepartmentCourses.Add(departmentCourse);
+            await eduLinkDbContext.DepartmentCourses.AddAsync(departmentCourse);
             await eduLinkDbContext.SaveChangesAsync();
             return $"The Course was added successfully to the {departmentName} department.";
         }
@@ -73,13 +73,15 @@ namespace EduLink.Repositories.Services
                 Address = departmentReqDto.Address,
 
             };
-            eduLinkDbContext.Departments.Add(NewDepartment);
+            await eduLinkDbContext.Departments.AddAsync(NewDepartment);
 
             await eduLinkDbContext.SaveChangesAsync();
 
             return "Added Successfully";
 
         }
+
+        //Aprovall Volunteer
         public async Task<string> AddStudentToVolunteer(int StudentId)
         {
             var student = await eduLinkDbContext.Students.FindAsync(StudentId);
@@ -96,7 +98,7 @@ namespace EduLink.Repositories.Services
 
             await userManager.AddToRoleAsync(User, "Volunteer");
 
-            eduLinkDbContext.Volunteers.Add(addStudentToVolunteer);
+            await eduLinkDbContext.Volunteers.AddAsync(addStudentToVolunteer);
             await eduLinkDbContext.SaveChangesAsync();
 
             return "Volunteer Approved Successfully";
@@ -111,7 +113,7 @@ namespace EduLink.Repositories.Services
             }
             eduLinkDbContext.Articles.Remove(Article);
             await eduLinkDbContext.SaveChangesAsync();
-            return "The rticle Removed Successfully";
+            return "The Article Removed Successfully";
         }
 
 
