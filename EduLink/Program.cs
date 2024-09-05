@@ -33,9 +33,9 @@ namespace EduLink
 
             // Register repositories
             //Ex:
-            //builder.Services.AddScoped<IVolunteer, VolunteerService>();
+          //  builder.Services.AddScoped<IVolunteer, VolunteerService>();
 
-            builder.Services.AddScoped<IAccount, IdentityAccountService>();
+          //  builder.Services.AddScoped<IAccount, IdentityAccountService>();
             builder.Services.AddScoped<IStudent, StudentService>();
 
             //For JWT Later

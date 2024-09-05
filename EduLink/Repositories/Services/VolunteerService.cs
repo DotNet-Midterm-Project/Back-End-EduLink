@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace EduLink.Repositories.Services
 {
@@ -15,11 +16,13 @@ namespace EduLink.Repositories.Services
     {
         private readonly EduLinkDbContext _context;
         private readonly HelperService _helperService;
+        private readonly EmailService _emailService;
 
-        public VolunteerService(EduLinkDbContext context, HelperService helperService)
+        public VolunteerService(EduLinkDbContext context, HelperService helperService, EmailService emailService)
         {
             _context = context;
             _helperService = helperService;
+            _emailService = emailService;
         }
 
         // Get volunteer courses
@@ -120,8 +123,7 @@ namespace EduLink.Repositories.Services
 
             return eventResponse;
         }
-
-        // Add an event
+        // Add Event
         public async Task<MessageResDTO> AddEventsAsync(int volunteerID, AddEventReqDTO request)
         {
             if (request == null)
@@ -162,9 +164,52 @@ namespace EduLink.Repositories.Services
             await _context.Events.AddAsync(eventEntity);
             await _context.SaveChangesAsync();
 
+            // Get all student email addresses
+            var studentEmails = await _context.Students
+                .Include(s => s.User) // Include User table to access Email property
+                .Select(s => s.User.Email) // Select the Email from the User table
+                .ToListAsync();
+
+            // Create the email content
+            var emailSubject = $"New Event: {eventEntity.Title}";
+            var emailDescriptionHtml = $@"
+        <p>Dear Student,</p>
+        <p>We are excited to announce a new event titled <strong>{eventEntity.Title}</strong>.</p>
+        <p><strong>Start Time:</strong> {eventEntity.StartTime}</p>
+        <p><strong>End Time:</strong> {eventEntity.EndTime}</p>
+        <p><strong>Location:</strong> {eventEntity.EventAddress}</p>
+        <p><strong>Description:</strong> {eventEntity.EventDescription}</p>
+        <p>We hope you can join us!</p>
+        <p>Best regards,</p>
+        <p>EduLink Team</p>";
+
+            // Convert HTML to plain text
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(emailDescriptionHtml);
+            var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
+
+            // Send email to all students
+            foreach (var email in studentEmails)
+            {
+                await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
+
+            }
+
+            // Create and store announcement
+            var announcement = new Announcement
+            {
+                EventID = eventEntity.EventID,
+                Title = eventEntity.Title,
+                Message = emailDescriptionPlain, // Store as plain text
+                AnounceDate = DateTime.UtcNow
+            };
+
+            await _context.Announcement.AddAsync(announcement);
+            await _context.SaveChangesAsync();
+
             return new MessageResDTO
             {
-                Message = $"Event '{request.Title}' added successfully."
+                Message = $"Event '{request.Title}' added successfully and announcement sent."
             };
         }
 

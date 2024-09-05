@@ -17,7 +17,8 @@ namespace EduLink.Repositories.Interfaces
         Task<string> AddFeedbackAsync(FeedbackReqDTO bookingDtoRequest);
         Task<string> BookingWorkshop(int studentId, int workshopID);
         Task<string> BookSession(int studentId, int sessionId);
-        //Task<MessageResDTO> RegisterVolunteerAsync(VolunteerRegisterReqDTO registerDTO);
-        
+        Task<MessageResDTO> RegisterVolunteerAsync(int studentId,VolunteerRegisterReqDTO registerDTO);
+        Task<List<AnnouncementResDTO>> GetAnnouncementsAsync();
+
     }
 }
