@@ -16,9 +16,9 @@ namespace EduLink.Repositories.Services
     {
         private readonly EduLinkDbContext _context;
         private readonly HelperService _helperService;
-        private readonly EmailService _emailService;
+        private readonly IEmailService _emailService;
 
-        public VolunteerService(EduLinkDbContext context, HelperService helperService, EmailService emailService)
+        public VolunteerService(EduLinkDbContext context, HelperService helperService, IEmailService emailService)
         {
             _context = context;
             _helperService = helperService;

@@ -22,10 +22,10 @@ namespace EduLink.Repositories.Services
         private readonly SignInManager<User> _signInManager;
         private readonly JwtTokenService _jwtTokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly EmailService _emailService;
+        private readonly IEmailService _emailService;
 
         public IdentityAccountService(EduLinkDbContext context, UserManager<User> userManager,
-            SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager, EmailService emailService)
+            SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager, IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
@@ -174,12 +174,12 @@ namespace EduLink.Repositories.Services
             {
                 return null;
             }
-            if (!user.EmailConfirmed)
-                return null;
+            //if (!user.EmailConfirmed)
+            //    return null;
 
             //I am not sure about this.
             //var result = await _signInManager.PasswordSignInAsync(user.UserName, loginDto.Password, false, false);
-            var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
             if (!result.Succeeded)
             {
                 return null;
