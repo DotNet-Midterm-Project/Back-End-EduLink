@@ -6,7 +6,7 @@ namespace EduLink.Models
     {
         public int AnouncementID { get; set; }
         public int EventID { get; set; }
-        public int SessionID { get; set; }
+        public int? SessionID{ get; set; }
         [MaxLength(500)]
         public string Title { get; set; }
         [MaxLength(2000)]

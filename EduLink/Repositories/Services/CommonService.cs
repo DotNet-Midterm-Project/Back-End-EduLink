@@ -22,8 +22,8 @@ namespace EduLink.Repositories.Services
                 .Where(e => e.EventType == (int)EventType.Workshop)
                 .Select(e => new WorkshopResponseDTO
                 {
-                    VolunteerID = e.VolunteerCourse.Volunteers.VolunteerID,
-                    VolunteerName = e.VolunteerCourse.Volunteers.Student.User.UserName,
+                    VolunteerID = e.VolunteerCourse.Volunteer.VolunteerID,
+                    VolunteerName = e.VolunteerCourse.Volunteer.Student.User.UserName,
                     WorkshopName = e.Title,
                     WorkshopDescription = e.EventDescription,
                     WorkshopDateTime = e.StartTime.DateTime,
@@ -42,7 +42,7 @@ namespace EduLink.Repositories.Services
                     ArticleID = a.ArticleID,
                     Title = a.Title,
                     PublicationDate = a.PublicationDate,
-                    ArticleContent = a.ArticaleContent,//error in spilling
+                    ArticleContent = a.ArticleContent,//error in spilling
                     Status = a.Status
                 })
                 .ToListAsync();
@@ -57,7 +57,7 @@ namespace EduLink.Repositories.Services
                     ArticleID = a.ArticleID,
                     Title = a.Title,
                     PublicationDate = a.PublicationDate,
-                    ArticleContent = a.ArticaleContent,
+                    ArticleContent = a.ArticleContent,
                     Status = a.Status
                 })
                 .ToListAsync();
@@ -81,12 +81,12 @@ namespace EduLink.Repositories.Services
         public async Task<List<EventResponseDTO>> GetEventsForVolunteerAsync(GetEventsRequestDTO request)
         {
             return await _context.Events
-                .Where(e => e.VolunteerCourse.Volunteers.VolunteerID == request.VolunteerID &&
+                .Where(e => e.VolunteerCourse.Volunteer.VolunteerID == request.VolunteerID &&
                             e.VolunteerCourse.VolunteerCourseID == request.CourseID)
                 .Select(e => new EventResponseDTO
                 {
-                    VolunteerName = e.VolunteerCourse.Volunteers.Student.User.UserName,
-                    CourseName = e.VolunteerCourse.Courses.CourseName,
+                    VolunteerName = e.VolunteerCourse.Volunteer.Student.User.UserName,
+                    CourseName = e.VolunteerCourse.Course.CourseName,
                     Title = e.Title,
                     Location = e.Location.ToString(),//converting enum to string
                     EventDescription = e.EventDescription,
@@ -107,7 +107,7 @@ namespace EduLink.Repositories.Services
                 .Where(s => s.EventID == request.EventID)
                 .Select(s => new SessionResponseDTO
                 {
-                    CourseName = s.Event.VolunteerCourse.Courses.CourseName,
+                    CourseName = s.Event.VolunteerCourse.Course.CourseName,
                     EventTitle = s.Event.Title,
                     Location = s.Event.Location.ToString(),
                     EventDescription = s.Event.EventDescription,
