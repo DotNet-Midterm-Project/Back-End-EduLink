@@ -37,6 +37,7 @@ namespace EduLink
 
             builder.Services.AddScoped<IAccount, IdentityAccountService>();
             builder.Services.AddScoped<IStudent, StudentService>();
+            builder.Services.AddScoped<IAdmin, AdminService>();
 
             //For JWT Later
             builder.Services.AddScoped<JwtTokenService>();
