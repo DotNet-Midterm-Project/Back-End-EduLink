@@ -34,7 +34,11 @@ namespace EduLink
             builder.Services.AddScoped<IAccount, IdentityAccountService>();
             builder.Services.AddScoped<HelperService>();
             builder.Services.AddScoped<IStudent, StudentService>();
+
             builder.Services.AddScoped<IVolunteer, VolunteerService>();
+
+            builder.Services.AddScoped<IAdmin, AdminService>();
+
             builder.Services.AddScoped<JwtTokenService>();
 
             // Configure Identity
