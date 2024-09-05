@@ -18,8 +18,8 @@ namespace EduLink.Models
         [MaxLength(200)]
 
         public string SkillDescription { get; set; }
-        public float Rating { get; set; }
-        public int RatingAcount { get; set; }
+        public float? Rating { get; set; }
+        public int? RatingAcount { get; set; }
         public AvailabilityStatus Availability { get; set; } 
         public bool Aprrove { get; set; }
 

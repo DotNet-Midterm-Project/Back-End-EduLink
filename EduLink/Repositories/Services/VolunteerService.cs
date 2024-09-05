@@ -1,330 +1,315 @@
-﻿//using EduLink.Data;
-//using EduLink.Models;
-//using EduLink.Models.DTO.Request;
-//using EduLink.Models.DTO.Response;
-//using EduLink.Repositories.Interfaces;
-//using Microsoft.AspNetCore.Http.HttpResults;
-//using Microsoft.EntityFrameworkCore;
-//namespace EduLink.Repositories.Services
-//{
-//    public class VolunteerService : IVolunteer
-//{
-//    private readonly EduLinkDbContext _context;
+﻿using EduLink.Data;
+using EduLink.Models;
+using EduLink.Models.DTO.Request;
+using EduLink.Models.DTO.Response;
+using EduLink.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-//    public VolunteerService(EduLinkDbContext context)
-//    {
-//        _context = context;
-//    }
+namespace EduLink.Repositories.Services
+{
+    public class VolunteerService : IVolunteer
+    {
+        private readonly EduLinkDbContext _context;
+        private readonly HelperService _helperService;
 
-//    public async Task<List<VolunteerCourseResDTO>> GetVolunteerCoursesAsync(int volunteerID)
-//    {
-//        var courses = await _context.VolunteerCourses
-//            .Where(vc => vc.VolunteerID == volunteerID)
-//            .Select(vc => new VolunteerCourseResDTO
-//            {
-//                CourseID = vc.CourseID,
-//                CourseName = vc.Courses.CourseName
-//            }).ToListAsync();
+        public VolunteerService(EduLinkDbContext context, HelperService helperService)
+        {
+            _context = context;
+            _helperService = helperService;
+        }
 
-//        return courses;
-//    }
-//    public async Task<MessageResDTO> AddEventContentAsync(EventContetnReqDTO dto)
-//    {
+        // Get volunteer courses
+        public async Task<List<VolunteerCourseResDTO>> GetVolunteerCoursesAsync(int volunteerID)
+        {
+            var courses = await _context.VolunteerCourses
+                .Where(vc => vc.VolunteerID == volunteerID)
+                .Select(vc => new VolunteerCourseResDTO
+                {
+                    CourseID = vc.CourseID,
+                    CourseName = vc.Course.CourseName,
+                    CourseDescription = vc.Course.CourseDescription
+                })
+                .ToListAsync();
 
-          
-//            var eventExists = await _context.Events.AnyAsync(e => e.EventID == dto.EventID);
-//            if (!eventExists)
-//            {
-//                return new MessageResDTO { Message = "Event not found." };
-//            }
+            return courses;
+        }
 
-      
-//            var newContent = new EventContent
-//            {
-//                EventID = dto.EventID,
-//                ContentName = dto.ContentName,
-//                ContentType = dto.ContentType,
-//                ContentDescription = dto.ContentDescription
-//            };
+        // Add event content to a specific event
+        public async Task<MessageResDTO> AddEventContentAsync(EventContetnReqDTO dto)
+        {
+            var eventExists = await _context.Events.AnyAsync(e => e.EventID == dto.EventID);
+            if (!eventExists)
+            {
+                return new MessageResDTO { Message = "Event not found." };
+            }
 
-//            await _context.AddAsync(newContent);
+            var newContent = new EventContent
+            {
+                EventID = dto.EventID,
+                ContentName = dto.ContentName,
+                ContentType = dto.ContentType,
+                ContentDescription = dto.ContentDescription,
+                ContentAdress = dto.ContentAdress,
+            };
 
-//            return new MessageResDTO {  Message = "Event content added successfully." };
-        
+            await _context.EventContents.AddAsync(newContent);
+            await _context.SaveChangesAsync();
 
-//    }
+            return new MessageResDTO { Message = "Event content added successfully." };
+        }
 
-//        public async Task<IEnumerable<EventContentResDTO>> GetEventContentsAsync(int volunteerID, int eventID)
-//        {
-     
-//            var eventContent = await _context.Events
-//                .Where(e => e.EventID == eventID && e.VolunteerCourse.VolunteerID == volunteerID)
-//                .SelectMany(e => e.EventContents)
-//                .Select(ec => new EventContentResDTO
-//                {
-//                    ContentID = ec.ContentID,
-//                    ContentName = ec.ContentName,
-//                    ContentType = ec.ContentType,
-//                    ContentDescription = ec.ContentDescription
-//                })
-//                .ToListAsync();
+        // Get all event contents for a specific event
+        public async Task<IEnumerable<EventContentResDTO>> GetEventContentsAsync(int eventID)
+        {
+            await _helperService.UpdateEventStatusesAsync();
 
-//            if (eventContent == null || !eventContent.Any())
-//            {
-//                throw new InvalidOperationException("No content found for the specified volunteer and event.");
-//            }
+            var eventContents = await _context.Events
+                .Where(e => e.EventID == eventID)
+                .SelectMany(e => e.EventContents)
+                .Select(ec => new EventContentResDTO
+                {
+                    ContentID = ec.ContentID,
+                    ContentName = ec.ContentName,
+                    ContentType = ec.ContentType,
+                    ContentDescription = ec.ContentDescription,
+                    ContentAdress = ec.ContentAdress,
+                })
+                .ToListAsync();
 
-//            return eventContent;
-//        }
+            if (eventContents == null || !eventContents.Any())
+            {
+                throw new InvalidOperationException("No content found for the specified event.");
+            }
 
-//        public async Task<MessageResDTO> AddArticleAsync(ArticleReqDTO dto)
-//        {
-//            Create a new Article object from the DTO
-//        var newArticle = new Article
-//        {
-//            VolunteerID = dto.VolunteerID,
-//            Title = dto.Title,
-//            ArticaleContent = dto.ArticaleContent,
-//            PublicationDate = dto.PublicationDate,
-//            AuthorName = dto.AuthorName
-//        };
+            return eventContents;
+        }
 
-//            Add the new Article to the context
-//        _context.Articles.Add(newArticle);
-//            await _context.SaveChangesAsync();
+        // Get all events for a specific course
+        public async Task<List<EventResDTO>> GetEventsAsync(int volunteerID, int courseID)
+        {
+            var volunteerCourse = await _context.VolunteerCourses
+                .FirstOrDefaultAsync(vc => vc.VolunteerID == volunteerID && vc.CourseID == courseID);
 
-//            Return a response message
-//        return new MessageResDTO
-//        {
-//            Message = $"The article '{dto.Title}' added successfully."
-//        };
-//        }
-//        public async Task<MessageResDTO> DeleteArticleAsync(int volunteerId, int articleId)
-//        {
-//            Find the article by ID
-//           var article = await _context.Articles
-//               .FirstOrDefaultAsync(a => a.ArticleID == articleId && a.VolunteerID == volunteerId);
+            if (volunteerCourse == null)
+            {
+                return new List<EventResDTO>();
+            }
 
-//            if (article == null)
-//            {
-//                return new MessageResDTO
-//                {
-//                    Message = "Article not found or you do not have permission to delete this article."
-//                };
-//            }
+            var events = await _context.Events
+                .Where(e => e.VolunteerCoursID == volunteerCourse.VolunteerCourseID)
+                .ToListAsync();
 
-//            Remove the article from the context
-//            _context.Articles.Remove(article);
-//            await _context.SaveChangesAsync();
+            var eventResponse = events.Select(e => new EventResDTO
+            {
+                EventID = e.EventID,
+                Title = e.Title,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime,
+                EventDescription = e.EventDescription,
+                EventStatus = e.EventStatus,
+                Location = e.Location,
+                Capacity = e.Capacity,
+                EventType = e.EventType,
+                EventAdress = e.EventAddress,
+                Details = e.EventDetailes,
+            }).ToList();
 
-//            Return a response message
-//            return new MessageResDTO
-//        {
-//            Message = $"The article '{article.Title}' deleted successfully."
-//        };
-//        }
+            return eventResponse;
+        }
 
-//        public async Task<List<ReservationResDTO>> GetAllReservationAsync(ReservationReqDTO reservation)
-//        {
-//            var reservations = await _context.Events
-//                .Where(r => r.VolunteerID == reservation.VolunteerID && r.CourseID == reservation.CourseID)
-//                .ToListAsync();
+        // Add an event
+        public async Task<MessageResDTO> AddEventsAsync(int volunteerID, AddEventReqDTO request)
+        {
+            if (request == null)
+            {
+                return new MessageResDTO
+                {
+                    Message = "Invalid request data."
+                };
+            }
 
-//            var ReservationResponse = reservations
-//                .Select(r => new ReservationResDTO
-//                {
-//                    CourseID = r.CourseID,
-//                    VolunteerID = r.VolunteerID,
-//                    Date = r.Date,
-//                    EndTime = r.EndTime,
-//                    IsAvailable = r.IsAvailable,
-//                    StartTime = r.StartTime,
-//                }).ToList();
+            var volunteerCourse = await _context.VolunteerCourses
+                .FirstOrDefaultAsync(vc => vc.VolunteerID == volunteerID && vc.CourseID == request.CourseID);
 
-//            return ReservationResponse;
-//        }
+            if (volunteerCourse == null)
+            {
+                return new MessageResDTO
+                {
+                    Message = "Volunteer is not associated with the course."
+                };
+            }
 
-//        public async Task<MessageResDTO> DeleteReservationAsync(DeleteReservationReqDTO deleteReservationRequest)
-//        {
-//            var reservation = await _context.Events
-//                .FirstOrDefaultAsync(r => r.VolunteerID == deleteReservationRequest.VolunteerID
-//                                        && r.CourseID == deleteReservationRequest.CourseID
-//                                        && r.ReservationID == deleteReservationRequest.ReservationID);
+            var eventEntity = new Event
+            {
+                VolunteerCoursID = volunteerCourse.VolunteerCourseID,
+                Title = request.Title,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                Location = request.Location,
+                EventType = request.EventType,
+                EventDescription = request.EventDescription,
+                EventDetailes = request.Details,
+                EventAddress = request.Location == EventLocation.Online ? "The session link will be sent later" : request.EventAdress,
+                Capacity = request.Capacity,
+                SessionCount = request.EventType == EventType.PrivateSession ? request.SessionCounts : 0,
+                EventStatus = EventStatus.Scheduled,
+            };
 
-//            if (reservation == null)
-//            {
-//                return new MessageResDTO { Message = "Reservation not found" };
-//            }
+            await _context.Events.AddAsync(eventEntity);
+            await _context.SaveChangesAsync();
 
-//            _context.Events.Remove(reservation);
-//            await _context.SaveChangesAsync();
+            return new MessageResDTO
+            {
+                Message = $"Event '{request.Title}' added successfully."
+            };
+        }
 
-//            return new MessageResDTO { Message = "Delete reservation successfully" };
-//        }
+        // Cancel an event
+        public async Task<MessageResDTO> CancelEventAsync(int eventId, int volunteerID)
+        {
+            var eventToCancel = await _context.Events
+                .Include(e => e.VolunteerCourse)
+                .FirstOrDefaultAsync(e => e.EventID == eventId);
 
-//        public async Task<MessageResDTO> UpdateReservationAsync(UpdateReservationReqDTO updateReservationRequest)
-//        {
-//            var reservation = await _context.Events
-//                .FirstOrDefaultAsync(r => r.VolunteerID == updateReservationRequest.VolunteerID
-//                                        && r.CourseID == updateReservationRequest.CourseID
-//                                        && r.ReservationID == updateReservationRequest.ReservationID);
+            if (eventToCancel == null)
+            {
+                return new MessageResDTO { Message = "Event not found." };
+            }
 
-//            if (reservation == null)
-//            {
-//                return new MessageResDTO { Message = "Reservation not found" };
-//            }
+            var isVolunteerAssociated = await _context.Events
+                .AnyAsync(e => e.EventID == eventId && e.VolunteerCourse.VolunteerID == volunteerID);
 
-//            reservation.StartTime = updateReservationRequest.StartTime;
-//            reservation.EndTime = updateReservationRequest.EndTime;
-//            reservation.Date = updateReservationRequest.Date;
+            if (!isVolunteerAssociated)
+            {
+                return new MessageResDTO { Message = "Volunteer is not associated with this event." };
+            }
 
-//            _context.Events.Update(reservation);
-//            await _context.SaveChangesAsync();
+            eventToCancel.EventStatus = EventStatus.Cancelled;
 
-//            return new MessageResDTO { Message = "Update reservation successfully" };
-//        }
+            _context.Events.Update(eventToCancel);
+            var result = await _context.SaveChangesAsync();
 
-//        public async Task<MessageResDTO> AddWorkshopAsync(AddWorkshopReqDTO addWorkshopRequest)
-//        {
-//            var volunteerExists = await _context.Volunteers.AnyAsync(v => v.VolunteerID == addWorkshopRequest.VolunteerID);
-//            if (!volunteerExists)
-//            {
-//                return new MessageResDTO
-//                {
-//                    Message = "Invalid VolunteerID. The volunteer does not exist."
-//                };
-//            }
+            return result > 0
+                ? new MessageResDTO { Message = "The event was cancelled successfully." }
+                : new MessageResDTO { Message = "Failed to cancel the event." };
+        }
 
-//            var workshop = new WorkShop
-//            {
-//                VolunteerID = addWorkshopRequest.VolunteerID,
-//                Title = addWorkshopRequest.Title,
-//                ArticaleContent = addWorkshopRequest.ArticaleContent,
-//                Date = addWorkshopRequest.Date,
-//                SessionLink = addWorkshopRequest.SessionLink,
-//                Capasity = addWorkshopRequest.Capasity
-//            };
+        // Generate a meeting URL for an online event
+        public async Task<MessageResDTO> GenerateMeetingUrlAsync(int eventId)
+        {
+            var eventToUpdate = await _context.Events
+                .FirstOrDefaultAsync(e => e.EventID == eventId);
 
-//            _context.WorkShops.Add(workshop);
-//            await _context.SaveChangesAsync();
+            if (eventToUpdate == null)
+            {
+                return new MessageResDTO { Message = "Event not found." };
+            }
 
-//            return new MessageResDTO
-//            {
-//                Message = "The workshop added successfully"
-//            };
-//        }
+            if (eventToUpdate.Location != EventLocation.Online)
+            {
+                return new MessageResDTO { Message = "Meeting URL can only be created for online events." };
+            }
 
-//        public async Task<MessageResDTO> DeleteWorkshopAsync(DeleteWorkshopReqDTO deleteWorkshopRequest)
-//        {
-//            var workshop = await _context.WorkShops
-//                .FirstOrDefaultAsync(w => w.WorkShopID == deleteWorkshopRequest.WorkshopID && w.VolunteerID == deleteWorkshopRequest.VolunteerID);
+            var meetingUrl = $"https://meeting.service.com/{Guid.NewGuid()}";
 
-//            if (workshop == null)
-//            {
-//                return new MessageResDTO
-//                {
-//                    Message = "Workshop not found or does not belong to this volunteer."
-//                };
-//            }
+            eventToUpdate.EventAddress = meetingUrl;
+            _context.Events.Update(eventToUpdate);
 
-//            _context.WorkShops.Remove(workshop);
-//            await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
 
-//            return new MessageResDTO
-//            {
-//                Message = "The Workshop deleted successfully"
-//            };
-//        }
+            return result > 0
+                ? new MessageResDTO { Message = "The URL was created successfully." }
+                : new MessageResDTO { Message = "Failed to create the URL." };
+        }
 
-//        public async Task<List<WorkshopResDTO>> GetAllWorkshopsAsync(GetAllWorkshopsReqDTO getAllWorkshopsRequest)
-//        {
-//            Query the workshops for the given volunteer
-   
-//           var workshops = await _context.WorkShops
-//               .Where(w => w.VolunteerID == getAllWorkshopsRequest.VolunteerID)
-//               .Select(w => new WorkshopResDTO
-//               {
-//                   Title = w.Title,
-//                   ArticaleContent = w.ArticaleContent,
-//                   VolunteerID = w.VolunteerID,
-//                   Date = w.Date,
-//                   SessionLink = w.SessionLink,
-//                   Capasity = w.Capasity
-//               })
-//               .ToListAsync();
+        // Add a session to an event
+        public async Task<MessageResDTO> AddSessionAsync(AddSessionReqDTO request)
+        {
+            var eventToUpdate = await _context.Events
+                .Include(e => e.Sessions)
+                .FirstOrDefaultAsync(e => e.EventID == request.EventID);
 
-//            return workshops;
-//        }
+            if (eventToUpdate == null)
+            {
+                return new MessageResDTO { Message = "Event not found." };
+            }
 
-//        public async Task<List<GetWorkshopNotificationRespDTO>> GetWorkshopNotificationsAsync()
-//        {
-//            var notifications = await _context.NotificationWorkshops
-//                .Include(n => n.WorkShop) // Include the related WorkShop entity
-//                .Where(n => n.ID > 0) // Filter by WorkshopID and StudentID if necessary
-//                .Select(n => new GetWorkshopNotificationRespDTO
-//                {
-//                    ID = n.ID,
-//                    Message = n.Message,
-//                    DateSend = n.DateSend,
-//                    Capasity = n.WorkShop.Capasity
-//                })
-//                .ToListAsync();
+            if (eventToUpdate.EventType != EventType.PrivateSession)
+            {
+                return new MessageResDTO { Message = "Sessions can only be added to events of type PrivateSession." };
+            }
 
-//            return notifications;
-//        }
+            var newSession = new Session
+            {
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                Details = request.Details,
+                Capacity = request.SessionCapacity,
+                SessionStatus = SessionStatus.Open,
+            };
 
-//        public async Task<ArticleResDTO> GetArticleByIdAsync(int volunteerId, int articleId)
-//        {
-//            var article = await _context.Articles
-//                .FirstOrDefaultAsync(a => a.VolunteerID == volunteerId && a.ArticleID == articleId);
+            eventToUpdate.Sessions.Add(newSession);
+            _context.Events.Update(eventToUpdate);
 
-//            if (article == null)
-//            {
-//                return null;
-//            }
+            var result = await _context.SaveChangesAsync();
 
-//            return new ArticleResDTO
-//            {
-//                Title = article.Title,
-//                ArticaleContent = article.ArticaleContent,
-//                AuthorName = article.AuthorName,
-//                VolunteerID = article.VolunteerID,
-//                PublicationDate = article.PublicationDate
-//            };
-//        }
+            return result > 0
+                ? new MessageResDTO { Message = "The session was added successfully." }
+                : new MessageResDTO { Message = "Failed to add the session." };
+        }
 
-//        public async Task<MessageResDTO> AddReservationAsync(AddReservationReqDTO request)
-//        {
+        // Commented code
 
-//            var volunteerCourse = await _context.VolunteerCourses
-//                .FirstOrDefaultAsync(vc => vc.VolunteerID == request.VolunteerID && vc.CourseID == request.CourseID);
+        // Add an article
+        /*
+        public async Task<MessageResDTO> AddArticleAsync(ArticleReqDTO dto)
+        {
+            var newArticle = new Article
+            {
+                VolunteerID = dto.VolunteerID,
+                Title = dto.Title,
+                ArticleContent = dto.ArticleContent,
+                PublicationDate = dto.PublicationDate,
+                AuthorName = dto.AuthorName
+            };
 
-//            if (volunteerCourse == null)
-//            {
-//                return new MessageResDTO
-//                {
-//                    Message = "Student is not associated with the course."
-//                };
-//            }
+            _context.Articles.Add(newArticle);
+            await _context.SaveChangesAsync();
 
+            return new MessageResDTO
+            {
+                Message = $"The article '{dto.Title}' added successfully."
+            };
+        }
+        */
 
-//            var reservation = new Event
-//            {
-//                VolunteerID = request.VolunteerID,
-//                CourseID = request.CourseID,
-//                StartTime = request.StartTime,
-//                EndTime = request.EndTime,
-//                EventDate = request.Date
-//            };
+        // Delete an article
+        /*
+        public async Task<MessageResDTO> DeleteArticleAsync(int volunteerId, int articleId)
+        {
+            var article = await _context.Articles
+                .FirstOrDefaultAsync(a => a.ArticleID == articleId && a.VolunteerID == volunteerId);
 
+            if (article == null)
+            {
+                return new MessageResDTO
+                {
+                    Message = "Article not found or not associated with the volunteer."
+                };
+            }
 
-//            await _context.Events.AddAsync(reservation);
-//            await _context.SaveChangesAsync();
+            _context.Articles.Remove(article);
+            await _context.SaveChangesAsync();
 
-//            return new MessageResDTO
-//            {
-//                Message = "Reservation added successfully."
-//            };
-//        }
-//    }
-//}
+            return new MessageResDTO
+            {
+                Message = "Article deleted successfully."
+            };
+        }
+        */
+    }
+}

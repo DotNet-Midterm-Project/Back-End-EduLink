@@ -10,7 +10,7 @@ namespace EduLink.Models
         public string Title { get; set; }
 
         [MaxLength(2000)]
-        public string ArticaleContent { get; set; }
+        public string ArticleContent { get; set; }
         public string AuthorName { get; set; }
         public DateTime PublicationDate { get; set; }
         public int VolunteerID { get; set; }

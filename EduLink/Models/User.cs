@@ -17,7 +17,7 @@ namespace EduLink.Models
         public string Skills { get; set; }
         [MaxLength(200)]
         
-        public string TempCode { get; set; }
+        public string? TempCode { get; set; }
         public bool IsActived { get; set; }
         public DateTimeOffset TempCodeExpire {  get; set; }
         public Student Student { get; set; }

@@ -7,6 +7,8 @@ using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Security.Principal;
+using System.Security.Claims;
 
 namespace EduLink.Controllers
 {
@@ -21,23 +23,40 @@ namespace EduLink.Controllers
             _volunteer = volunteer;
         }
 
-        [Authorize(Roles = "volunteer")]
+        [Authorize(Roles = "Volunteer")]
         [HttpGet("volunteer-courses")]
-        public async Task<IActionResult> GetVolunteeringCourses( [FromQuery] int volunteerID)
+        public async Task<IActionResult> GetVolunteerCourses()
         {
-        
 
-            var result = await _volunteer.GetVolunteerCoursesAsync(volunteerID);
-
-            if (result == null || result.Count == 0)
+            if (User.Identity is ClaimsIdentity identity)
             {
-                return NotFound("No courses found for the specified volunteer.");
-            }
+                // Extract the Volunteer ID claim from the JWT token
+                var volunteerIdClaim = identity.FindFirst("VolunteerID");
+                if (volunteerIdClaim == null)
+                {
+                    return Unauthorized("Volunteer ID not found in token.");
+                }
 
-            return Ok(result);
+                if (!int.TryParse(volunteerIdClaim.Value, out var volunteerID))
+                {
+                    return BadRequest("Invalid Volunteer ID in token.");
+                }
+
+                // Fetch volunteer courses
+                var result = await _volunteer.GetVolunteerCoursesAsync(volunteerID);
+
+                if (result == null || result.Count == 0)
+                {
+                    return NotFound("No courses found for the specified volunteer.");
+                }
+
+                return Ok(result);
+            }
+            return Unauthorized("Invalid token.");
         }
 
-        [Authorize(Roles = "volunteer")] 
+
+        [Authorize(Roles = "Volunteer")] 
         [HttpPost("add-event-content")]
         public async Task<IActionResult> AddEventContent([FromBody] EventContetnReqDTO dto)
         {
@@ -50,13 +69,29 @@ namespace EduLink.Controllers
 
             return Ok(response);
         }
-
-        [HttpGet("get-event-contents/{volunteerID}/{eventID}")]
-        public async Task<IActionResult> GetEventContentsAsync( int volunteerID,  int eventID)
+        [Authorize(Roles = "Volunteer")]
+        [HttpGet("get-event-contents/{eventID}")]
+        public async Task<IActionResult> GetEventContentsAsync(   int eventID)
         {
+
+            //var volunteerIdClaim = HttpContext.User.FindFirst("VolunteerID");
+
+
+            //if (volunteerIdClaim == null)
+            //{
+            //    return Unauthorized("Volunteer ID not found in token.");
+            //}
+
+
+            //if (!int.TryParse(volunteerIdClaim.Value, out var volunteerID))
+            //{
+            //    return BadRequest("Invalid Volunteer ID in token.");
+            //}
+
+
             try
             {
-                var result = await _volunteer.GetEventContentsAsync(volunteerID, eventID);
+                var result = await _volunteer.GetEventContentsAsync( eventID);
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -69,75 +104,134 @@ namespace EduLink.Controllers
             }
         }
 
-        [HttpPost("add-article")]
-        public async Task<IActionResult> AddArticle([FromHeader] string Authorization, [FromBody] ArticleReqDTO dto)
+
+        [Authorize(Roles = "volunteer")]
+        [HttpGet("/get-all-Events/{coursID}")]
+        public async Task<IActionResult> GetAllEvents(int coursID)
         {
-            // Validate the authorization token
-            if (Authorization != "tech_token")
-            {
-                return Unauthorized();
-            }
-
-            if (dto == null)
-            {
-                return BadRequest("Invalid article data.");
-            }
-
-            var response = await _volunteer.AddArticleAsync(dto);
-
-            return Ok(response);
+        if (User.Identity is ClaimsIdentity identity)
+        {
+        // Extract the Volunteer ID claim from the JWT token
+        var volunteerIdClaim = identity.FindFirst("VolunteerID");
+        if (volunteerIdClaim == null)
+        {
+            return Unauthorized("Volunteer ID not found in token.");
         }
 
-        [HttpDelete("delete-article")]
-        public async Task<IActionResult> DeleteArticle([FromHeader] string Authorization, [FromBody] DeleteArticleReqDTO request)
+        if (!int.TryParse(volunteerIdClaim.Value, out var volunteerID))
         {
-            // Validate the authorization token
-            if (Authorization != "tech_token")
-            {
-                return Unauthorized();
-            }
-
-            if (request == null || request.VolunteerID <= 0 || request.ArticleID <= 0)
-            {
-                return BadRequest("Invalid request data.");
-            }
-
-            var response = await _volunteer.DeleteArticleAsync(request.VolunteerID, request.ArticleID);
-
-            return Ok(response);
+            return BadRequest("Invalid Volunteer ID in token.");
         }
 
-        [HttpGet("get-all-reservation")]
-        //[Authorize]
-        public async Task<IActionResult> GetAllReservations(//[FromHeader(Name = "Authorization")] string authToken,
-            [FromQuery] ReservationReqDTO reservationRequest)
+        // Fetch all events for the volunteer in the specified course
+        var Events = await _volunteer.GetEventsAsync(volunteerID, coursID);
+        return Ok(Events);
+    }
+    return Unauthorized("Invalid token.");
+}
+
+        [HttpPost("add-Event")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> AddEvent([FromBody] AddEventReqDTO request)
         {
-            //if(authToken != "tech_token")
-            //{
-            //    return Unauthorized("Invalid token.");
-            //}
-            if (reservationRequest == null)
+          
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
+            if (volunteerIDClaim == null)
             {
-                return BadRequest();
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
             }
 
-            var resResrvation = await _volunteer.GetAllReservationAsync(reservationRequest);
-            return Ok(resResrvation);
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+
+            var response = await _volunteer.AddEventsAsync(volunteerID, request);
+
+          
+            if (response.Message == "Volunteer is not associated with the course.")
+            {
+                return BadRequest(new { message = response.Message });
+            }
+
+            return Ok(new { message = response.Message });
         }
 
-        [HttpDelete("delete-reservation")]
-        //[Authorize]
-        //public async Task<IActionResult> DeleteReservation(//[FromHeader(Name = "Authorization")] string authToken, 
-        //    [FromBody] DeleteReservationReqDTO deleteReservationRequest)
-        //{
-        //    //if (authToken != "tech_token")
-        //    //{
-        //    //    return Unauthorized("Invalid token.");
-        //    //}
 
-        //    var response = await _volunteer.DeleteReservationAsync(deleteReservationRequest);
-        //    return Ok(response);
-        //}
+        [HttpPut("cancel-event/{eventId}")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> CancelEvent( int eventId)
+        {
+          
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "volunteerID");
+            if (volunteerIDClaim == null)
+            {
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
+            }
+
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+
+           
+            var response = await _volunteer.CancelEventAsync(eventId, volunteerID);
+
+            if (response.Message == "The event was cancelled successfully.")
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
+
+
+        [HttpPost("Generate-URL-meeting/{eventId}")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> GenerateMeetingUrl(int eventId)
+        {
+            // Extract VolunteerID from the token
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "volunteerID");
+            if (volunteerIDClaim == null)
+            {
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
+            }
+
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+
+            // Call the service to generate the meeting URL
+            var response = await _volunteer.GenerateMeetingUrlAsync(eventId);
+
+            if (response.Message == "The URL was created successfully.")
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
+
+        [HttpPost("add-session")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> AddSession([FromBody] AddSessionReqDTO request)
+        {
+            var response = await _volunteer.AddSessionAsync(request);
+
+            if (response.Message.Contains("successfully"))
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
 
         //[HttpPut("update-reservation")]
         ////[Authorize]
@@ -153,60 +247,7 @@ namespace EduLink.Controllers
         //    return Ok(response);
         //}
 
-        [HttpPost("add-workshop")]
-        //[Authorize]
-        public async Task<IActionResult> AddWorkshop(//[FromHeader(Name = "Authorization")] string authToken, 
-            [FromBody] AddWorkshopReqDTO addWorkshopRequest)
-        {
-            //if (authToken != "tech_token")
-            //{
-            //    return Unauthorized("Invalid token.");
-            //}
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var response = await _volunteer.AddWorkshopAsync(addWorkshopRequest);
-            return Ok(response);
-        }
-
-        [HttpDelete("delete-workshop/{id}")]
-        //[Authorize]
-        public async Task<IActionResult> DeleteWorkshop(//[FromHeader(Name = "Authorization")] string authToken,
-                      [FromRoute] int id, [FromBody] DeleteWorkshopReqDTO deleteWorkshopRequest)
-        {
-            if (id != deleteWorkshopRequest.WorkshopID)
-            {
-                return BadRequest(new { message = "Workshop ID in the route does not match the ID in the request body." });
-            }
-
-            var result = await _volunteer.DeleteWorkshopAsync(deleteWorkshopRequest);
-
-            if (result.Message == "Workshop not found or does not belong to this volunteer.")
-            {
-                return NotFound(result);
-            }
-
-            return Ok(result);
-        }
-
-        //[Authorize]
-        [HttpGet("get-all-workshop/{volunteerID}")]
-        //public async Task<IActionResult> GetAllWorkshops(//[FromHeader(Name = "Authorization")] string authToken,
-        //    [FromRoute] int volunteerID)
-        //{
-        //    var workshops = await _volunteer.GetAllWorkshopsAsync(new GetAllWorkshopsReqDTO { VolunteerID = volunteerID });
-
-        //    if (workshops == null || !workshops.Any())
-        //    {
-        //        return NotFound(new { message = "No workshops found for this volunteer." });
-        //    }
-
-        //    return Ok(new { Workshop = workshops });
-        //}
-
+     
 
         //[HttpGet("get-notifications-workshops")]
         //public async Task<IActionResult> GetWorkshopNotifications(//[FromHeader(Name = "Authorization")] string authToken,
@@ -222,33 +263,60 @@ namespace EduLink.Controllers
         //    return Ok(new { notifications });
         //}
 
-        [HttpGet("get-article/")]
-        [Authorize]
-        public async Task<IActionResult> GetArticle( [FromBody] GetArticleReqDTO request)
-        {
-            var article = await _volunteer .GetArticleByIdAsync(request.VolunteerID, request.AricaleID);
 
-            if (article == null)
-            {
-                return NotFound(new { message = "Article not found" });
-            }
+        //[HttpPost("add-article")]
+        //public async Task<IActionResult> AddArticle([FromHeader] string Authorization, [FromBody] ArticleReqDTO dto)
+        //{
+        //    // Validate the authorization token
+        //    if (Authorization != "tech_token")
+        //    {
+        //        return Unauthorized();
+        //    }
 
-            return Ok(new { Article = article });
-        }
+        //    if (dto == null)
+        //    {
+        //        return BadRequest("Invalid article data.");
+        //    }
 
-        [HttpPost("add-reservation")]
-        [Authorize(Roles = "Student")]
-        public async Task<IActionResult> AddReservation([FromBody] AddReservationReqDTO request)
-        {
-            var response = await _volunteer.AddReservationAsync(request);
+        //    var response = await _volunteer.AddArticleAsync(dto);
 
-            if (response.Message == "Student is not associated with the course.")
-            {
-                return BadRequest(new { message = response.Message });
-            }
+        //    return Ok(response);
+        //}
 
-            return Ok(new { message = response.Message });
-        }
+        //[HttpDelete("delete-article")]
+        //public async Task<IActionResult> DeleteArticle([FromHeader] string Authorization, [FromBody] DeleteArticleReqDTO request)
+        //{
+        //    // Validate the authorization token
+        //    if (Authorization != "tech_token")
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    if (request == null || request.VolunteerID <= 0 || request.ArticleID <= 0)
+        //    {
+        //        return BadRequest("Invalid request data.");
+        //    }
+
+        //    var response = await _volunteer.DeleteArticleAsync(request.VolunteerID, request.ArticleID);
+
+        //    return Ok(response);
+        //}
+
+        //[HttpGet("get-article/")]
+        //[Authorize]
+        //public async Task<IActionResult> GetArticle( [FromBody] GetArticleReqDTO request)
+        //{
+        //    var article = await _volunteer .GetArticleByIdAsync(request.VolunteerID, request.AricaleID);
+
+        //    if (article == null)
+        //    {
+        //        return NotFound(new { message = "Article not found" });
+        //    }
+
+        //    return Ok(new { Article = article });
+        //}
+
+     
 
     }
 }

@@ -109,7 +109,7 @@ namespace EduLink.Controllers
             var Course = await student.GetCourseVolunteerAsync(CourseID);
             if (Course == null)
             {
-                return NotFound("The Courses Not Found");
+                return NotFound("The Course Not Found");
             }
             return Ok(Course);
         }
@@ -140,6 +140,7 @@ namespace EduLink.Controllers
             }
           return Unauthorized("Invalid token.");
         }
+
           [HttpPost("addFeedBack")]
          [Authorize(Roles = "Student")]
         public async Task<ActionResult<string>> AddFeedBack( FeedbackReqDTO feedback) {

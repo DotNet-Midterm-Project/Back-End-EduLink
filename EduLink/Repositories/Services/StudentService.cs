@@ -146,18 +146,67 @@ namespace EduLink.Repositories.Services
 
 
 
-        //        public async Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterReqDTO registerDTO)
-        //        {
-        //            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.StudentID==registerDTO.StudentID);
-        //            if (student == null)
-        //            {
-        //                return    new MessageResponseDTO { Message = "Student Not found", };
+//            var feedback = new Feedback
+//            {
+//                Comment = bookingDtoRequest.Comment,
+//                Rating = bookingDtoRequest.Rating,
+//                BookingID = bookingDtoRequest.BookingId  
+//            };
 
-        //            }
-        //            // Fetch the volunteer if they exist, otherwise create a new one
-        //            var volunteer = await eduLinkDbContext.Volunteers
-        //                              .Include(v => v.VolunteerCourse)
-        //                               .FirstOrDefaultAsync(v => v.StudentID == registerDTO.StudentID);
+//            eduLinkDbContext.Feedbacks.Add(feedback);
+//            booking.Feedbacks = feedback;  
+//            await eduLinkDbContext.SaveChangesAsync();
+
+//            return $"Added feedback successfully on Booking : BookingID ={bookingDtoRequest.BookingId}";
+//        }
+
+//        public async Task<string> WorkshopsRegistrationAsync(string StudentId, int WorkshopID)
+//        {
+//            var workshop = await eduLinkDbContext.WorkShops
+//            .Include(w => w.WorkshopsRegistrations)
+//            .FirstOrDefaultAsync(w => w.WorkShopID == WorkshopID);
+
+//            if (workshop == null)
+//            {
+//                return "Workshop not found.";
+//            }
+
+//            if (workshop.WorkshopsRegistrations.Any(wr => wr.StudentID == StudentId))
+//            {
+//                return "Student is already registered for this workshop.";
+//            }
+
+//            if (workshop.WorkshopsRegistrations.Count >= workshop.Capasity)
+//            {
+//                return "Workshop capacity reached.";
+//            }
+
+//            var workShopRegistration = new WorkshopsRegistration
+//            {
+//                WorkShopID = WorkshopID,
+//                StudentID = StudentId,
+//            };
+
+//            eduLinkDbContext.Add(workShopRegistration);
+//            await eduLinkDbContext.SaveChangesAsync();
+
+//            return $"Register successfully on {workshop.Title}";
+
+//        }
+
+
+//        public async Task<MessageResponseDTO> RegisterVolunteerAsync(VolunteerRegisterReqDTO registerDTO)
+//        {
+//            var student=await eduLinkDbContext.Students.SingleOrDefaultAsync(S=>S.StudentID==registerDTO.StudentID);
+//            if (student == null)
+//            {
+//                return    new MessageResponseDTO { Message = "Student Not found", };
+                   
+//            }
+//            // Fetch the volunteer if they exist, otherwise create a new one
+//            var volunteer = await eduLinkDbContext.Volunteers
+//                              .Include(v => v.VolunteerCourse)
+//                               .FirstOrDefaultAsync(v => v.StudentID == registerDTO.StudentID);
 
 
         //            if (volunteer == null)
