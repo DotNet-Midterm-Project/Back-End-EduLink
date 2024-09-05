@@ -2,19 +2,16 @@
 {
     public class BookingForStudentResDTO
     {
-        public string StudentID { get; set; }
-        public string SessionStatus { get; set; }
-        public string VolunteerName { get; set; }
-        public int CourseID {  get; set; }
-        public DateTime Date { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
-
-        public string SessionLink { get; set; }
-
-        public int ReservationID { get; set; }
-
-
+        public string EventTitle { get; set; }
+        public string CourseName { get; set; }
+        public string EventLocation { get; set; }
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset EndTime { get; set; }
+        //public DateOnly StartDate { get; set; }
+        //public DateOnly EndDate { get; set; }
+        public DateOnly Date { get; set; }
+        public string SessionStatus {  get; set; }
+        public string EventAddress { get; set; }
 
     }
 }

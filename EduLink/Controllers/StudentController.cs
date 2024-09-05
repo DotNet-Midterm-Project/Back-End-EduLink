@@ -6,7 +6,9 @@ using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Security.Claims;
 
 namespace EduLink.Controllers
 {
@@ -20,29 +22,90 @@ namespace EduLink.Controllers
         {
             this.student = student;
         }
-        [HttpGet("getAllCourse/{StudentID}")]
-        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetAllCoursesByStudentDepartmentAsync([FromHeader] string Authorization, [FromRoute] string StudentID)
+        [HttpGet("getAllCourse")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GEtStudentIdAsync()
         {
-            // Validate the authorization token
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
-            if (!ModelState.IsValid)
+            if (User.Identity is ClaimsIdentity identity)
             {
-                return BadRequest();
+                var StudentClaims = identity.FindFirst("StudentID");
+                if (StudentClaims == null)
+                {
+                    return Unauthorized("Student ID not found in token.");
+                }
+                if (!int.TryParse(StudentClaims.Value, out var studentID))
+                {
+                    return BadRequest("Invalid Volunteer ID in token.");
+                }
+                var result = await student.GetCoursesByStudentDepartmentAsync(studentID);
+                if (result == null || result.Count == 0)
+                {
+                    return NotFound("No courses found for the specified Department.");
+                }
+
+                return Ok(result);
             }
-            var Course = await student.GetCoursesByStudentDepartmentAsync(StudentID);
-            if (Course == null)
-            {
-                return NotFound();
-            }
-            return Ok(Course);
+
+            return Unauthorized("Invalid token.");
+
         }
-        [HttpGet("GetCourseVolunteers/{EventID}")]
-        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetAllCoursesByStudentDepartmentAsync([FromHeader] string Authorization, [FromRoute] int CourseID)
+        [HttpGet("Post")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> BookingWorkshop( int workshopID)
         {
-            // Validate the authorization token
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
+            if (User.Identity is ClaimsIdentity identity)
+            {
+                var StudentClaims = identity.FindFirst("StudentID");
+                if (StudentClaims == null)
+                {
+                    return Unauthorized("Student ID not found in token.");
+                }
+                if (!int.TryParse(StudentClaims.Value, out var studentID))
+                {
+                    return BadRequest("Invalid Volunteer ID in token.");
+                }
+                var result = await student.BookingWorkshop(studentID , workshopID);
+                if (result == null)
+                {
+                    return NotFound("No courses found for the specified Department.");
+                }
+
+                return Ok(result);
+            }
+            return Unauthorized("Invalid token.");
+        }
+        [HttpGet("getAllCourse")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> BookSession(int sessionId)
+        {
+            if (User.Identity is ClaimsIdentity identity)
+            {
+                var StudentClaims = identity.FindFirst("StudentID");
+                if (StudentClaims == null)
+                {
+                    return Unauthorized("Student ID not found in token.");
+                }
+                if (!int.TryParse(StudentClaims.Value, out var studentID))
+                {
+                    return BadRequest("Invalid Student ID in token.");
+                }
+                var result = await student.BookSession(studentID , sessionId);
+                if (result == null )
+                {
+                    return NotFound("No Session found .");
+                }
+
+                return Ok(result);
+            }
+            return Unauthorized("Invalid token.");
+        }
+    
+
+
+        [HttpGet("GetCourseVolunteers/{CourseID}")]
+        [Authorize(Roles = "Student")]
+        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetCourseVolunteerAsync([FromBody] int CourseID)
+        {
             var Course = await student.GetCourseVolunteerAsync(CourseID);
             if (Course == null)
             {
@@ -50,83 +113,38 @@ namespace EduLink.Controllers
             }
             return Ok(Course);
         }
-        [HttpGet("GetEducationalContent/{VolunteerID}/{courseID}")]
-        public async Task<ActionResult<List<EventContentResDTO>>> GetEducationalContent([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
+  
+        [HttpGet("/Getbooking")]
+        [Authorize(Roles = "Student")]
+
+        public async Task<IActionResult> GetBookingStudent()
         {
-            // Validate the authorization token
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
-            if (!ModelState.IsValid)
+            if (User.Identity is ClaimsIdentity identity)
             {
-                return BadRequest();
-            }
-            var EducationalContent = await student.GeteducationalcontentAsync(VolunteerID, courseID);
-            if ((EducationalContent == null))
-            {
-                return NotFound();
-            }
+                var StudentClaims = identity.FindFirst("StudentID");
+                if (StudentClaims == null)
+                {
+                    return Unauthorized("Student ID not found in token.");
+                }
+                if (!int.TryParse(StudentClaims.Value, out var studentID))
+                {
+                    return BadRequest("Invalid Volunteer ID in token.");
+                }
+                var result = await student.GetBookingForStudentAsync(studentID);
+                if (result == null || result.Count == 0)
+                {
+                    return NotFound("No courses found for the specified Department.");
+                }
 
-            return Ok(EducationalContent);
+                return Ok(result);
+            }
+          return Unauthorized("Invalid token.");
         }
-        [HttpGet("GetReservations/{VolunteerID}/{courseID}")]
-        public async Task<ActionResult<List<EventResDTO>>> GetReservations([FromHeader] string Authorization, [FromRoute] int VolunteerID, [FromRoute] int courseID)
-        {
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            var Reservation = await student.GetReservationForVolunteerAsync(VolunteerID, courseID);
-            if (Reservation == null) {
-                return NotFound();
-            }
-            return Ok(Reservation);
-
-        }
-        [HttpPost("AddBooking/{ReservationID}/{StudentID}")]
-        public async Task<ActionResult<string>> AddBooking([FromHeader] string Authorization, [FromRoute] int ReservationID , [FromRoute] string StudentID)
-        {
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            var AddBooking = await student.AddBookingAsync(ReservationID, StudentID);
-            if (AddBooking == "Reservation not found.") { 
-               return NotFound(AddBooking);
-            }
-            if(AddBooking == "Reservation is no longer available.")
-            {
-                return BadRequest(AddBooking);
-            }
-            return Ok(AddBooking);
-
-        }
-        [HttpGet("/getbooking/{StudentID}/{ReservationID}")]
-        public async Task<ActionResult<List<BookingForStudentResDTO>>> getbookingStudent([FromHeader] string Authorization,[FromRoute] string StudentID ,[FromRoute] int ReservationID)
-        {
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            var BookingStudent = await student.GetBookingAsync(StudentID, ReservationID);
-            if (BookingStudent == null)
-            {
-                return NotFound();
-            }
-            return Ok(BookingStudent);
-
-        }
-        [HttpPost("addFeedBack")]
-        public async Task<ActionResult<string>> AddFeedBack([FromHeader] string Authorization, FeedbackReqDTO feedback) {
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
+          [HttpPost("addFeedBack")]
+         [Authorize(Roles = "Student")]
+        public async Task<ActionResult<string>> AddFeedBack( FeedbackReqDTO feedback) {
+        
             var Feedback = await student.AddFeedbackAsync(feedback);
             if (Feedback == null)
                 return NotFound("Booking not found.");
@@ -134,49 +152,38 @@ namespace EduLink.Controllers
             return Ok(Feedback);
                 
         }
-       [HttpPost("WorkshopsRegistratio/{StudnetID}/{“WorkshopID}")]
-       public async Task<ActionResult<String>> WorkshopsRegistratio([FromHeader] string Authorization,[FromRoute] string StudnetID , [FromRoute] int WorkshopID)
+        [HttpDelete]
+       // [Authorize(Roles = "Student")]
+        public async Task<IActionResult> DeleteBooking([FromBody] int BookingID)
         {
-            if (Authorization != "Bearer JWT_token_here")
-                return Unauthorized();
-            var workshopsRegistratio = await student.WorkshopsRegistrationAsync(StudnetID, WorkshopID);
-            if(workshopsRegistratio ==  "Workshop not found." || workshopsRegistratio == "Workshop capacity reached.")
+            if (User.Identity is ClaimsIdentity identity)
             {
-                return BadRequest(workshopsRegistratio);
-            }
-            return Ok(workshopsRegistratio);
-         }
+                var studentClaim = identity.FindFirst("StudentID");
+                if (studentClaim == null)
+                {
+                    return Unauthorized("Student ID not found in token.");
+                }
 
-        [HttpPost("Register/Volinteer")]
-       // [Authorize]
-        public async Task<IActionResult> RegisterVolunteer([FromBody] VolunteerRegisterReqDTO registerDTO)
-        {
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest(ModelState);
-            //}
+                if (!int.TryParse(studentClaim.Value, out var studentID))
+                {
+                    return BadRequest("Invalid Student ID in token.");
+                }
 
-            var response = await student.RegisterVolunteerAsync(registerDTO);
+                var result = await student.DeleteBookingAsynct(studentID, BookingID);
+                if (result == null)
+                {
+                    return NotFound("Booking not found or could not be deleted.");
+                }
 
-            if (response.Message == "You are already registered as a volunteer.")
-            {
-                return Conflict(response); // HTTP 409 Conflict if the volunteer is already registered
+                return Ok("Booking deleted successfully.");
             }
 
-            return Ok(response); // HTTP 200 OK if registration is successful
+            return Unauthorized("Invalid token.");
         }
+   
 
-        [HttpGet("get-notifications-booking")]
-        public async Task<IActionResult> GetNotificationsByStudent([FromHeader] string studentId)
-        {
-            if (string.IsNullOrEmpty(studentId))
-            {
-                return BadRequest("StudentId is required.");
-            }
-
-            var notifications = await student.GetNotificationsByStudentAsync(studentId);
-            return Ok(new { notifications });
         }
-    }
-
 }
+
+
+
