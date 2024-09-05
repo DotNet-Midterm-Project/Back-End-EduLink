@@ -7,7 +7,7 @@ namespace EduLink.Models
         Scheduled,
         Ongoing,
         Completed,
-        Clode,
+        Closed,
         Cancelled
     }
 
