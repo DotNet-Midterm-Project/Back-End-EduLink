@@ -92,6 +92,7 @@ namespace EduLink.Controllers
             try
             {
                 var result = await _volunteer.GetEventContentsAsync( eventID);
+                
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -105,9 +106,9 @@ namespace EduLink.Controllers
         }
 
 
-        [Authorize(Roles = "volunteer")]
-        [HttpGet("/get-all-Events/{coursID}")]
-        public async Task<IActionResult> GetAllEvents(int coursID)
+        [Authorize(Roles = "Volunteer")]
+        [HttpGet("/get-all-Events/{courseID}")]
+        public async Task<IActionResult> GetAllEvents(int courseID)
         {
         if (User.Identity is ClaimsIdentity identity)
         {
@@ -124,11 +125,15 @@ namespace EduLink.Controllers
         }
 
         // Fetch all events for the volunteer in the specified course
-        var Events = await _volunteer.GetEventsAsync(volunteerID, coursID);
-        return Ok(Events);
+        var Events = await _volunteer.GetEventsAsync(volunteerID, courseID);
+                if (Events == null)
+                {
+                    return NotFound("Event  Not Found");
+                }
+            return Ok(Events);
+        }
+             return Unauthorized("Invalid token.");
     }
-    return Unauthorized("Invalid token.");
-}
 
         [HttpPost("add-Event")]
         [Authorize(Roles = "Volunteer")]
@@ -163,7 +168,7 @@ namespace EduLink.Controllers
         public async Task<IActionResult> CancelEvent( int eventId)
         {
           
-            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "volunteerID");
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
             {
                 return Unauthorized(new { message = "Volunteer ID not found in token." });
@@ -193,7 +198,7 @@ namespace EduLink.Controllers
         public async Task<IActionResult> GenerateMeetingUrl(int eventId)
         {
             // Extract VolunteerID from the token
-            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "volunteerID");
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
             {
                 return Unauthorized(new { message = "Volunteer ID not found in token." });

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduLink.Migrations
 {
     /// <inheritdoc />
-    public partial class updatetables : Migration
+    public partial class UpdateTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -129,12 +129,14 @@ namespace EduLink.Migrations
                         name: "FK_DepartmentCourses_Courses_CourseID",
                         column: x => x.CourseID,
                         principalTable: "Courses",
-                        principalColumn: "CourseID");
+                        principalColumn: "CourseID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DepartmentCourses_Departments_DepartmentID",
                         column: x => x.DepartmentID,
                         principalTable: "Departments",
-                        principalColumn: "DepartmentID");
+                        principalColumn: "DepartmentID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -305,12 +307,14 @@ namespace EduLink.Migrations
                         name: "FK_VolunteerCourses_Courses_CourseID",
                         column: x => x.CourseID,
                         principalTable: "Courses",
-                        principalColumn: "CourseID");
+                        principalColumn: "CourseID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_VolunteerCourses_Volunteers_VolunteerID",
                         column: x => x.VolunteerID,
                         principalTable: "Volunteers",
-                        principalColumn: "VolunteerID");
+                        principalColumn: "VolunteerID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -362,7 +366,7 @@ namespace EduLink.Migrations
                     AnouncementID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EventID = table.Column<int>(type: "int", nullable: false),
-                    SessionID = table.Column<int>(type: "int", nullable: false),
+                    SessionID = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
                     AnounceDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -374,7 +378,8 @@ namespace EduLink.Migrations
                         name: "FK_Announcement_Events_EventID",
                         column: x => x.EventID,
                         principalTable: "Events",
-                        principalColumn: "EventID");
+                        principalColumn: "EventID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -453,8 +458,7 @@ namespace EduLink.Migrations
                         name: "FK_Bookings_Students_StudentID",
                         column: x => x.StudentID,
                         principalTable: "Students",
-                        principalColumn: "StudentID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "StudentID");
                 });
 
             migrationBuilder.CreateTable(

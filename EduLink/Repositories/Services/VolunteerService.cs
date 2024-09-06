@@ -56,7 +56,7 @@ namespace EduLink.Repositories.Services
                 ContentName = dto.ContentName,
                 ContentType = dto.ContentType,
                 ContentDescription = dto.ContentDescription,
-                ContentAdress = dto.ContentAdress,
+                ContentAdress = dto.ContentAddress,
             };
 
             await _context.EventContents.AddAsync(newContent);
@@ -77,7 +77,7 @@ namespace EduLink.Repositories.Services
                 {
                     ContentID = ec.ContentID,
                     ContentName = ec.ContentName,
-                    ContentType = ec.ContentType,
+                    ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
                     ContentAdress = ec.ContentAdress,
                 })
@@ -113,10 +113,10 @@ namespace EduLink.Repositories.Services
                 StartTime = e.StartTime,
                 EndTime = e.EndTime,
                 EventDescription = e.EventDescription,
-                EventStatus = e.EventStatus,
-                Location = e.Location,
+                EventStatus = e.EventStatus.ToString(),
+                Location = e.Location.ToString(),
                 Capacity = e.Capacity,
-                EventType = e.EventType,
+                EventType = e.EventType.ToString(),
                 EventAdress = e.EventAddress,
                 Details = e.EventDetailes,
             }).ToList();
@@ -155,10 +155,11 @@ namespace EduLink.Repositories.Services
                 EventType = request.EventType,
                 EventDescription = request.EventDescription,
                 EventDetailes = request.Details,
-                EventAddress = request.Location == EventLocation.Online ? "The session link will be sent later" : request.EventAdress,
+                EventAddress = request.Location == EventLocation.Online ? "The session link will be sent later" : request.EventAddress,
                 Capacity = request.Capacity,
                 SessionCount = request.EventType == EventType.PrivateSession ? request.SessionCounts : 0,
                 EventStatus = EventStatus.Scheduled,
+               
             };
 
             await _context.Events.AddAsync(eventEntity);
@@ -189,23 +190,28 @@ namespace EduLink.Repositories.Services
             var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
 
             // Send email to all students
-            foreach (var email in studentEmails)
-            {
-                await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
+            if (studentEmails!=null) {
+                foreach (var email in studentEmails)
+                {
+                    await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
 
+                }
+
+
+                // Create and store announcement
+                var announcement = new Announcement
+                {
+                    EventID = eventEntity.EventID,
+                    Title = eventEntity.Title,
+                    Message = emailDescriptionPlain, // Store as plain text
+                    AnounceDate = DateTime.UtcNow
+                };
+
+                await _context.Announcement.AddAsync(announcement);
+                await _context.SaveChangesAsync();
             }
+        
 
-            // Create and store announcement
-            var announcement = new Announcement
-            {
-                EventID = eventEntity.EventID,
-                Title = eventEntity.Title,
-                Message = emailDescriptionPlain, // Store as plain text
-                AnounceDate = DateTime.UtcNow
-            };
-
-            await _context.Announcement.AddAsync(announcement);
-            await _context.SaveChangesAsync();
 
             return new MessageResDTO
             {
@@ -267,7 +273,7 @@ namespace EduLink.Repositories.Services
             var result = await _context.SaveChangesAsync();
 
             return result > 0
-                ? new MessageResDTO { Message = "The URL was created successfully." }
+                ? new MessageResDTO { Message = $"The URL was created successfully: {meetingUrl}" }
                 : new MessageResDTO { Message = "Failed to create the URL." };
         }
 
@@ -287,24 +293,28 @@ namespace EduLink.Repositories.Services
             {
                 return new MessageResDTO { Message = "Sessions can only be added to events of type PrivateSession." };
             }
-
-            var newSession = new Session
+            if (eventToUpdate.SessionCount > 0)
             {
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                Details = request.Details,
-                Capacity = request.SessionCapacity,
-                SessionStatus = SessionStatus.Open,
-            };
+                var newSession = new Session
+                {
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    Details = request.Details,
+                    Capacity = request.SessionCapacity,
+                    SessionStatus = SessionStatus.Open,
+                };
 
-            eventToUpdate.Sessions.Add(newSession);
-            _context.Events.Update(eventToUpdate);
+                eventToUpdate.Sessions.Add(newSession);
+                _context.Events.Update(eventToUpdate);
+                --eventToUpdate.SessionCount;
 
-            var result = await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync();
 
-            return result > 0
-                ? new MessageResDTO { Message = "The session was added successfully." }
-                : new MessageResDTO { Message = "Failed to add the session." };
+                return result > 0
+                    ? new MessageResDTO { Message = "The session was added successfully." }
+                    : new MessageResDTO { Message = "Failed to add the session." };
+            }
+            return new MessageResDTO { Message = "Failed to add the session." };
         }
 
         // Commented code

@@ -77,8 +77,10 @@ namespace EduLink.Repositories.Services
 
 
             var volunteerCourse = await eduLinkDbContext.Volunteers
-                .Where(c => volunteers.Contains(c.VolunteerID))
-                .ToListAsync();
+      .Where(c => volunteers.Contains(c.VolunteerID))
+      .Include(v => v.Student)           
+      .ThenInclude(s => s.User)       
+      .ToListAsync();
 
 
             var VolunteerDto = volunteerCourse.Select(dc => new VolunteerResDTO
