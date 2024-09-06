@@ -19,12 +19,4 @@
         public string ArticleContent { get; set; }
         public ArticleStatus Status { get; set; }
     }
-
-
-    
-
-    
-
-    
-
 }

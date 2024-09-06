@@ -5,6 +5,4 @@
         public int VolunteerID { get; set; }
         public int CourseID { get; set; }
     }
-
-    
 }
