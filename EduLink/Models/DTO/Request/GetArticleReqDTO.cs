@@ -1,9 +1,9 @@
-﻿namespace EduLink.Models.DTO.Request
-{
-    public class GetArticleReqDTO
+﻿//namespace EduLink.Models.DTO.Request
+//{
+//    //public class GetArticleReqDTO
 
-    {
-        public int VolunteerID { get; set; }
-        public int AricaleID { get; set; }
-    }
-}
+//    //{
+//    //    public int VolunteerID { get; set; }
+//    //    public int AricaleID { get; set; }
+//    //}
+//}

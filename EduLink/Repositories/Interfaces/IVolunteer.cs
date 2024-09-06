@@ -8,25 +8,19 @@ namespace EduLink.Repositories.Interfaces
 
         Task<List<VolunteerCourseResDTO>> GetVolunteerCoursesAsync(int volunteerID);
         Task<MessageResDTO> AddEventContentAsync(EventContetnReqDTO dto);
-        Task<IEnumerable<EventContentResDTO>> GetEventContentsAsync( int eventID);
+        Task<IEnumerable<EventContentResDTO>> GetEventContentsAsync(int eventID);
         Task<List<EventResDTO>> GetEventsAsync(int volunteerID, int courseID);
         Task<MessageResDTO> AddEventsAsync(int volunteerID,AddEventReqDTO request);
         Task<MessageResDTO> CancelEventAsync(int eventId, int volunteerID);
-       Task<MessageResDTO> GenerateMeetingUrlAsync(int eventId);
+        Task<MessageResDTO> GenerateMeetingUrlAsync(int eventId);
         Task<MessageResDTO> AddSessionAsync(AddSessionReqDTO request);
 
-        //Task<MessageResDTO> AddArticleAsync(ArticleReqDTO dto);
-        //Task<MessageResDTO> DeleteArticleAsync(int volunteerId, int articleId);
-        //Task<ArticleResDTO> GetArticleByIdAsync(int volunteerId, int articleId);
-    
-
-        //
-     
-
-    
-        //Task<MessageResDTO> AddWorkshopAsync(AddWorkshopReqDTO addWorkshopRequest);
-        //Task<MessageResDTO> DeleteWorkshopAsync(DeleteWorkshopReqDTO deleteWorkshopRequest);
-       // Task<List<WorkshopResDTO>> GetAllWorkshopsAsync(GetAllWorkshopsReqDTO getAllWorkshopsRequest);
-        //Task<List<GetWorkshopNotificationRespDTO>> GetWorkshopNotificationsAsync();
+        Task<MessageResDTO> AddArticleAsync(AddArticleReqDTO request, int volunteerId);
+        Task<MessageResDTO> ModifyArticleStatusAsync(ModifyArticleStatusReqDTO request, int volunteerId);
+        Task<ArticlesResDTO> GetArticlesForVolunteerAsync(int volunteerId);
+        Task<ArticleDTO> GetArticleByIdAsync(int articleId);
+        Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId);
+        Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request);
+        //Task<GetNotificationsResponse> GetNotificationsAsync(GetNotificationsRequest request);
     }
 }

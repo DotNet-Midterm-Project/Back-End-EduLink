@@ -8,13 +8,10 @@ namespace EduLink.Models.DTO.Request
         public int EventID { get; set; }
 
         [Required] 
-       
         public string ContentName { get; set; }
 
         [Required] 
         public Content ContentType { get; set; }
-
-      
         public string ContentDescription { get; set; }
         public string ContentAddress { get; set; }
     }

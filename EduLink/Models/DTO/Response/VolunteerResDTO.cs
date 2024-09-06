@@ -11,7 +11,5 @@
         public string Availability { get; set; }
         public bool Aprrove { get; set; }
         public string? PhoneNumber {  get; set; }
-
-
     }
 }
