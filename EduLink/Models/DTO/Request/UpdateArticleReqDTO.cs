@@ -7,6 +7,6 @@
         public string ArticleContent { get; set; }
         public DateTime PublicationDate { get; set; }
         public ArticleStatus Status { get; set; }
-        public string AuthorName { get; set; }
+
     }
 }

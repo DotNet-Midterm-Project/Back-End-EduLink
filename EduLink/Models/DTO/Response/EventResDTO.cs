@@ -4,11 +4,11 @@
     {
         public int EventID { get; set; }
         public string Title { get; set; }
-        public EventLocation Location { get; set; }
+        public string Location { get; set; }
         public string EventDescription { get; set; }
         public string Details { get; set; }
-        public EventType EventType { get; set; }
-        public EventStatus EventStatus { get; set; }
+        public string EventType { get; set; }
+        public string EventStatus { get; set; }
         public int Capacity { get; set; }
         public DateTimeOffset StartTime { get; set; }
         public DateTimeOffset EndTime { get; set; }

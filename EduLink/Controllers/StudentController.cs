@@ -193,9 +193,64 @@ namespace EduLink.Controllers
 
             return Unauthorized("Invalid token.");
         }
-   
 
+        [HttpPost("RegisterVolunteer")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> RegisterVolunteer([FromBody] VolunteerRegisterReqDTO registerDTO)
+        {
+            if (User.Identity is ClaimsIdentity identity)
+            {
+                var studentClaim = identity.FindFirst("StudentID");
+                if (studentClaim == null)
+                {
+                    return Unauthorized("Student ID not found in token.");
+                }
+
+                if (!int.TryParse(studentClaim.Value, out var studentID))
+                {
+                    return BadRequest("Invalid Student ID in token.");
+                }
+
+                
+                var result = await student.RegisterVolunteerAsync(studentID, registerDTO);
+
+                
+                if (result.Message == "Student not found")
+                {
+                    return NotFound("Student not found.");
+                }
+                else if (result.Message == "You are already registered as a volunteer.")
+                {
+                    return BadRequest("You are already registered as a volunteer.");
+                }
+                else if (result.Message == "Your application is being considered to become a volunteer.")
+                {
+                    return Ok("Your application is being considered to become a volunteer.");
+                }
+
+           
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while registering as a volunteer.");
+            }
+
+            return Unauthorized("Invalid token.");
         }
+
+        [HttpGet("announcements")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetAnnouncements()
+        {
+            var announcements = await student.GetAnnouncementsAsync();
+
+            if (announcements == null || announcements.Count == 0)
+            {
+                return NotFound("No announcements found.");
+            }
+
+            return Ok(announcements);
+        }
+
+
+    }
 }
 
 

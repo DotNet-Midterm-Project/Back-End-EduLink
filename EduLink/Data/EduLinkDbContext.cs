@@ -110,13 +110,13 @@ namespace EduLink.Data
                 .HasOne(vc => vc.Volunteer)               // Each VolunteerCourse has one Student
                 .WithMany(v => v.VolunteerCourse)          // Each Student has many VolunteerCourses
                 .HasForeignKey(vc => vc.VolunteerID)      // Foreign key in VolunteerCourse entity
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<VolunteerCourse>()
                 .HasOne(vc => vc.Course)                  // Each VolunteerCourse has one Course
                 .WithMany(c => c.volunteerCourses)         // Each Course has many VolunteerCourses
                 .HasForeignKey(vc => vc.CourseID)         // Foreign key in VolunteerCourse entity
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Configure the one-to-many relationship between Volunteer and Article
             modelBuilder.Entity<Article>()
@@ -159,12 +159,12 @@ namespace EduLink.Data
             modelBuilder.Entity<DepartmentCourses>()
                 .HasOne(x => x.Department)
                 .WithMany(x => x.Department_Courses)
-                .HasForeignKey(x => x.DepartmentID).OnDelete(DeleteBehavior.NoAction); 
+                .HasForeignKey(x => x.DepartmentID).OnDelete(DeleteBehavior.Cascade); 
                 
             modelBuilder.Entity<DepartmentCourses>()
                 .HasOne(x => x.Course)
                 .WithMany(x => x.DepartmentCourses)
-                .HasForeignKey(x => x.CourseID).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(x => x.CourseID).OnDelete(DeleteBehavior.Cascade);
    
 
             // Relationship between Event and Announcement (one-to-many)
@@ -172,7 +172,7 @@ namespace EduLink.Data
                 .HasOne(a => a.Event)
                 .WithMany(e => e.Announcements)
                 .HasForeignKey(a => a.EventID)
-                .OnDelete(DeleteBehavior.NoAction);  
+                .OnDelete(DeleteBehavior.Cascade);  
             // Use Cascade or Restrict depending on your needs
 
 
@@ -188,7 +188,7 @@ namespace EduLink.Data
                 .HasOne(b => b.Student)
                 .WithMany(s => s.Bookings)
                 .HasForeignKey(b => b.StudentID)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
             // Define One-To-Many relationship between EventContent and Event
             modelBuilder.Entity<EventContent>()
                 .HasOne(e => e.Event)

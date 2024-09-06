@@ -74,7 +74,8 @@ namespace EduLink.Controllers
         {
             try
             {
-                var result = await _volunteer.GetEventContentsAsync(eventID);
+                var result = await _volunteer.GetEventContentsAsync( eventID);
+                
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)

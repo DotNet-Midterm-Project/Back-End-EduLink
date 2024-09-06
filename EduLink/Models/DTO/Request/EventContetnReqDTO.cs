@@ -13,7 +13,7 @@ namespace EduLink.Models.DTO.Request
         [Required] 
         public Content ContentType { get; set; }
         public string ContentDescription { get; set; }
-        public string ContentAdress { get; set; }
+        public string ContentAddress { get; set; }
     }
 
 }
