@@ -3,7 +3,9 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -243,73 +245,183 @@ namespace EduLink.Repositories.Services
                 return new MessageResDTO { Message = "Sessions can only be added to events of type PrivateSession." };
             }
 
-            var newSession = new Session
+            if (eventToUpdate.SessionCount > 0)
             {
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                Details = request.Details,
-                Capacity = request.SessionCapacity,
-                SessionStatus = SessionStatus.Open,
-            };
+                var newSession = new Session
+                {
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    Details = request.Details,
+                    Capacity = request.SessionCapacity,
+                    SessionStatus = SessionStatus.Open,
+                };
 
-            eventToUpdate.Sessions.Add(newSession);
-            _context.Events.Update(eventToUpdate);
+                eventToUpdate.Sessions.Add(newSession);
+                _context.Events.Update(eventToUpdate);
+                --eventToUpdate.SessionCount;
 
-            var result = await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync();
 
-            return result > 0
-                ? new MessageResDTO { Message = "The session was added successfully." }
-                : new MessageResDTO { Message = "Failed to add the session." };
+                return result > 0
+                    ? new MessageResDTO { Message = "The session was added successfully." }
+                    : new MessageResDTO { Message = "Failed to add the session." };
+            }
+
+            return new MessageResDTO{ Message = "Failed to add the session." };
         }
 
-        // Commented code
-
-        // Add an article
-        /*
-        public async Task<MessageResDTO> AddArticleAsync(ArticleReqDTO dto)
+        public async Task<MessageResDTO> AddArticleAsync(AddArticleReqDTO request, int volunteerId)
         {
-            var newArticle = new Article
+            var volunteer = await _context.Volunteers.FindAsync(volunteerId);
+            if (volunteer == null)
             {
-                VolunteerID = dto.VolunteerID,
-                Title = dto.Title,
-                ArticleContent = dto.ArticleContent,
-                PublicationDate = dto.PublicationDate,
-                AuthorName = dto.AuthorName
+                throw new Exception("Volunteer not found");
+            }
+
+            var article = new Article
+            {
+                Title = request.Title,
+                ArticleContent = request.ArticleContent,
+                PublicationDate = request.PublicationDate,
+                Status = request.Status,
+                VolunteerID = volunteerId,
+                Volunteer = volunteer,
+                AuthorName = request.AuthorName
             };
 
-            _context.Articles.Add(newArticle);
-            await _context.SaveChangesAsync();
+            await _context.Articles.AddAsync(article);
+            await _context.SaveChangesAsync(); 
 
-            return new MessageResDTO
-            {
-                Message = $"The article '{dto.Title}' added successfully."
-            };
+            return new MessageResDTO { Message = $"The Article '{article.Title}' has been added successfully." };
         }
-        */
 
-        // Delete an article
-        /*
-        public async Task<MessageResDTO> DeleteArticleAsync(int volunteerId, int articleId)
+        public async Task<MessageResDTO> ModifyArticleStatusAsync(ModifyArticleStatusReqDTO request, int volunteerId)
         {
-            var article = await _context.Articles
-                .FirstOrDefaultAsync(a => a.ArticleID == articleId && a.VolunteerID == volunteerId);
+            var article = await _context.Articles.FindAsync(request.ArticleID);
 
             if (article == null)
             {
-                return new MessageResDTO
-                {
-                    Message = "Article not found or not associated with the volunteer."
-                };
+                throw new Exception("Article not found");
             }
 
-            _context.Articles.Remove(article);
-            await _context.SaveChangesAsync();
-
-            return new MessageResDTO
+            if (article.VolunteerID != volunteerId)
             {
-                Message = "Article deleted successfully."
+                throw new Exception("You are not authorized to modify this article");
+            }
+
+            article.Status = request.Status;
+
+            await _context.SaveChangesAsync(); 
+
+            return new MessageResDTO { Message = $"The Article '{article.Title}' has been updated to '{request.Status}'" };
+        }
+
+        public async Task<ArticlesResDTO> GetArticlesForVolunteerAsync(int volunteerId)
+        {
+            var volunteer = await _context.Volunteers.FindAsync(volunteerId);
+            if (volunteer == null)
+            {
+                throw new Exception("Volunteer not found");
+            }
+
+            var articles = await _context.Articles
+                                         .Where(a => a.VolunteerID == volunteerId)
+                                         .Select(a => new ArticleDTO
+                                         {
+                                             ArticleID = a.ArticleID,
+                                             Title = a.Title,
+                                             ArticleContent = a.ArticleContent,
+                                             PublicationDate = a.PublicationDate,
+                                             Status = a.Status.ToString()
+                                         })
+                                         .ToListAsync();
+
+            return new ArticlesResDTO
+            {
+                Articles = articles
             };
         }
-        */
+
+        public async Task<ArticleDTO> GetArticleByIdAsync(int articleId)
+        {
+            var article = await _context.Articles
+                .Where(a => a.ArticleID == articleId)
+                .Select(a => new ArticleDTO
+                {
+                    Title = a.Title,
+                    ArticleContent = a.ArticleContent,
+                    VolunteerID = a.VolunteerID,
+                    PublicationDate = a.PublicationDate,
+                    Status = a.Status.ToString()
+                })
+                .FirstOrDefaultAsync();
+
+            return article;
+        }
+
+        public async Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId)
+        {
+            var article = await _context.Articles
+                .FirstOrDefaultAsync(a => a.ArticleID == request.ArticleID && a.VolunteerID == volunteerId);
+
+            if (article == null)
+            {
+                return new MessageResDTO { Message = "Article not found or volunteer not authorized" };
+            }
+
+            // Update article properties
+            article.Title = request.Title;
+            article.ArticleContent = request.ArticleContent;
+            article.PublicationDate = request.PublicationDate;
+            article.Status = request.Status;
+            article.AuthorName = request.AuthorName;
+
+            // Save changes to the database
+            _context.Articles.Update(article);
+            await _context.SaveChangesAsync();
+
+            return new MessageResDTO { Message = $"The Article '{article.Title}' updated successfully" };
+        }
+
+        public async Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request)
+        {
+            var eventToUpdate = await _context.Events.FindAsync(request.EventID);
+
+            if (eventToUpdate == null)
+            {
+                return new MessageResDTO { Message = "Event not found" };
+            }
+
+            eventToUpdate.Title = request.Title;
+            eventToUpdate.Location = request.Location;
+            eventToUpdate.EventDescription = request.EventDescription;
+            eventToUpdate.EventDetailes = request.EventDetails;
+            eventToUpdate.Capacity = request.Capacity;
+            eventToUpdate.EventType = request.EventType;
+            eventToUpdate.EventAddress = request.EventAddress;
+            eventToUpdate.SessionCount = request.SessionCount;
+
+            _context.Events.Update(eventToUpdate);
+            await _context.SaveChangesAsync();
+
+            return new MessageResDTO { Message = "Update-event successfully" };
+        }
+
+        //public async Task<GetNotificationsResponse> GetNotificationsAsync(GetNotificationsRequest request)
+        //{
+        //    var notifications = await _context.Announcement
+        //        .Where(a => a.Event.EventType == EventType.Workshop &&
+        //                    _context.Bookings.Any(b => b.StudentID == request.StudentId && b.EventID == a.EventID))
+        //        .Select(a => new NotificationResponse
+        //        {
+        //            NotificationID = a.AnouncementID,
+        //            Message = a.Message,
+        //            DateSend = a.AnounceDate,
+        //            Capacity = a.Event.Capacity
+        //        })
+        //        .ToListAsync();
+
+        //    return new GetNotificationsResponse { Notifications = notifications };
+        //}
     }
 }

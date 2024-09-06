@@ -9,9 +9,6 @@
         public string Email { get; set; }
         public int? AcountRating { get; set; }
         public string Availability { get; set; }
-
         public string? PhoneNumber {  get; set; }
-
-
     }
 }

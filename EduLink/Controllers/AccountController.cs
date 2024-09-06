@@ -62,7 +62,7 @@ namespace EduLink.Controllers
             var authResponse = await _accountService.LoginAsync(loginDto);
             if (authResponse == null)
             {
-                return Unauthorized("Invalid credentials.");
+                return Unauthorized("Invalid Email or Password.");
             }
 
             return Ok(authResponse);
