@@ -106,8 +106,8 @@ namespace EduLink.Repositories.Services
                 SkillDescription = v.SkillDescription,
                 Email = v.Student.User.Email ?? "No email available", // Null check for Email
                 PhoneNumber = v.Student.User.PhoneNumber ?? "No phone available", // Null check for PhoneNumber
-                Rating = v.Rating,
-                AcountRating = v.RatingAcount, // Corrected spelling
+                Rating = v.Rating?? 0,
+                RatingCount = v.RatingAcount?? 0, // Corrected spelling
                 Availability = v.Availability.ToString(), // Convert enum to string
             }).ToListAsync(); // Use async ToList
 
