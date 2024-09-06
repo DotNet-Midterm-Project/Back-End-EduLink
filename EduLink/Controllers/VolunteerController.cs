@@ -90,11 +90,11 @@ namespace EduLink.Controllers
 
         // GET: /get-all-Events/1
         // Tested
-        [HttpGet("/get-all-Events/{coursID}")]
+        [HttpGet("/get-all-Events/{courseID}")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> GetAllEvents(int coursID)
+        public async Task<IActionResult> GetAllEvents(int courseID)
         {
-            if (coursID <= 0)
+            if (courseID <= 0)
             {
                 return BadRequest("Invalid course ID.");
             }
@@ -112,7 +112,7 @@ namespace EduLink.Controllers
                     return BadRequest("Invalid Volunteer ID in token.");
                 }
 
-                var events = await _volunteer.GetEventsAsync(volunteerID, coursID);
+                var events = await _volunteer.GetEventsAsync(volunteerID, courseID);
 
                 if (events == null || !events.Any())
                 {
@@ -316,7 +316,7 @@ namespace EduLink.Controllers
         // Tested
         [HttpGet("get-article/{articleId}")]
         [Authorize]
-        public async Task<IActionResult> GetArticleByID(int ArticleID)
+        public async Task<IActionResult> GetArticleByID(int articleId)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
@@ -329,7 +329,7 @@ namespace EduLink.Controllers
                 return BadRequest(new { message = "Invalid Volunteer ID." });
             }
 
-            var article = await _volunteer.GetArticleByIdAsync(ArticleID);
+            var article = await _volunteer.GetArticleByIdAsync(articleId);
 
             if (article == null || article.VolunteerID != volunteerID)
             {

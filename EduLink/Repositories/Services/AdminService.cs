@@ -189,7 +189,7 @@ namespace EduLink.Repositories.Services
                     Rating = v.Rating,
                     SkillDescription = v.SkillDescription,
                     Email = v.Student.User.Email,
-                    AcountRating = v.RatingAcount,
+                    RatingCount = v.RatingAcount,
                     Availability = v.Availability.ToString(),
                     Approve = v.Approve
                 })

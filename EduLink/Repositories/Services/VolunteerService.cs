@@ -334,7 +334,7 @@ namespace EduLink.Repositories.Services
                 Title = request.Title,
                 ArticleContent = request.ArticleContent,
                 PublicationDate = request.PublicationDate,
-                Status = request.Status,
+                Status = ArticleStatus.Visible,
                 VolunteerID = volunteerId,
                 Volunteer = volunteer,
                
@@ -380,6 +380,7 @@ namespace EduLink.Repositories.Services
                 .Select(a => new ArticleDTO
                 {
                     ArticleID = a.ArticleID,
+                    VolunteerID= volunteerId,
                     Title = a.Title,
                     ArticleContent = a.ArticleContent,
                     PublicationDate = a.PublicationDate,

@@ -50,7 +50,7 @@ namespace EduLink.Controllers
             return Unauthorized("Invalid token.");
 
         }
-        [HttpPost("BookingWorkshop")]
+        [HttpPost("BookWorkshop")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> BookingWorkshop( int workshopID)
         {
