@@ -69,10 +69,6 @@ namespace EduLink.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<string>("AuthorName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
 
@@ -476,7 +472,7 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VolunteerID"));
 
-                    b.Property<bool>("Aprrove")
+                    b.Property<bool>("Approve")
                         .HasColumnType("bit");
 
                     b.Property<int>("Availability")

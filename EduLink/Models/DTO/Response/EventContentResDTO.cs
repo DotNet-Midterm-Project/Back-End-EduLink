@@ -6,6 +6,6 @@
         public string ContentName { get; set; }
         public string ContentType { get; set; } 
         public string ContentDescription { get; set; }
-        public string ContentAdress { get; set; }
+        public string ContentAddress { get; set; }
     }
 }

@@ -195,7 +195,7 @@ namespace EduLink.Repositories.Services
                 {
                     SkillDescription = registerDTO.SkillsDescription,
                     StudentID = studentId,
-                    Aprrove = false,
+                    Approve = false,
                     Availability = AvailabilityStatus.Available,
                     VolunteerCourse = new List<VolunteerCourse>() 
                 };

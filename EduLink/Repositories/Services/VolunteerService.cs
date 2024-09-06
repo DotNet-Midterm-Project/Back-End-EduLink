@@ -58,7 +58,7 @@ namespace EduLink.Repositories.Services
                 ContentName = dto.ContentName,
                 ContentType = dto.ContentType,
                 ContentDescription = dto.ContentDescription,
-                ContentAdress = dto.ContentAddress,
+                ContentAddress = dto.ContentAddress,
             };
 
             await _context.EventContents.AddAsync(newContent);
@@ -81,7 +81,7 @@ namespace EduLink.Repositories.Services
                     ContentName = ec.ContentName,
                     ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
-                    ContentAdress = ec.ContentAdress,
+                    ContentAddress = ec.ContentAddress,
                 })
                 .ToListAsync();
 
@@ -319,8 +319,7 @@ namespace EduLink.Repositories.Services
             return new MessageResDTO { Message = "Failed to add the session." };
         }
 
-            return new MessageResDTO{ Message = "Failed to add the session." };
-        }
+       
 
         public async Task<MessageResDTO> AddArticleAsync(AddArticleReqDTO request, int volunteerId)
         {
@@ -338,7 +337,7 @@ namespace EduLink.Repositories.Services
                 Status = request.Status,
                 VolunteerID = volunteerId,
                 Volunteer = volunteer,
-                AuthorName = request.AuthorName
+               
             };
 
             await _context.Articles.AddAsync(article);
@@ -377,16 +376,16 @@ namespace EduLink.Repositories.Services
             }
 
             var articles = await _context.Articles
-                                         .Where(a => a.VolunteerID == volunteerId)
-                                         .Select(a => new ArticleDTO
-                                         {
-                                             ArticleID = a.ArticleID,
-                                             Title = a.Title,
-                                             ArticleContent = a.ArticleContent,
-                                             PublicationDate = a.PublicationDate,
-                                             Status = a.Status.ToString()
-                                         })
-                                         .ToListAsync();
+                .Where(a => a.VolunteerID == volunteerId)
+                .Select(a => new ArticleDTO
+                {
+                    ArticleID = a.ArticleID,
+                    Title = a.Title,
+                    ArticleContent = a.ArticleContent,
+                    PublicationDate = a.PublicationDate,
+                    Status = a.Status.ToString()
+                })
+                .ToListAsync();
 
             return new ArticlesResDTO
             {
@@ -426,7 +425,7 @@ namespace EduLink.Repositories.Services
             article.ArticleContent = request.ArticleContent;
             article.PublicationDate = request.PublicationDate;
             article.Status = request.Status;
-            article.AuthorName = request.AuthorName;
+        
 
             // Save changes to the database
             _context.Articles.Update(article);

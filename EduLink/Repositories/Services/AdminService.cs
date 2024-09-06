@@ -92,7 +92,7 @@ namespace EduLink.Repositories.Services
             {
                 return null;
             }
-            volunteer.Aprrove = true;
+            volunteer.Approve = true;
           
             var user = volunteer.Student.User;
 
@@ -191,7 +191,7 @@ namespace EduLink.Repositories.Services
                     Email = v.Student.User.Email,
                     AcountRating = v.RatingAcount,
                     Availability = v.Availability.ToString(),
-                    Aprrove = v.Aprrove
+                    Approve = v.Approve
                 })
                 .ToListAsync();
 
