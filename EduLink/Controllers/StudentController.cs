@@ -24,7 +24,7 @@ namespace EduLink.Controllers
         }
         [HttpGet("getAllCourse")]
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> GEtStudentIdAsync()
+        public async Task<IActionResult> GEtStudentIdAsync([FromQuery] string? Search = null)
         {
             if (User.Identity is ClaimsIdentity identity)
             {
@@ -37,7 +37,8 @@ namespace EduLink.Controllers
                 {
                     return BadRequest("Invalid Volunteer ID in token.");
                 }
-                var result = await student.GetCoursesByStudentDepartmentAsync(studentID);
+
+                var result = await student.GetCoursesByStudentDepartmentAsync(studentID , Search);
                 if (result == null || result.Count == 0)
                 {
                     return NotFound("No courses found for the specified Department.");
@@ -69,6 +70,10 @@ namespace EduLink.Controllers
                 {
                     return NotFound("No courses found for the specified Department.");
                 }
+                if (result == "Booked")
+                {
+                    return BadRequest("You are already booked for this WorkShop.");
+                }
 
                 return Ok(result);
             }
@@ -94,6 +99,14 @@ namespace EduLink.Controllers
                 {
                     return NotFound("No Session found .");
                 }
+                if(result == "Booked")
+                {
+                   return BadRequest("You are already booked for this session.");                   
+                }
+                if(result == "Session is fully booked.")
+                {
+                    return NotFound(result);
+                }
 
                 return Ok(result);
             }
@@ -104,9 +117,9 @@ namespace EduLink.Controllers
 
         [HttpGet("GetCourseVolunteers/{CourseID}")]
         [Authorize(Roles = "Student")]
-        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetCourseVolunteer([FromRoute] int CourseID)
+        public async Task<ActionResult<List<DepartmentCoursesResDTO>>> GetCourseVolunteers([FromRoute] int CourseID  )
         {
-            var Course = await student.GetCourseVolunteersAsync(CourseID);
+            var Course = await student.GetCourseVolunteersAsync(CourseID );
             if (Course.Count == 0)
             {
                 return NotFound("The Course Not Found");
