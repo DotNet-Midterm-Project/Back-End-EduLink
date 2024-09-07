@@ -14,7 +14,7 @@ namespace EduLink.Models
         [MaxLength(1000)]
         public string ContentDescription { get; set; }
         [MaxLength(2000)]
-        public string ContentAdress { get; set; }
+        public string ContentAddress { get; set; }
 
 
 

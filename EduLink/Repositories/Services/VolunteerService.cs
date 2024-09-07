@@ -55,7 +55,7 @@ namespace EduLink.Repositories.Services
                 ContentName = dto.ContentName,
                 ContentType = dto.ContentType,
                 ContentDescription = dto.ContentDescription,
-                ContentAdress = dto.ContentAdress,
+                ContentAddress = dto.ContentAdress,
             };
 
             await _context.EventContents.AddAsync(newContent);
@@ -78,7 +78,8 @@ namespace EduLink.Repositories.Services
                     ContentName = ec.ContentName,
                     ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
-                    ContentAddress = ec.ContentAdress,
+                    ContentAddress = ec.ContentAddress,
+                    EventID = ec.EventID,
                 })
                 .ToListAsync();
 

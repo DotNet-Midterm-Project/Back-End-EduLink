@@ -82,7 +82,7 @@ namespace EduLink.Repositories.Services
                 .Select(ec => new EventContentResDTO
                 {
                     ContentID = ec.ContentID,
-                    ContentAddress = ec.ContentAdress,
+                    ContentAddress = ec.ContentAddress,
                     ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
                     ContentName = ec.ContentName,
