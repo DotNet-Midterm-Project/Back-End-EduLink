@@ -79,7 +79,7 @@ namespace EduLink.Repositories.Services
                 .Select(ec => new EventContentResDTO
                 {
                     ContentID = ec.ContentID,
-                    ContentType = ec.ContentType.ToString(),
+                    ContentType = ec.ContentType,
                     ContentDescription = ec.ContentDescription,
                     ContentName = ec.ContentName,
                     EventID = ec.EventID
@@ -98,12 +98,12 @@ namespace EduLink.Repositories.Services
                      VolunteerName = e.VolunteerCourse.Volunteer.Student.User.UserName,
                      CourseName = e.VolunteerCourse.Course.CourseName,
                      Title = e.Title,
-                     Location = e.Location.ToString(),
+                     Location = e.Location,
                      EventDescription = e.EventDescription,
                      Details = e.EventDetailes,
-                     EventStatus = e.EventStatus.ToString(),
+                     EventStatus = e.EventStatus,
                      Capacity = e.Capacity,
-                     EventType = e.EventType.ToString(),
+                     EventType = e.EventType,
                      StartTime = e.StartTime,
                      EndTime = e.EndTime,
                      EventAdress = e.EventAddress
