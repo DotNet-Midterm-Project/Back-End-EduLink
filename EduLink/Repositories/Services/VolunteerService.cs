@@ -3,13 +3,7 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 namespace EduLink.Repositories.Services
@@ -81,7 +75,8 @@ namespace EduLink.Repositories.Services
                     ContentName = ec.ContentName,
                     ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
-                    ContentAddress = ec.ContentAdress,
+                    ContentAddress = ec.ContentAddress,
+                    EventID = ec.EventID,
                 })
                 .ToListAsync();
 
