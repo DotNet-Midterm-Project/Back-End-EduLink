@@ -3,13 +3,7 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 namespace EduLink.Repositories.Services
