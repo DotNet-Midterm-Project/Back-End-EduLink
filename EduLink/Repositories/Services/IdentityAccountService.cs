@@ -155,7 +155,7 @@ namespace EduLink.Repositories.Services
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
+            var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(360));
 
             return new RegisterAdminResDTO
             {
@@ -199,7 +199,7 @@ namespace EduLink.Repositories.Services
                 var volunteer = await _context.Volunteers.Include(v => v.Student).FirstOrDefaultAsync(v => v.Student.UserID == user.Id);
                 if (volunteer != null)
                 {
-                    token = await _jwtTokenService.GenerateTokenWithRoleData(user, "Volunteer", volunteer, TimeSpan.FromMinutes(60));
+                    token = await _jwtTokenService.GenerateTokenWithRoleData(user, "Volunteer", volunteer, TimeSpan.FromMinutes(360));
                 }
             }
             else if (roles.Contains("Student"))
@@ -208,7 +208,7 @@ namespace EduLink.Repositories.Services
                 var student = await _context.Students.FirstOrDefaultAsync(s => s.UserID == user.Id);
                 if (student != null)
                 {
-                    token = await _jwtTokenService.GenerateTokenWithRoleData(user, "Student", student, TimeSpan.FromMinutes(60));
+                    token = await _jwtTokenService.GenerateTokenWithRoleData(user, "Student", student, TimeSpan.FromMinutes(360));
                 }
             }
             else

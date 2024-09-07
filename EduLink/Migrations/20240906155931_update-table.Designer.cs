@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    [Migration("20240904201147_update-tables")]
-    partial class updatetables
+    [Migration("20240906155931_update-table")]
+    partial class updatetable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,7 +44,7 @@ namespace EduLink.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<int>("SessionID")
+                    b.Property<int?>("SessionID")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -71,10 +71,6 @@ namespace EduLink.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("AuthorName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
@@ -264,7 +260,7 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContentID"));
 
-                    b.Property<string>("ContentAdress")
+                    b.Property<string>("ContentAddress")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -479,7 +475,7 @@ namespace EduLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VolunteerID"));
 
-                    b.Property<bool>("Aprrove")
+                    b.Property<bool>("Approve")
                         .HasColumnType("bit");
 
                     b.Property<int>("Availability")
@@ -691,7 +687,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Event", "Event")
                         .WithMany("Announcements")
                         .HasForeignKey("EventID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Event");
@@ -725,7 +721,7 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Student", "Student")
                         .WithMany("Bookings")
                         .HasForeignKey("StudentID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Event");
@@ -740,13 +736,13 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Course", "Course")
                         .WithMany("DepartmentCourses")
                         .HasForeignKey("CourseID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("EduLink.Models.Department", "Department")
                         .WithMany("Department_Courses")
                         .HasForeignKey("DepartmentID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -844,13 +840,13 @@ namespace EduLink.Migrations
                     b.HasOne("EduLink.Models.Course", "Course")
                         .WithMany("volunteerCourses")
                         .HasForeignKey("CourseID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("EduLink.Models.Volunteer", "Volunteer")
                         .WithMany("VolunteerCourse")
                         .HasForeignKey("VolunteerID")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");

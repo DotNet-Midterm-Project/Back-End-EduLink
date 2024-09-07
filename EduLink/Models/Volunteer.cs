@@ -21,7 +21,7 @@ namespace EduLink.Models
         public float? Rating { get; set; }
         public int? RatingAcount { get; set; }
         public AvailabilityStatus Availability { get; set; } 
-        public bool Aprrove { get; set; }
+        public bool Approve { get; set; }
 
        
         public ICollection<Article> Articles { get; set; }

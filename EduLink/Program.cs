@@ -40,6 +40,7 @@ namespace EduLink
 
             builder.Services.AddScoped<IAdmin, AdminService>();
 
+
             builder.Services.AddScoped<JwtTokenService>();
 
             // Configure Identity

@@ -29,7 +29,7 @@ namespace EduLink.Repositories.Services
             };
 
 
-           await eduLinkDbContext.Courses.AddAsync(course);
+            await eduLinkDbContext.Courses.AddAsync(course);
 
 
             await eduLinkDbContext.SaveChangesAsync();
@@ -49,7 +49,7 @@ namespace EduLink.Repositories.Services
 
             if (departmentName == null)
             {
-                return "Department not found.";
+                return null;
             }
 
 
@@ -77,28 +77,26 @@ namespace EduLink.Repositories.Services
 
             await eduLinkDbContext.SaveChangesAsync();
 
-            return "Added Successfully";
+            return "department   added  Successfully";
 
         }
 
         //Aprovall Volunteer
-        public async Task<string> AddStudentToVolunteer(int StudentId)
+        public async Task<string> AddStudentToVolunteer(int volunteerId)
         {
-            var student = await eduLinkDbContext.Students.FindAsync(StudentId);
-            if (student == null)
+            var volunteer = await eduLinkDbContext.Volunteers
+        .Include(v => v.Student) 
+        .ThenInclude(s => s.User) 
+        .FirstOrDefaultAsync(v => v.VolunteerID == volunteerId);
+            if (volunteer == null)
             {
-                return "student not Found";
+                return null;
             }
-            var addStudentToVolunteer = new Volunteer
-            {
-                StudentID = StudentId,
-                SkillDescription = student.User.Skills
-            };
-            var User = student.User;
+            volunteer.Approve = true;
+          
+            var user = volunteer.Student.User;
 
-            await userManager.AddToRoleAsync(User, "Volunteer");
-
-            await eduLinkDbContext.Volunteers.AddAsync(addStudentToVolunteer);
+            await userManager.AddToRoleAsync(user, "Volunteer");
             await eduLinkDbContext.SaveChangesAsync();
 
             return "Volunteer Approved Successfully";
@@ -109,7 +107,7 @@ namespace EduLink.Repositories.Services
             var Article = await eduLinkDbContext.Articles.FindAsync(ArticleId);
             if (Article == null)
             {
-                return "Article Not Found ";
+                return null;
             }
             eduLinkDbContext.Articles.Remove(Article);
             await eduLinkDbContext.SaveChangesAsync();
@@ -122,7 +120,7 @@ namespace EduLink.Repositories.Services
             var Course = await eduLinkDbContext.Courses.FindAsync(CourseId);
             if (Course == null)
             {
-                return "Course not Found";
+                return null;
             }
             eduLinkDbContext.Courses.Remove(Course);
             await eduLinkDbContext.SaveChangesAsync();
@@ -138,7 +136,7 @@ namespace EduLink.Repositories.Services
                 .FirstOrDefaultAsync();
             if (Volunteer == null)
             {
-                return "Volunteer Not Found";
+                return null;
             }
             var userId = await eduLinkDbContext
                 .Students
@@ -147,7 +145,7 @@ namespace EduLink.Repositories.Services
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return "Volunteer user not found in Identity.";
+                return null;
             }
             var roles = await userManager.GetRolesAsync(user);
             foreach (var role in roles)
@@ -161,20 +159,45 @@ namespace EduLink.Repositories.Services
             return "Volunteer and associated roles were removed successfully.";
         }
 
-        public async Task<List<Course>> GetAllCourses()
+        public async Task<List<CourseResDTO>> GetAllCourses()
         {
-            var Courses = await eduLinkDbContext.Courses.ToListAsync();
+            var courses = await eduLinkDbContext.Courses.ToListAsync();
 
-            return Courses;
+            var courseDtos = courses.Select(course => new CourseResDTO
+            {
+                CourseID = course.CourseID,
+                CourseName = course.CourseName,
+                CourseDescription = course.CourseDescription,
+                // Assuming you have a way to get VolunteerID from the course, otherwise set it accordingly
+
+            }).ToList();
+            if (courseDtos.Count == 0)
+            {
+                return null;
+            }
+
+            return courseDtos;
         }
 
-        public async Task<List<Volunteer>> GetAllVolunteers()
+        public async Task<List<VolunteerResDTO>> GetAllVolunteers()
         {
-            var Volunteers = await eduLinkDbContext.Volunteers.ToListAsync();
-            return Volunteers;
+            var volunteers = await eduLinkDbContext.Volunteers
+                .Select(v => new VolunteerResDTO
+                {
+                    VolunteerID = v.VolunteerID,
+                    VolunteerName = v.Student.User.UserName,
+                    Rating = v.Rating,
+                    SkillDescription = v.SkillDescription,
+                    Email = v.Student.User.Email,
+                    RatingCount = v.RatingAcount,
+                    Availability = v.Availability.ToString(),
+                    Approve = v.Approve
+                })
+                .ToListAsync();
+
+            return volunteers;
+
         }
-
-
 
         public async Task<string> UpdateCourse(int CourseID, UpdateCourseReqDto updateCourseReqDto)
         {
@@ -184,7 +207,7 @@ namespace EduLink.Repositories.Services
 
             if (course == null)
             {
-                return "Course not found.";
+                return null;
             }
 
 

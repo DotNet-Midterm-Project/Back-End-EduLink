@@ -14,9 +14,5 @@ namespace EduLink.Models.DTO.Request
 
         [Required]
         public DateTime PublicationDate { get; set; }
-
-        [Required]
-        public ArticleStatus Status { get; set; }
-        public string AuthorName { get; set; }
     }
 }

@@ -20,87 +20,113 @@ namespace EduLink.Controllers
         }
         [HttpPost("AddCourse")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> AddCourse([FromBody] AddCourseReqDto addCourseReqDto)
+        public async Task<IActionResult> AddCourse([FromBody] AddCourseReqDto addCourseReqDto)
         {
             var AddCourse = await admin.AddCourse(addCourseReqDto);
-            return AddCourse;
+            if (addCourseReqDto == null)
+            {
+                return NotFound();
+            }
+            return Ok(AddCourse);
         }
         [HttpPost("AddCourseToDepartment/{DepartmentID}/{CourseID}")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> AddCourseToDepartment([FromRoute] int DepartmentID, [FromRoute] int CourseID)
+        public async Task<IActionResult> AddCourseToDepartment([FromRoute] int DepartmentID, [FromRoute] int CourseID)
         {
+
             var AddCourseToDepartment = await admin.AddCourseToDepartment(DepartmentID, CourseID);
-            return AddCourseToDepartment;
+            if (AddCourseToDepartment == null)
+                return NotFound("DepartmentNotfound");
+
+
+            return Ok(AddCourseToDepartment);
         }
 
 
         [HttpPost("AddNewDepartment")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> AddDepartment([FromBody] AddDepartmentReqDto departmentReqDto)
+        public async Task<IActionResult> AddDepartment([FromBody] AddDepartmentReqDto departmentReqDto)
         {
             var NewDepartment = await admin.AddDepartment(departmentReqDto);
-            return NewDepartment;
+            if (NewDepartment == null)
+            {
+                return NotFound();
+            }
+            return Ok(NewDepartment);
         }
 
 
 
-        [HttpPost("StudentBeComeVolunteer/{StudentId}")]
+        [HttpPost("StudentBeComeVolunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> AddStudentToVolunteer([FromRoute] int StudentId)
+        public async Task<IActionResult> AddStudentToVolunteer([FromRoute] int VolunteerId)
         {
-            var AddStudentToVolunteer = await admin.AddStudentToVolunteer(StudentId);
-            return AddStudentToVolunteer;
+            var AddStudentToVolunteer = await admin.AddStudentToVolunteer(VolunteerId);
+            if (AddStudentToVolunteer == null)
+            {
+                return NotFound();
+            }
+            return Ok(AddStudentToVolunteer);
 
         }
         [HttpDelete("DeleteArticle/{ArticleId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> DeleteArticle(int ArticleId)
+        public async Task<IActionResult> DeleteArticle(int ArticleId)
         {
             var DeleteArticle = await admin.DeleteArticle(ArticleId);
-            return DeleteArticle;
+            if (DeleteArticle == null) return NotFound();
+            return Ok(DeleteArticle);
         }
         [HttpDelete("DeleteCourse/{CourseId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> DeleteCourse(int CourseId)
+        public async Task<IActionResult> DeleteCourse(int CourseId)
         {
             var DeleteCourse = await admin.DeleteCourse(CourseId);
-            return DeleteCourse;
+            if (DeleteCourse == null)
+                return NotFound();
+            return Ok(DeleteCourse);
         }
         [HttpDelete("DeleteVolunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> DeleteVolunteer(int VolunteerId)
+        public async Task<IActionResult> DeleteVolunteer(int VolunteerId)
         {
             var DeleteVolunteer = await admin.DeleteVolunteer(VolunteerId);
-            return DeleteVolunteer;
+            if (DeleteVolunteer == null)
+                return NotFound();
+            return Ok(DeleteVolunteer);
         }
         [HttpGet("GetAllCourse")]
         [Authorize(Roles = "Admin")]
-        public async Task<List<Course>> GetAllCourses()
+        public async Task<IActionResult> GetAllCourses()
         {
             var GetCourses = await admin.GetAllCourses();
-            return GetCourses;
+            if (GetAllCourses == null) return null;
+            return Ok(GetCourses);
         }
         [HttpGet("GetAllVolunteer")]
         [Authorize(Roles = "Admin")]
-        public async Task<List<Volunteer>> GetAllVolunteers()
+        public async Task<IActionResult> GetAllVolunteers()
         {
             var GetAllVolunteers = await admin.GetAllVolunteers();
-            return GetAllVolunteers;
+            if (GetAllVolunteers == null) return NotFound();
+            return Ok(GetAllVolunteers);
         }
         [HttpPut("UpdateCourse/{CourseID}")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> UpdateCourse([FromRoute] int CourseID, [FromBody] UpdateCourseReqDto updateCourseReqDto)
+        public async Task<IActionResult> UpdateCourse([FromRoute] int CourseID, [FromBody] UpdateCourseReqDto updateCourseReqDto)
         {
             var UpdateCourse = await admin.UpdateCourse(CourseID,
                 updateCourseReqDto);
-            return UpdateCourse;
+            if (UpdateCourse == null) return NotFound();
+            return Ok(UpdateCourse);
         }
-        [HttpPut("GetFeedbackFromVolunteer/{VolunteerId}")]
+        [HttpGet("GetFeedbackFromVolunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<List<GetFeedbackVolunteerResDto>> GetFeedbacskVolunteer([FromRoute] int VolunteerId)
+        public async Task<IActionResult> GetFeedbacskVolunteer([FromRoute] int VolunteerId)
         {
             var GetFeedbackVolunteer = await admin.GetFeedbacksVolunteer(VolunteerId);
-            return GetFeedbackVolunteer;
+            if (GetFeedbackVolunteer == null) return NotFound();
+            return Ok(GetFeedbackVolunteer);
         }
 
     }

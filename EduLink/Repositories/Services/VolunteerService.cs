@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace EduLink.Repositories.Services
 {
@@ -17,11 +18,13 @@ namespace EduLink.Repositories.Services
     {
         private readonly EduLinkDbContext _context;
         private readonly HelperService _helperService;
+        private readonly IEmailService _emailService;
 
-        public VolunteerService(EduLinkDbContext context, HelperService helperService)
+        public VolunteerService(EduLinkDbContext context, HelperService helperService, IEmailService emailService)
         {
             _context = context;
             _helperService = helperService;
+            _emailService = emailService;
         }
 
         // Get volunteer courses
@@ -55,7 +58,7 @@ namespace EduLink.Repositories.Services
                 ContentName = dto.ContentName,
                 ContentType = dto.ContentType,
                 ContentDescription = dto.ContentDescription,
-                ContentAddress = dto.ContentAdress,
+                ContentAddress = dto.ContentAddress,
             };
 
             await _context.EventContents.AddAsync(newContent);
@@ -123,8 +126,7 @@ namespace EduLink.Repositories.Services
 
             return eventResponse;
         }
-
-        // Add an event
+        // Add Event
         public async Task<MessageResDTO> AddEventsAsync(int volunteerID, AddEventReqDTO request)
         {
             if (request == null)
@@ -156,18 +158,67 @@ namespace EduLink.Repositories.Services
                 EventType = request.EventType,
                 EventDescription = request.EventDescription,
                 EventDetailes = request.Details,
-                EventAddress = request.Location == EventLocation.Online ? "The session link will be sent later" : request.EventAdress,
+                EventAddress = request.Location == EventLocation.Online ? "The session link will be sent later" : request.EventAddress,
                 Capacity = request.Capacity,
                 SessionCount = request.EventType == EventType.PrivateSession ? request.SessionCounts : 0,
                 EventStatus = EventStatus.Scheduled,
+               
             };
 
             await _context.Events.AddAsync(eventEntity);
             await _context.SaveChangesAsync();
 
+            // Get all student email addresses
+            var studentEmails = await _context.Students
+                .Include(s => s.User) // Include User table to access Email property
+                .Select(s => s.User.Email) // Select the Email from the User table
+                .ToListAsync();
+
+            // Create the email content
+            var emailSubject = $"New Event: {eventEntity.Title}";
+            var emailDescriptionHtml = $@"
+        <p>Dear Student,</p>
+        <p>We are excited to announce a new event titled <strong>{eventEntity.Title}</strong>.</p>
+        <p><strong>Start Time:</strong> {eventEntity.StartTime}</p>
+        <p><strong>End Time:</strong> {eventEntity.EndTime}</p>
+        <p><strong>Location:</strong> {eventEntity.EventAddress}</p>
+        <p><strong>Description:</strong> {eventEntity.EventDescription}</p>
+        <p>We hope you can join us!</p>
+        <p>Best regards,</p>
+        <p>EduLink Team</p>";
+
+            // Convert HTML to plain text
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(emailDescriptionHtml);
+            var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
+
+            // Send email to all students
+            if (studentEmails!=null) {
+                foreach (var email in studentEmails)
+                {
+                    await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
+
+                }
+
+
+                // Create and store announcement
+                var announcement = new Announcement
+                {
+                    EventID = eventEntity.EventID,
+                    Title = eventEntity.Title,
+                    Message = emailDescriptionPlain, // Store as plain text
+                    AnounceDate = DateTime.UtcNow
+                };
+
+                await _context.Announcement.AddAsync(announcement);
+                await _context.SaveChangesAsync();
+            }
+        
+
+
             return new MessageResDTO
             {
-                Message = $"Event '{request.Title}' added successfully."
+                Message = $"Event '{request.Title}' added successfully and announcement sent."
             };
         }
 
@@ -225,7 +276,7 @@ namespace EduLink.Repositories.Services
             var result = await _context.SaveChangesAsync();
 
             return result > 0
-                ? new MessageResDTO { Message = "The URL was created successfully." }
+                ? new MessageResDTO { Message = $"The URL was created successfully: {meetingUrl}" }
                 : new MessageResDTO { Message = "Failed to create the URL." };
         }
 
@@ -245,7 +296,6 @@ namespace EduLink.Repositories.Services
             {
                 return new MessageResDTO { Message = "Sessions can only be added to events of type PrivateSession." };
             }
-
             if (eventToUpdate.SessionCount > 0)
             {
                 var newSession = new Session
@@ -267,9 +317,10 @@ namespace EduLink.Repositories.Services
                     ? new MessageResDTO { Message = "The session was added successfully." }
                     : new MessageResDTO { Message = "Failed to add the session." };
             }
-
-            return new MessageResDTO{ Message = "Failed to add the session." };
+            return new MessageResDTO { Message = "Failed to add the session." };
         }
+
+       
 
         public async Task<MessageResDTO> AddArticleAsync(AddArticleReqDTO request, int volunteerId)
         {
@@ -284,10 +335,10 @@ namespace EduLink.Repositories.Services
                 Title = request.Title,
                 ArticleContent = request.ArticleContent,
                 PublicationDate = request.PublicationDate,
-                Status = request.Status,
+                Status = ArticleStatus.Visible,
                 VolunteerID = volunteerId,
                 Volunteer = volunteer,
-                AuthorName = request.AuthorName
+               
             };
 
             await _context.Articles.AddAsync(article);
@@ -326,16 +377,17 @@ namespace EduLink.Repositories.Services
             }
 
             var articles = await _context.Articles
-                                         .Where(a => a.VolunteerID == volunteerId)
-                                         .Select(a => new ArticleDTO
-                                         {
-                                             ArticleID = a.ArticleID,
-                                             Title = a.Title,
-                                             ArticleContent = a.ArticleContent,
-                                             PublicationDate = a.PublicationDate,
-                                             Status = a.Status.ToString()
-                                         })
-                                         .ToListAsync();
+                .Where(a => a.VolunteerID == volunteerId)
+                .Select(a => new ArticleDTO
+                {
+                    ArticleID = a.ArticleID,
+                    VolunteerID= volunteerId,
+                    Title = a.Title,
+                    ArticleContent = a.ArticleContent,
+                    PublicationDate = a.PublicationDate,
+                    Status = a.Status.ToString()
+                })
+                .ToListAsync();
 
             return new ArticlesResDTO
             {
@@ -375,7 +427,7 @@ namespace EduLink.Repositories.Services
             article.ArticleContent = request.ArticleContent;
             article.PublicationDate = request.PublicationDate;
             article.Status = request.Status;
-            article.AuthorName = request.AuthorName;
+        
 
             // Save changes to the database
             _context.Articles.Update(article);

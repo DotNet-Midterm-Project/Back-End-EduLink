@@ -9,10 +9,10 @@ namespace EduLink.Repositories.Interfaces
         Task<string> AddCourse(AddCourseReqDto addCourseReqDto);
         Task<string> AddCourseToDepartment(int DepartmentID, int CourseID);
         Task<string> AddDepartment(AddDepartmentReqDto departmentReqDto);
-        Task<string> AddStudentToVolunteer(int StudentId);
+        Task<string> AddStudentToVolunteer(int VolunteerId);
 
-        Task<List<Course>> GetAllCourses();
-        Task<List<Volunteer>> GetAllVolunteers();
+        Task<List<CourseResDTO>> GetAllCourses();
+        Task<List<VolunteerResDTO>> GetAllVolunteers();
         Task<List<GetFeedbackVolunteerResDto>> GetFeedbacksVolunteer(int VolunteerId);
 
         Task<string> UpdateCourse(int CourseID, UpdateCourseReqDto updateCourseReqDto);
