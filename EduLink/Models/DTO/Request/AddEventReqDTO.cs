@@ -22,7 +22,7 @@ namespace EduLink.Models.DTO.Request
         public DateTimeOffset StartTime { get; set; }
         [Required]
         public DateTimeOffset EndTime { get; set; }
-        public string EventAdress { get; set; }
+        public string EventAddress { get; set; }
         public int SessionCounts { get; set; }
     }
 }
