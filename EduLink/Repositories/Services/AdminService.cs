@@ -5,6 +5,8 @@ using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
+using System.Drawing.Printing;
 
 namespace EduLink.Repositories.Services
 {
@@ -21,64 +23,72 @@ namespace EduLink.Repositories.Services
 
         public async Task<string> AddCourse(AddCourseReqDto addCourseReqDto)
         {
+            // Validate input
+            if (string.IsNullOrEmpty(addCourseReqDto.CourseName) || string.IsNullOrEmpty(addCourseReqDto.CourseDescription))
+            {
+                return null;
+            }
 
+            // Create and add course to the database
             var course = new Course
             {
                 CourseName = addCourseReqDto.CourseName,
                 CourseDescription = addCourseReqDto.CourseDescription,
             };
 
-
             await eduLinkDbContext.Courses.AddAsync(course);
-
-
             await eduLinkDbContext.SaveChangesAsync();
 
-
-            return $"The Course was added successfully ";
-
+            return "The Course was added successfully";
         }
 
         public async Task<string> AddCourseToDepartment(int DepartmentID, int CourseID)
         {
-
-            var departmentName = await eduLinkDbContext.Departments
-                .Where(e => e.DepartmentID == DepartmentID)
-                .Select(e => e.DepartmentName)
-                .FirstOrDefaultAsync();
-
-            if (departmentName == null)
+            // Check if department exists
+            var department = await eduLinkDbContext.Departments.FindAsync(DepartmentID);
+            if (department == null)
             {
                 return null;
             }
 
+            // Check if course exists
+            var course = await eduLinkDbContext.Courses.FindAsync(CourseID);
+            if (course == null)
+            {
+                return null;
+            }
 
+            // Add course to department
             var departmentCourse = new DepartmentCourses
             {
                 CourseID = CourseID,
                 DepartmentID = DepartmentID,
             };
-
-
+            var CheckCourseInTheDepartment = await eduLinkDbContext.DepartmentCourses
+                .Where(e => e.CourseID == departmentCourse.CourseID && e.DepartmentID == departmentCourse.DepartmentID)
+                .FirstOrDefaultAsync();
+            if (CheckCourseInTheDepartment != null)
+            {
+                return ($"The course '{course.CourseName}' is already associated with the department '{department.DepartmentName}'.");
+            }
             await eduLinkDbContext.DepartmentCourses.AddAsync(departmentCourse);
             await eduLinkDbContext.SaveChangesAsync();
-            return $"The Course was added successfully to the {departmentName} department.";
+
+            return $"The Course was added successfully to the {department.DepartmentName} department.";
         }
 
-        public async Task<string> AddDepartment(AddDepartmentReqDto departmentReqDto)
+        public async Task<string> AddDepartmentAsync(AddDepartmentReqDto departmentReqDto)
         {
-            var NewDepartment = new Department
+            var newDepartment = new Department
             {
                 DepartmentName = departmentReqDto.DepartmentName,
-                Address = departmentReqDto.Address,
-
+                Address = departmentReqDto.Address
             };
-            await eduLinkDbContext.Departments.AddAsync(NewDepartment);
 
+            await eduLinkDbContext.Departments.AddAsync(newDepartment);
             await eduLinkDbContext.SaveChangesAsync();
 
-            return "department   added  Successfully";
-
+            return "Department added successfully.";
         }
 
         //Aprovall Volunteer
@@ -102,29 +112,36 @@ namespace EduLink.Repositories.Services
             return "Volunteer Approved Successfully";
         }
 
-        public async Task<string> DeleteArticle(int ArticleId)
+        public async Task<string> DeleteArticleAsync(int articleId)
         {
-            var Article = await eduLinkDbContext.Articles.FindAsync(ArticleId);
-            if (Article == null)
+            var article = await eduLinkDbContext.Articles.FindAsync(articleId);
+
+            if (article == null)
             {
-                return null;
+                return $"Article with ID {articleId} not found.";
             }
-            eduLinkDbContext.Articles.Remove(Article);
+
+            eduLinkDbContext.Articles.Remove(article);
             await eduLinkDbContext.SaveChangesAsync();
-            return "The Article Removed Successfully";
+
+            return "The article was removed successfully.";
         }
 
 
         public async Task<string> DeleteCourse(int CourseId)
         {
-            var Course = await eduLinkDbContext.Courses.FindAsync(CourseId);
-            if (Course == null)
+            // Check if course exists
+            var course = await eduLinkDbContext.Courses.FindAsync(CourseId);
+            if (course == null)
             {
                 return null;
             }
-            eduLinkDbContext.Courses.Remove(Course);
+
+            // Remove course
+            eduLinkDbContext.Courses.Remove(course);
             await eduLinkDbContext.SaveChangesAsync();
-            return "Course deleted Successfully";
+
+            return "Course deleted successfully.";
         }
 
         public async Task<string> DeleteVolunteer(int VolunteerId)
@@ -159,29 +176,74 @@ namespace EduLink.Repositories.Services
             return "Volunteer and associated roles were removed successfully.";
         }
 
-        public async Task<List<CourseResDTO>> GetAllCourses()
+        public async Task<List<CourseResDTO>> GetAllCoursesAsync(string? filterName, int pageNumber, int pageSize)
         {
-            var courses = await eduLinkDbContext.Courses.ToListAsync();
+            // Start with all courses as a queryable entity
+            var coursesQuery = eduLinkDbContext.Courses.AsQueryable();
 
-            var courseDtos = courses.Select(course => new CourseResDTO
+            // Apply filtering if a filter is provided
+            if (!string.IsNullOrEmpty(filterName))
             {
-                CourseID = course.CourseID,
-                CourseName = course.CourseName,
-                CourseDescription = course.CourseDescription,
-                // Assuming you have a way to get VolunteerID from the course, otherwise set it accordingly
-
-            }).ToList();
-            if (courseDtos.Count == 0)
-            {
-                return null;
+                coursesQuery = coursesQuery.Where(c => c.CourseName.Contains(filterName));
             }
+
+            // Apply pagination
+            var skipNum = (pageNumber - 1) * pageSize;
+
+            var courseDtos = await coursesQuery
+                .Skip(skipNum)
+                .Take(pageSize)
+                .Select(course => new CourseResDTO
+                {
+                    CourseID = course.CourseID,
+                    CourseName = course.CourseName,
+                    CourseDescription = course.CourseDescription,
+                })
+                .ToListAsync();
 
             return courseDtos;
         }
 
-        public async Task<List<VolunteerResDTO>> GetAllVolunteers()
+        public async Task<List<VolunteerResDTO>> GetAllVolunteersAsync(string? filterName, int pageNumber, int pageSize, bool? sortByRating , bool? GetBeComeVolunteerRequest)
         {
-            var volunteers = await eduLinkDbContext.Volunteers
+         
+            if (pageNumber < 1 || pageSize < 1)
+            {
+                throw new ArgumentException("Page number and page size must be greater than zero.");
+            }
+
+            // Create the base query
+            var volunteersQuery = eduLinkDbContext.Volunteers.AsQueryable();
+
+            
+            if (!string.IsNullOrEmpty(filterName))
+            {
+                volunteersQuery = volunteersQuery.Where(v => v.Student.User.UserName.Contains(filterName));
+            }
+
+            
+         
+            
+                if (sortByRating.Value)
+                {
+                    volunteersQuery = volunteersQuery.OrderByDescending(v => v.Rating);
+                }
+            
+
+            
+                if (GetBeComeVolunteerRequest.Value)
+                {
+                    volunteersQuery = volunteersQuery.Where(v => v.Approve == false);
+                }
+            
+
+
+            var skipNum = (pageNumber - 1) * pageSize;
+
+            
+            var volunteers = await volunteersQuery
+                .Skip(skipNum)
+                .Take(pageSize)
                 .Select(v => new VolunteerResDTO
                 {
                     VolunteerID = v.VolunteerID,
@@ -196,7 +258,6 @@ namespace EduLink.Repositories.Services
                 .ToListAsync();
 
             return volunteers;
-
         }
 
         public async Task<string> UpdateCourse(int CourseID, UpdateCourseReqDto updateCourseReqDto)
@@ -223,18 +284,62 @@ namespace EduLink.Repositories.Services
         {
 
             var feedbacks = await eduLinkDbContext.Feedbacks
+                .Include(e=>e.Booking)
+                .ThenInclude(e=>e.Event)
+                .ThenInclude(e=>e.VolunteerCourse)
+                .ThenInclude(e=>e.Course)
                 .Where(f => f.Booking.Event.VolunteerCourse.VolunteerID == VolunteerId)
+                 
                 .ToListAsync();
 
+         
+            if (feedbacks == null || feedbacks.Count == 0)
+            {
+                return new List<GetFeedbackVolunteerResDto>();
+            }
 
+            
             var feedbackDtos = feedbacks.Select(f => new GetFeedbackVolunteerResDto
             {
                 Rating = f.Rating,
                 Comment = f.Comment,
-                CourseName = f.Booking.Event.VolunteerCourse.Course.CourseName
+                CourseName = f.Booking?.Event?.VolunteerCourse?.Course?.CourseName ?? "Unknown Course"
             }).ToList();
 
             return feedbackDtos;
+        }
+
+        public async Task<List<DepartmentResDto>> GetAllDepartmentsAsync(string? SearchName, int PageNumber, int PageSize)
+        {
+            var departmentsQuery = eduLinkDbContext.Departments.AsQueryable();
+
+            // Check if there are any departments
+            if (!departmentsQuery.Any())
+            {
+                return new List<DepartmentResDto>(); // Return an empty list if no departments exist
+            }
+
+            // Filter by department name if SearchName is provided
+            if (!string.IsNullOrEmpty(SearchName))
+            {
+                departmentsQuery = departmentsQuery.Where(d => d.DepartmentName.Contains(SearchName));
+            }
+
+            // Apply pagination
+            var skipNum = (PageNumber - 1) * PageSize;
+            var paginatedDepartments = await departmentsQuery
+                .Skip(skipNum)
+                .Take(PageSize)
+                .ToListAsync();
+
+            // Project to DTO
+            var departmentDto = paginatedDepartments.Select(e => new DepartmentResDto
+            {
+                Address = e.Address,
+                DepartmentName = e.DepartmentName
+            }).ToList();
+
+            return departmentDto;
         }
     }
 }
