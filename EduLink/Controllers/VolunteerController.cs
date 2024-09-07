@@ -52,7 +52,7 @@ namespace EduLink.Controllers
 
         // POST: /Volunteer/add-Event
         // Tested
-        [HttpPost("add-Event")]
+        [HttpPost("add-event")]
         [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> AddEvent([FromBody] AddEventReqDTO request)
         {
@@ -80,7 +80,7 @@ namespace EduLink.Controllers
 
         // GET: /get-all-Events/1
         // Tested
-        [HttpGet("/get-all-Events/{courseID}")]
+        [HttpGet("/get-events/{courseID}")]
         [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> GetAllEvents(int courseID)
         {
@@ -117,7 +117,7 @@ namespace EduLink.Controllers
 
         // PUT: /Volunteer/Update-Events
         // Tested
-        [HttpPut("Update-Events")]
+        [HttpPut("update-events")]
         [Authorize]
         public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventReqDTO request)
         {
@@ -174,7 +174,7 @@ namespace EduLink.Controllers
         // GET: /Volunteer/get-event-contents/1
         // Tested
         [Authorize(Roles = "Volunteer")]
-        [HttpGet("get-event-contents/{eventID}")]
+        [HttpGet("get-event-content/{eventID}")]
         public async Task<IActionResult> GetEventContentsAsync(int eventID)
         {
             try
@@ -213,7 +213,7 @@ namespace EduLink.Controllers
 
         // GET: Volunteer/Generate-URL-meeting/1
         // Not Tested
-        [HttpPost("Generate-URL-meeting/{eventId}")]
+        [HttpPost("generate-url/{eventId}")]
         [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> GenerateMeetingUrl(int eventId)
         {
