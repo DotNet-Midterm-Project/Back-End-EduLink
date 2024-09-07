@@ -11,12 +11,8 @@
         public int Capacity { get; set; }
     }
 
-    public class ArticleResponseDTO
+    public class WorkshopsResDTO
     {
-        public int ArticleID { get; set; }
-        public string Title { get; set; }
-        public DateTime PublicationDate { get; set; }
-        public string ArticleContent { get; set; }
-        public ArticleStatus Status { get; set; }
+        public List<WorkshopResponseDTO> Workshops { get; set; }
     }
 }

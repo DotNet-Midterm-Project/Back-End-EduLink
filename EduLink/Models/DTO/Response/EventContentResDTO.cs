@@ -6,6 +6,7 @@
         public string ContentName { get; set; }
         public Content ContentType { get; set; }
         public string ContentDescription { get; set; }
-        public string ContentAdress { get; set; }
+        public string ContentAddress { get; set; }
+        public int EventID { get; set; }
     }
 }

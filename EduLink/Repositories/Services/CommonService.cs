@@ -1,10 +1,8 @@
-﻿using EduLink.Models.DTO.Request;
-using EduLink.Models.DTO.Response;
+﻿using EduLink.Models.DTO.Response;
 using EduLink.Models;
 using EduLink.Repositories.Interfaces;
 using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
-
 namespace EduLink.Repositories.Services
 {
     public class CommonService : ICommon
@@ -19,7 +17,7 @@ namespace EduLink.Repositories.Services
         public async Task<List<WorkshopResponseDTO>> GetAllWorkshopsAsync()
         {
             return await _context.Events
-                .Where(e => e.EventType == (int)EventType.Workshop)
+                .Where(e => e.EventType == EventType.Workshop && e.EventStatus != EventStatus.Cancelled)
                 .Select(e => new WorkshopResponseDTO
                 {
                     VolunteerID = e.VolunteerCourse.Volunteer.VolunteerID,
@@ -27,84 +25,98 @@ namespace EduLink.Repositories.Services
                     WorkshopName = e.Title,
                     WorkshopDescription = e.EventDescription,
                     WorkshopDateTime = e.StartTime.DateTime,
-                    SessionLink = "https://your-link-here.com",//get link here.
+                    SessionLink = e.Location == EventLocation.Online ? e.EventAddress : null,
                     Capacity = e.Capacity
                 })
                 .ToListAsync();
         }
 
-        public async Task<List<ArticleResponseDTO>> GetAllArticlesAsync()
+        public async Task<ArticlesResDTO> GetAllArticlesAsync()
         {
-            return await _context.Articles
-                .Where(a => a.Status == ArticleStatus.Visible)
-                .Select(a => new ArticleResponseDTO
+            var articles = await _context.Articles
+                .Select(a => new ArticleDTO
                 {
                     ArticleID = a.ArticleID,
+                    VolunteerID = a.VolunteerID,
                     Title = a.Title,
-                    PublicationDate = a.PublicationDate,
-                    ArticleContent = a.ArticleContent,//error in spilling
-                    Status = a.Status
-                })
-                .ToListAsync();
-        }
-
-        public async Task<List<ArticleResponseDTO>> GetArticlesByVolunteerAsync(int volunteerId)
-        {
-            return await _context.Articles
-                .Where(a => a.VolunteerID == volunteerId && a.Status == ArticleStatus.Visible)
-                .Select(a => new ArticleResponseDTO
-                {
-                    ArticleID = a.ArticleID,
-                    Title = a.Title,
-                    PublicationDate = a.PublicationDate,
                     ArticleContent = a.ArticleContent,
-                    Status = a.Status
+                    PublicationDate = a.PublicationDate,
+                    Status = a.Status.ToString()
                 })
                 .ToListAsync();
+
+            return new ArticlesResDTO
+            {
+                Articles = articles
+            };
         }
 
-        public async Task<List<EventContentResponseDTO>> GetEventContentAsync(int eventId)
+        public async Task<ArticlesResDTO> GetArticlesByVolunteerIdAsync(int volunteerId)
         {
-            return await _context.EventContents
+            var articles = await _context.Articles
+                .Where(a => a.VolunteerID == volunteerId)
+                .Select(a => new ArticleDTO
+                {
+                    ArticleID = a.ArticleID,
+                    VolunteerID = a.VolunteerID,
+                    Title = a.Title,
+                    ArticleContent = a.ArticleContent,
+                    PublicationDate = a.PublicationDate,
+                    Status = a.Status.ToString()
+                })
+                .ToListAsync();
+
+            return new ArticlesResDTO
+            {
+                Articles = articles
+            };
+        }
+
+        public async Task<List<EventContentResDTO>> GetEventContentByEventIdAsync(int eventId)
+        {
+            var contents = await _context.EventContents
                 .Where(ec => ec.EventID == eventId)
-                .Select(ec => new EventContentResponseDTO
+                .Select(ec => new EventContentResDTO
                 {
                     ContentID = ec.ContentID,
-                    ContentType = ec.ContentType.ToString(),//converting enum to string
+                    ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
                     ContentName = ec.ContentName,
                     EventID = ec.EventID
                 })
                 .ToListAsync();
+
+            return contents;
         }
 
-        public async Task<List<EventResponseDTO>> GetEventsForVolunteerAsync(GetEventsRequestDTO request)
+        public async Task<List<EventResDTO>> GetEventsByVolunteerAndCourseAsync(int volunteerId, int courseId)
         {
-            return await _context.Events
-                .Where(e => e.VolunteerCourse.Volunteer.VolunteerID == request.VolunteerID &&
-                            e.VolunteerCourse.VolunteerCourseID == request.CourseID)
-                .Select(e => new EventResponseDTO
-                {
-                    VolunteerName = e.VolunteerCourse.Volunteer.Student.User.UserName,
-                    CourseName = e.VolunteerCourse.Course.CourseName,
-                    Title = e.Title,
-                    Location = e.Location.ToString(),//converting enum to string
-                    EventDescription = e.EventDescription,
-                    EventDetails = e.EventDetailes,
-                    EventStatus = e.EventStatus,
-                    Capacity = e.Capacity,
-                    EventType = (EventType)e.EventType,//converting int to Enum
-                    StartTime = e.StartTime,
-                    EndTime = e.EndTime,
-                    EventAddress = e.EventAddress
-                })
-                .ToListAsync();
+            var events = await _context.Events
+                 .Where(e => e.VolunteerCourse.VolunteerID == volunteerId && e.VolunteerCourse.CourseID == courseId)
+                 .Select(e => new EventResDTO
+                 {
+                     VolunteerName = e.VolunteerCourse.Volunteer.Student.User.UserName,
+                     CourseName = e.VolunteerCourse.Course.CourseName,
+                     Title = e.Title,
+                     Location = e.Location.ToString(),
+                     EventDescription = e.EventDescription,
+                     Details = e.EventDetailes,
+                     EventStatus = e.EventStatus.ToString(),
+                     Capacity = e.Capacity,
+                     EventType = e.EventType.ToString(),
+                     StartTime = e.StartTime,
+                     EndTime = e.EndTime,
+                     EventAdress = e.EventAddress
+                 })
+                 .ToListAsync();
+
+            return events;
         }
 
-        public async Task<List<SessionResponseDTO>> GetEventSessionsAsync(GetEventSessionRequestDTO request)
+        public async Task<List<SessionResponseDTO>> GetSessionsByEventAsync(int eventId)
         {
-            return await _context.Sessions
-                .Where(s => s.EventID == request.EventID)
+            var sessions = await _context.Sessions
+                .Where(s => s.EventID == eventId)
                 .Select(s => new SessionResponseDTO
                 {
                     CourseName = s.Event.VolunteerCourse.Course.CourseName,
@@ -112,14 +124,15 @@ namespace EduLink.Repositories.Services
                     Location = s.Event.Location.ToString(),
                     EventDescription = s.Event.EventDescription,
                     EventDetails = s.Event.EventDetailes,
-                    EventStatus = s.Event.EventStatus,
+                    EventStatus = (EventStatus)s.SessionStatus,
                     Capacity = s.Capacity,
-                    EventType = (EventType)s.Event.EventType,//converting int to Enum type --> EventType
-                    StartTime = s.Event.StartTime,
-                    EndTime = s.Event.EndTime,
+                    EventType = s.Event.EventType,
+                    StartTime = s.StartDate,
+                    EndTime = s.EndDate,
                     EventAddress = s.Event.EventAddress
                 })
                 .ToListAsync();
+            return sessions;
         }
     }
 

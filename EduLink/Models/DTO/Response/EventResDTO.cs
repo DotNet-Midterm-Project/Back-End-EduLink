@@ -13,6 +13,7 @@
         public DateTimeOffset StartTime { get; set; }
         public DateTimeOffset EndTime { get; set; }
         public string EventAdress { get; set; }
-  
+        public string VolunteerName { get; set; }
+        public string CourseName { get; set; }
     }
 }
