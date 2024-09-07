@@ -76,9 +76,9 @@ namespace EduLink.Repositories.Services
                 {
                     ContentID = ec.ContentID,
                     ContentName = ec.ContentName,
-                    ContentType = ec.ContentType,
+                    ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
-                    ContentAdress = ec.ContentAdress,
+                    ContentAddress = ec.ContentAdress,
                 })
                 .ToListAsync();
 
@@ -112,11 +112,11 @@ namespace EduLink.Repositories.Services
                 StartTime = e.StartTime,
                 EndTime = e.EndTime,
                 EventDescription = e.EventDescription,
-                EventStatus = e.EventStatus,
-                Location = e.Location,
+                EventStatus = e.EventStatus.ToString(),
+                Location = e.Location.ToString(),
                 Capacity = e.Capacity,
-                EventType = e.EventType,
-                EventAdress = e.EventAddress,
+                EventType = e.EventType.ToString(),
+                EventAddress = e.EventAddress,
                 Details = e.EventDetailes,
             }).ToList();
 

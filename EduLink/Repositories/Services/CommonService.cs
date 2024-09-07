@@ -25,7 +25,7 @@ namespace EduLink.Repositories.Services
                     WorkshopName = e.Title,
                     WorkshopDescription = e.EventDescription,
                     WorkshopDateTime = e.StartTime.DateTime,
-                    SessionLink = e.Location == EventLocation.Online ? e.EventAddress : null,
+                    SessionLink = e.Location == EventLocation.Online ? e.EventAddress : "The session link will be sent later",
                     Capacity = e.Capacity
                 })
                 .ToListAsync();
@@ -34,10 +34,12 @@ namespace EduLink.Repositories.Services
         public async Task<ArticlesResDTO> GetAllArticlesAsync()
         {
             var articles = await _context.Articles
+                .Where(a => a.Status == ArticleStatus.Visible)
                 .Select(a => new ArticleDTO
                 {
                     ArticleID = a.ArticleID,
                     VolunteerID = a.VolunteerID,
+                    VolunteerName = a.Volunteer.Student.User.UserName,
                     Title = a.Title,
                     ArticleContent = a.ArticleContent,
                     PublicationDate = a.PublicationDate,
@@ -54,11 +56,12 @@ namespace EduLink.Repositories.Services
         public async Task<ArticlesResDTO> GetArticlesByVolunteerIdAsync(int volunteerId)
         {
             var articles = await _context.Articles
-                .Where(a => a.VolunteerID == volunteerId)
+                .Where(a => a.VolunteerID == volunteerId && a.Status == ArticleStatus.Visible)
                 .Select(a => new ArticleDTO
                 {
                     ArticleID = a.ArticleID,
                     VolunteerID = a.VolunteerID,
+                    VolunteerName = a.Volunteer.Student.User.UserName,
                     Title = a.Title,
                     ArticleContent = a.ArticleContent,
                     PublicationDate = a.PublicationDate,
@@ -79,7 +82,8 @@ namespace EduLink.Repositories.Services
                 .Select(ec => new EventContentResDTO
                 {
                     ContentID = ec.ContentID,
-                    ContentType = ec.ContentType,
+                    ContentAddress = ec.ContentAdress,
+                    ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
                     ContentName = ec.ContentName,
                     EventID = ec.EventID
@@ -95,18 +99,19 @@ namespace EduLink.Repositories.Services
                  .Where(e => e.VolunteerCourse.VolunteerID == volunteerId && e.VolunteerCourse.CourseID == courseId)
                  .Select(e => new EventResDTO
                  {
+                     EventID = e.EventID,
                      VolunteerName = e.VolunteerCourse.Volunteer.Student.User.UserName,
                      CourseName = e.VolunteerCourse.Course.CourseName,
                      Title = e.Title,
-                     Location = e.Location,
+                     Location = e.Location.ToString(),
                      EventDescription = e.EventDescription,
                      Details = e.EventDetailes,
-                     EventStatus = e.EventStatus,
+                     EventStatus = e.EventStatus.ToString(),
                      Capacity = e.Capacity,
-                     EventType = e.EventType,
+                     EventType = e.EventType.ToString(),
                      StartTime = e.StartTime,
                      EndTime = e.EndTime,
-                     EventAdress = e.EventAddress
+                     EventAddress = e.EventAddress
                  })
                  .ToListAsync();
 
@@ -124,9 +129,9 @@ namespace EduLink.Repositories.Services
                     Location = s.Event.Location.ToString(),
                     EventDescription = s.Event.EventDescription,
                     EventDetails = s.Event.EventDetailes,
-                    EventStatus = (EventStatus)s.SessionStatus,
+                    EventStatus = s.SessionStatus.ToString(),
                     Capacity = s.Capacity,
-                    EventType = s.Event.EventType,
+                    EventType = s.Event.EventType.ToString(),
                     StartTime = s.StartDate,
                     EndTime = s.EndDate,
                     EventAddress = s.Event.EventAddress
