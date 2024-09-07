@@ -1,5 +1,8 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using EduLink.Models;
+using EduLink.Models.DTO.Request;
+using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,47 +19,96 @@ namespace EduLink.Controllers
             _commonService = commonService;
         }
 
-        [HttpGet("workshops")]
+        // GET: /Common/getAll-Workshop
+        // Tested
+        [HttpGet("getAll-Workshop")]
         public async Task<IActionResult> GetAllWorkshops()
         {
-            var workshops = await _commonService.GetAllWorkshopsAsync();
-            return Ok(workshops);
+            try
+            {
+                var workshops = await _commonService.GetAllWorkshopsAsync();
+                var response = new WorkshopsResDTO
+                {
+                    Workshops = workshops
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
-        [HttpGet("articles")]
+        // GET: /Common/get-articles
+        // Tested
+        [HttpGet("get-articles")]
         public async Task<IActionResult> GetAllArticles()
         {
-            var articles = await _commonService.GetAllArticlesAsync();
-            return Ok(articles);
+            var articlesResponse = await _commonService.GetAllArticlesAsync();
+            if (articlesResponse.Articles == null || !articlesResponse.Articles.Any())
+            {
+                return NotFound(new { message = "No articles found" });
+            }
+
+            return Ok(articlesResponse);
         }
 
-        [HttpGet("articles/volunteer/{volunteerId}")]
-        public async Task<IActionResult> GetArticlesByVolunteer(int volunteerId)
+        // GET: /Common/get-articles/2
+        // Tested
+        [HttpGet("get-articles/{volunteerId}")]
+        public async Task<IActionResult> GetArticlesByVolunteerId(int volunteerId)
         {
-            var articles = await _commonService.GetArticlesByVolunteerAsync(volunteerId);
-            return Ok(articles);
+            var articlesResponse = await _commonService.GetArticlesByVolunteerIdAsync(volunteerId);
+            if (articlesResponse.Articles == null || !articlesResponse.Articles.Any())
+            {
+                return NotFound(new { message = "No articles found for this volunteer" });
+            }
+
+            return Ok(articlesResponse);
         }
 
-        [HttpGet("eventcontent/{eventId}")]
-        public async Task<IActionResult> GetEventContent(int eventId)
+        // GET: /Common/get-Event-Content?eventId=1
+        // Tested
+        [HttpGet("get-Event-Content")]
+        public async Task<IActionResult> GetEventContent([FromQuery] int eventId)
         {
-            var eventContent = await _commonService.GetEventContentAsync(eventId);
-            return Ok(eventContent);
+            var eventContentResponse = await _commonService.GetEventContentByEventIdAsync(eventId);
+            if (eventContentResponse == null || !eventContentResponse.Any())
+            {
+                return NotFound(new { message = "No content found for the specified event" });
+            }
+
+            return Ok(eventContentResponse);
         }
 
-        [HttpPost("volunteer/events")]
-        public async Task<IActionResult> GetEventsForVolunteer([FromBody] GetEventsRequestDTO request)
+        // GET: /Common/get-Events?volunteerId=2&courseId=1
+        // Tested
+        [HttpGet("get-Events")]
+        public async Task<IActionResult> GetEvents([FromQuery] int volunteerId, [FromQuery] int courseId)
         {
-            var events = await _commonService.GetEventsForVolunteerAsync(request);
-            return Ok(events);
+            var eventResponse = await _commonService.GetEventsByVolunteerAndCourseAsync(volunteerId, courseId);
+            if (eventResponse == null || !eventResponse.Any())
+            {
+                return NotFound(new { message = "No events found for the specified volunteer and course." });
+            }
+
+            return Ok(eventResponse);
         }
 
-        [HttpPost("event/sessions")]
-        public async Task<IActionResult> GetEventSessions([FromBody] GetEventSessionRequestDTO request)
+        // GET: /Common/get-event-session?eventId=1
+        // Tested
+        [HttpGet("get-event-session")]
+        public async Task<IActionResult> GetEventSessions([FromQuery] int eventId)
         {
-            var sessions = await _commonService.GetEventSessionsAsync(request);
-            return Ok(sessions);
+            var sessionResponse = await _commonService.GetSessionsByEventAsync(eventId);
+            if (sessionResponse == null || !sessionResponse.Any())
+            {
+                return NotFound(new { message = "No sessions found for the specified event." });
+            }
+
+            return Ok(sessionResponse);
         }
     }
-
 }
+
+

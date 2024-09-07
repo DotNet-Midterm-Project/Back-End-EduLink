@@ -81,7 +81,7 @@ namespace EduLink.Repositories.Services
                     ContentName = ec.ContentName,
                     ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
-                    ContentAddress = ec.ContentAddress,
+                    ContentAddress = ec.ContentAdress,
                 })
                 .ToListAsync();
 
@@ -119,7 +119,7 @@ namespace EduLink.Repositories.Services
                 Location = e.Location.ToString(),
                 Capacity = e.Capacity,
                 EventType = e.EventType.ToString(),
-                EventAdress = e.EventAddress,
+                EventAddress = e.EventAddress,
                 Details = e.EventDetailes,
             }).ToList();
 

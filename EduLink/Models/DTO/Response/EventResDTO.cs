@@ -12,7 +12,8 @@
         public int Capacity { get; set; }
         public DateTimeOffset StartTime { get; set; }
         public DateTimeOffset EndTime { get; set; }
-        public string EventAdress { get; set; }
-  
+        public string EventAddress { get; set; }
+        public string VolunteerName { get; set; }
+        public string CourseName { get; set; }
     }
 }

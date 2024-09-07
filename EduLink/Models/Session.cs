@@ -5,13 +5,13 @@ namespace EduLink.Models
 
     public enum SessionStatus
     {
-        Scheduled=1,
-        Open = 2,
-        Closed = 3,
-        Cancel = 4,
-        Ongoing=5,
-        Completed=6,
-        Cancelled=7,
+        Scheduled,
+        Open,
+        Closed,
+        Cancel,
+        Ongoing,
+        Completed,
+        Cancelled,
     }
     public class Session
     {

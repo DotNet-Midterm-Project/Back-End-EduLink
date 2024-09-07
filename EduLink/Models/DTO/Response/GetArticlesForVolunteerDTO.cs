@@ -7,6 +7,7 @@ public class ArticlesResDTO
 
 public class ArticleDTO
 {
+    public string VolunteerName { get; set; }
     public int ArticleID { get; set; }
     public int VolunteerID { get; set; }
     public string Title { get; set; }

@@ -34,6 +34,7 @@ namespace EduLink
             builder.Services.AddScoped<IAccount, IdentityAccountService>();
             builder.Services.AddScoped<HelperService>();
             builder.Services.AddScoped<IStudent, StudentService>();
+            builder.Services.AddScoped<ICommon, CommonService>();
 
             builder.Services.AddScoped<IVolunteer, VolunteerService>();
 
