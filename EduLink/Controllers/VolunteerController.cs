@@ -50,47 +50,37 @@ namespace EduLink.Controllers
             return Unauthorized("Invalid token.");
         }
 
-        // POST: /Volunteer/add-event-content
+        // POST: /Volunteer/add-Event
         // Tested
+        [HttpPost("add-event")]
         [Authorize(Roles = "Volunteer")]
-        [HttpPost("add-event-content")]
-        public async Task<IActionResult> AddEventContent([FromBody] EventContetnReqDTO dto)
+        public async Task<IActionResult> AddEvent([FromBody] AddEventReqDTO request)
         {
-            if (dto == null)
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
+            if (volunteerIDClaim == null)
             {
-                return BadRequest("Invalid content data.");
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
             }
 
-            var response = await _volunteer.AddEventContentAsync(dto);
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
 
-            return Ok(response);
-        }
+            var response = await _volunteer.AddEventsAsync(volunteerID, request);
 
-        // GET: /Volunteer/get-event-contents/1
-        // Tested
-        [Authorize(Roles = "Volunteer")]
-        [HttpGet("get-event-contents/{eventID}")]
-        public async Task<IActionResult> GetEventContentsAsync(int eventID)
-        {
-            try
+
+            if (response.Message == "Volunteer is not associated with the course.")
             {
-                var result = await _volunteer.GetEventContentsAsync( eventID);
-                
-                return Ok(result);
+                return BadRequest(new { message = response.Message });
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+
+            return Ok(new { message = response.Message });
         }
 
         // GET: /get-all-Events/1
         // Tested
-        [HttpGet("/get-all-Events/{courseID}")]
+        [HttpGet("/get-events/{courseID}")]
         [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> GetAllEvents(int courseID)
         {
@@ -125,32 +115,14 @@ namespace EduLink.Controllers
             return Unauthorized("Invalid token.");
         }
 
-        // POST: /Volunteer/add-Event
+        // PUT: /Volunteer/Update-Events
         // Tested
-        [HttpPost("add-Event")]
-        [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> AddEvent([FromBody] AddEventReqDTO request)
+        [HttpPut("update-events")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventReqDTO request)
         {
-            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
-            if (volunteerIDClaim == null)
-            {
-                return Unauthorized(new { message = "Volunteer ID not found in token." });
-            }
-
-            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
-            {
-                return BadRequest(new { message = "Invalid Volunteer ID." });
-            }
-
-            var response = await _volunteer.AddEventsAsync(volunteerID, request);
-
-
-            if (response.Message == "Volunteer is not associated with the course.")
-            {
-                return BadRequest(new { message = response.Message });
-            }
-
-            return Ok(new { message = response.Message });
+            var response = await _volunteer.UpdateEventAsync(request);
+            return Ok(response);
         }
 
         // PUT: /Volunteer/cancel-event/1
@@ -182,10 +154,66 @@ namespace EduLink.Controllers
                 return BadRequest(response);
             }
         }
+       
+        // POST: /Volunteer/add-event-content
+        // Tested
+        [Authorize(Roles = "Volunteer")]
+        [HttpPost("add-event-content")]
+        public async Task<IActionResult> AddEventContent([FromBody] EventContetnReqDTO dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest("Invalid content data.");
+            }
+
+            var response = await _volunteer.AddEventContentAsync(dto);
+
+            return Ok(response);
+        }
+
+        // GET: /Volunteer/get-event-contents/1
+        // Tested
+        [Authorize(Roles = "Volunteer")]
+        [HttpGet("get-event-content/{eventID}")]
+        public async Task<IActionResult> GetEventContentsAsync(int eventID)
+        {
+            try
+            {
+                var result = await _volunteer.GetEventContentsAsync( eventID);
+                
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        // POST: /Volunteer/add-session
+        // Tested
+        [HttpPost("add-session")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> AddSession([FromBody] AddSessionReqDTO request)
+        {
+            var response = await _volunteer.AddSessionAsync(request);
+
+            if (response.Message.Contains("Successfully"))
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
 
         // GET: Volunteer/Generate-URL-meeting/1
         // Not Tested
-        [HttpPost("Generate-URL-meeting/{eventId}")]
+        [HttpPost("generate-url/{eventId}")]
         [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> GenerateMeetingUrl(int eventId)
         {
@@ -209,24 +237,6 @@ namespace EduLink.Controllers
             else
             {
                 return Ok(response);
-            }
-        }
-
-        // POST: /Volunteer/add-session
-        // Tested
-        [HttpPost("add-session")]
-        [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> AddSession([FromBody] AddSessionReqDTO request)
-        {
-            var response = await _volunteer.AddSessionAsync(request);
-
-            if (response.Message.Contains("Successfully"))
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return BadRequest(response);
             }
         }
 
@@ -257,34 +267,7 @@ namespace EduLink.Controllers
 
             return Ok(response);
         }
-
-        // PUT: /Volunteer/hidden-article
-        // Tested
-        [HttpPut("hidden-article")]
-        [Authorize]
-        public async Task<IActionResult> ModifyArticleStatus([FromBody] ModifyArticleStatusReqDTO request)
-        {
-            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
-            if (volunteerIDClaim == null)
-            {
-                return Unauthorized(new { message = "Volunteer ID not found in token." });
-            }
-
-            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
-            {
-                return BadRequest(new { message = "Invalid Volunteer ID." });
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var message = await _volunteer.ModifyArticleStatusAsync(request, volunteerID);
-
-            return Ok(new { message });
-        }
-
+ 
         // GET: /Volunteer/get-articles
         // Tested
         [HttpGet("get-articles")]
@@ -393,23 +376,31 @@ namespace EduLink.Controllers
             }
         }
 
-        // PUT: /Volunteer/Update-Events
+        // PUT: /Volunteer/hidden-article
         // Tested
-        [HttpPut("Update-Events")]
+        [HttpPut("hidden-article")]
         [Authorize]
-        public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventReqDTO request)
+        public async Task<IActionResult> ModifyArticleStatus([FromBody] ModifyArticleStatusReqDTO request)
         {
-            var response = await _volunteer.UpdateEventAsync(request);
-            return Ok(response);
-        }
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
+            if (volunteerIDClaim == null)
+            {
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
+            }
 
-        //[HttpGet("get-notifications-Events")]
-        //[Authorize]
-        //public async Task<IActionResult> GetNotifications([FromHeader] int studentId)
-        //{
-        //var request = new GetNotificationsRequest { StudentId = studentId };
-        //    var response = await _volunteer.GetNotificationsAsync(request);
-        //    return Ok(response);
-        //}
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var message = await _volunteer.ModifyArticleStatusAsync(request, volunteerID);
+
+            return Ok(new { message });
+        }
     }
 }

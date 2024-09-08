@@ -5,6 +5,7 @@ using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EduLink.Controllers
 {
@@ -18,117 +19,243 @@ namespace EduLink.Controllers
         {
             this.admin = admin;
         }
+
         [HttpPost("AddCourse")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCourse([FromBody] AddCourseReqDto addCourseReqDto)
         {
-            var AddCourse = await admin.AddCourse(addCourseReqDto);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             if (addCourseReqDto == null)
             {
-                return NotFound();
+                return BadRequest("Course data is null.");
             }
-            return Ok(AddCourse);
+
+            var result = await admin.AddCourse(addCourseReqDto);
+
+            if (result == null)
+            {
+                return BadRequest("Invalid course details provided. Please provide both Course Name and Course Description.");
+            }
+
+            return Ok(result);
         }
+
         [HttpPost("AddCourseToDepartment/{DepartmentID}/{CourseID}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCourseToDepartment([FromRoute] int DepartmentID, [FromRoute] int CourseID)
         {
+            if (DepartmentID <= 0 || CourseID <= 0)
+            {
+                return BadRequest("Invalid department or course ID.");
+            }
 
-            var AddCourseToDepartment = await admin.AddCourseToDepartment(DepartmentID, CourseID);
-            if (AddCourseToDepartment == null)
-                return NotFound("DepartmentNotfound");
+            var result = await admin.AddCourseToDepartment(DepartmentID, CourseID);
+            if(result.Contains("already associated"))
+            {
+                return BadRequest(result);
+            }
+            if (result == null)
+            {
+                return NotFound("Department or course not found.");
+            }
 
-
-            return Ok(AddCourseToDepartment);
+            return Ok(result);
         }
-
 
         [HttpPost("AddNewDepartment")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddDepartment([FromBody] AddDepartmentReqDto departmentReqDto)
         {
-            var NewDepartment = await admin.AddDepartment(departmentReqDto);
-            if (NewDepartment == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest(ModelState);
             }
-            return Ok(NewDepartment);
+            if(departmentReqDto.DepartmentName.IsNullOrEmpty() || departmentReqDto.Address.IsNullOrEmpty())
+            {
+                return BadRequest(new MessageResDTO { Message = "Invalid Department name or Department Address. Please check the input data. " });
+            }
+            var result = await admin.AddDepartmentAsync(departmentReqDto);
+
+            if (result == null)
+            {
+                return BadRequest("Unable to add the department. Please check the input data.");
+            }
+
+            return Ok(result);
         }
 
-
-
-        [HttpPost("StudentBeComeVolunteer/{VolunteerId}")]
+        [HttpPost("StudentBecomeVolunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddStudentToVolunteer([FromRoute] int VolunteerId)
         {
-            var AddStudentToVolunteer = await admin.AddStudentToVolunteer(VolunteerId);
-            if (AddStudentToVolunteer == null)
+            if (VolunteerId <= 0)
             {
-                return NotFound();
+                return BadRequest("Invalid volunteer ID.");
             }
-            return Ok(AddStudentToVolunteer);
 
+            var result = await admin.AddStudentToVolunteer(VolunteerId);
+
+            if (result == null)
+            {
+                return NotFound("Volunteer not found.");
+            }
+
+            return Ok(result);
         }
-        [HttpDelete("DeleteArticle/{ArticleId}")]
+
+        [HttpGet("GetAllCourses")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteArticle(int ArticleId)
+        public async Task<IActionResult> GetAllCourses([FromQuery] string? SearchName = null , int PageNumber = 1, int PageSize = 100)
         {
-            var DeleteArticle = await admin.DeleteArticle(ArticleId);
-            if (DeleteArticle == null) return NotFound();
-            return Ok(DeleteArticle);
+            var result = await admin.GetAllCoursesAsync(SearchName ,  PageNumber ,PageSize );
+
+            if (result == null || !result.Any())
+            {
+                return NotFound("No courses found.");
+            }
+
+            return Ok(result);
         }
-        [HttpDelete("DeleteCourse/{CourseId}")]
+        [HttpGet("GetAllDepartment")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteCourse(int CourseId)
+        public async Task<IActionResult> GetAllDepartments([FromQuery] string? SearchName = null, int PageNumber = 1, int PageSize = 100)
         {
-            var DeleteCourse = await admin.DeleteCourse(CourseId);
-            if (DeleteCourse == null)
-                return NotFound();
-            return Ok(DeleteCourse);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = await admin.GetAllDepartmentsAsync( SearchName , PageNumber , PageSize );
+            if(result == null || !result.Any())
+            {
+                return NotFound("No Department Found");
+            }
+            return Ok(result);
         }
-        [HttpDelete("DeleteVolunteer/{VolunteerId}")]
+        [HttpGet("GetAllVolunteers")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteVolunteer(int VolunteerId)
+        
+        public async Task<IActionResult> GetAllVolunteers([FromQuery] string? filterName, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100, bool? sortByRating = false, bool? GetBeComeVolunteerRequest = false)
         {
-            var DeleteVolunteer = await admin.DeleteVolunteer(VolunteerId);
-            if (DeleteVolunteer == null)
-                return NotFound();
-            return Ok(DeleteVolunteer);
+            // Validate pageNumber and pageSize
+            if (pageNumber < 1 || pageSize < 1)
+            {
+                return BadRequest("Page number and page size must be greater than zero.");
+            }
+
+            var result = await admin.GetAllVolunteersAsync(filterName, pageNumber, pageSize , sortByRating, GetBeComeVolunteerRequest);
+
+            if (result == null || !result.Any())
+            {
+                return NotFound("No volunteers found.");
+            }
+
+            return Ok(result);
         }
-        [HttpGet("GetAllCourse")]
+
+        [HttpGet("GetFeedbackFromVolunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllCourses()
+        public async Task<IActionResult> GetFeedbacksVolunteer([FromRoute] int VolunteerId)
         {
-            var GetCourses = await admin.GetAllCourses();
-            if (GetAllCourses == null) return null;
-            return Ok(GetCourses);
+            if (VolunteerId <= 0)
+            {
+                return BadRequest("Invalid volunteer ID.");
+            }
+
+            var result = await admin.GetFeedbacksVolunteer(VolunteerId);
+
+            if (result == null || !result.Any())
+            {
+                return NotFound("No feedback found for this volunteer.");
+            }
+
+            return Ok(result);
         }
-        [HttpGet("GetAllVolunteer")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllVolunteers()
-        {
-            var GetAllVolunteers = await admin.GetAllVolunteers();
-            if (GetAllVolunteers == null) return NotFound();
-            return Ok(GetAllVolunteers);
-        }
+
         [HttpPut("UpdateCourse/{CourseID}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCourse([FromRoute] int CourseID, [FromBody] UpdateCourseReqDto updateCourseReqDto)
         {
-            var UpdateCourse = await admin.UpdateCourse(CourseID,
-                updateCourseReqDto);
-            if (UpdateCourse == null) return NotFound();
-            return Ok(UpdateCourse);
+            if (CourseID <= 0)
+            {
+                return BadRequest("Invalid course ID.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await admin.UpdateCourse(CourseID, updateCourseReqDto);
+
+            if (result == null)
+            {
+                return NotFound("Course not found.");
+            }
+
+            return Ok(result);
         }
-        [HttpGet("GetFeedbackFromVolunteer/{VolunteerId}")]
+
+        [HttpDelete("DeleteArticle/{ArticleId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetFeedbacskVolunteer([FromRoute] int VolunteerId)
+        public async Task<IActionResult> DeleteArticle([FromRoute] int ArticleId)
         {
-            var GetFeedbackVolunteer = await admin.GetFeedbacksVolunteer(VolunteerId);
-            if (GetFeedbackVolunteer == null) return NotFound();
-            return Ok(GetFeedbackVolunteer);
+            if (ArticleId <= 0)
+            {
+                return BadRequest("Invalid article ID.");
+            }
+
+            var result = await admin.DeleteArticleAsync(ArticleId);
+
+            if (result.Contains("not found."))
+            {
+                return NotFound(result);
+            }
+
+
+            return Ok(result);
         }
 
-    }
+        [HttpDelete("DeleteCourse/{CourseId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteCourse([FromRoute] int CourseId)
+        {
+            if (CourseId <= 0)
+            {
+                return BadRequest("Invalid course ID.");
+            }
 
+            var result = await admin.DeleteCourse(CourseId);
+
+            if (result == null)
+            {
+                return NotFound("Course not found.");
+            }
+
+            return Ok(result);
+        }
+
+        [HttpDelete("DeleteVolunteer/{VolunteerId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteVolunteer([FromRoute] int VolunteerId)
+        {
+            if (VolunteerId <= 0)
+            {
+                return BadRequest("Invalid volunteer ID.");
+            }
+
+            var result = await admin.DeleteVolunteer(VolunteerId);
+
+            if (result == null)
+            {
+                return NotFound("Volunteer not found.");
+            }
+
+            return Ok(result);
+        }
+        
+    }
 }

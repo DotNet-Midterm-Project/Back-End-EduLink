@@ -3,13 +3,7 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 namespace EduLink.Repositories.Services
@@ -82,6 +76,7 @@ namespace EduLink.Repositories.Services
                     ContentType = ec.ContentType.ToString(),
                     ContentDescription = ec.ContentDescription,
                     ContentAddress = ec.ContentAddress,
+                    EventID = ec.EventID,
                 })
                 .ToListAsync();
 
@@ -106,25 +101,33 @@ namespace EduLink.Repositories.Services
 
             var events = await _context.Events
                 .Where(e => e.VolunteerCoursID == volunteerCourse.VolunteerCourseID)
+                .Include(e => e.VolunteerCourse)
+                .ThenInclude(vc => vc.Volunteer)
+                .ThenInclude(v => v.Student)
+                .ThenInclude(s => s.User)
+                .Include(e => e.VolunteerCourse.Course)
                 .ToListAsync();
 
             var eventResponse = events.Select(e => new EventResDTO
             {
                 EventID = e.EventID,
+                Capacity = e.Capacity,
                 Title = e.Title,
                 StartTime = e.StartTime,
                 EndTime = e.EndTime,
                 EventDescription = e.EventDescription,
                 EventStatus = e.EventStatus.ToString(),
                 Location = e.Location.ToString(),
-                Capacity = e.Capacity,
                 EventType = e.EventType.ToString(),
-                EventAdress = e.EventAddress,
+                EventAddress = e.EventAddress,
                 Details = e.EventDetailes,
+                VolunteerName = e.VolunteerCourse?.Volunteer?.Student?.User?.UserName ?? "Volunteer Name is null",
+                CourseName = e.VolunteerCourse?.Course?.CourseName ?? "Course Name is null",
             }).ToList();
 
             return eventResponse;
         }
+
         // Add Event
         public async Task<MessageResDTO> AddEventsAsync(int volunteerID, AddEventReqDTO request)
         {
@@ -208,9 +211,7 @@ namespace EduLink.Repositories.Services
                 foreach (var email in studentEmails)
                 {
                     await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
-
                 }
-
 
                 // Create and store announcement
                 var announcement = new Announcement
@@ -225,8 +226,6 @@ namespace EduLink.Repositories.Services
                 await _context.SaveChangesAsync();
             }
         
-
-
             return new MessageResDTO
             {
                 Message = $"Event '{request.Title}' added successfully and announcement sent."
@@ -368,8 +367,6 @@ namespace EduLink.Repositories.Services
             return new MessageResDTO { Message = "Failed to add the session." };
         }
 
-       
-
         public async Task<MessageResDTO> AddArticleAsync(AddArticleReqDTO request, int volunteerId)
         {
             var volunteer = await _context.Volunteers.FindAsync(volunteerId);
@@ -431,6 +428,7 @@ namespace EduLink.Repositories.Services
                     ArticleID = a.ArticleID,
                     VolunteerID= volunteerId,
                     Title = a.Title,
+                    VolunteerName = a.Volunteer.Student.User.UserName,
                     ArticleContent = a.ArticleContent,
                     PublicationDate = a.PublicationDate,
                     Status = a.Status.ToString()
@@ -449,9 +447,11 @@ namespace EduLink.Repositories.Services
                 .Where(a => a.ArticleID == articleId)
                 .Select(a => new ArticleDTO
                 {
+                    VolunteerID = a.VolunteerID,
+                    ArticleID = a.ArticleID,
+                    VolunteerName = a.Volunteer.Student.User.UserName,
                     Title = a.Title,
                     ArticleContent = a.ArticleContent,
-                    VolunteerID = a.VolunteerID,
                     PublicationDate = a.PublicationDate,
                     Status = a.Status.ToString()
                 })
@@ -476,7 +476,6 @@ namespace EduLink.Repositories.Services
             article.PublicationDate = request.PublicationDate;
             article.Status = request.Status;
         
-
             // Save changes to the database
             _context.Articles.Update(article);
             await _context.SaveChangesAsync();
@@ -494,35 +493,18 @@ namespace EduLink.Repositories.Services
             }
 
             eventToUpdate.Title = request.Title;
-            eventToUpdate.Location = request.Location;
             eventToUpdate.EventDescription = request.EventDescription;
             eventToUpdate.EventDetailes = request.EventDetails;
+            eventToUpdate.EventAddress = request.EventAddress;
+            eventToUpdate.Location = request.Location;
             eventToUpdate.Capacity = request.Capacity;
             eventToUpdate.EventType = request.EventType;
-            eventToUpdate.EventAddress = request.EventAddress;
             eventToUpdate.SessionCount = request.SessionCount;
 
             _context.Events.Update(eventToUpdate);
             await _context.SaveChangesAsync();
 
-            return new MessageResDTO { Message = "Update-event successfully" };
+            return new MessageResDTO { Message = "Update Event successfully" };
         }
-
-        //public async Task<GetNotificationsResponse> GetNotificationsAsync(GetNotificationsRequest request)
-        //{
-        //    var notifications = await _context.Announcement
-        //        .Where(a => a.Event.EventType == EventType.Workshop &&
-        //                    _context.Bookings.Any(b => b.StudentID == request.StudentId && b.EventID == a.EventID))
-        //        .Select(a => new NotificationResponse
-        //        {
-        //            NotificationID = a.AnouncementID,
-        //            Message = a.Message,
-        //            DateSend = a.AnounceDate,
-        //            Capacity = a.Event.Capacity
-        //        })
-        //        .ToListAsync();
-
-        //    return new GetNotificationsResponse { Notifications = notifications };
-        //}
     }
 }
