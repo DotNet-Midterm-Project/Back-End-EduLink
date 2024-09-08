@@ -202,13 +202,13 @@ namespace EduLink.Controllers
 
             var response = await _volunteer.GenerateMeetingUrlAsync(eventId);
 
-            if (response.Message == $"The URL was created successfully.")
+            if (response.Message == $"Failed to create the URL.")
             {
-                return Ok(response);
+                return BadRequest(response);
             }
             else
             {
-                return BadRequest(response);
+                return Ok(response);
             }
         }
 

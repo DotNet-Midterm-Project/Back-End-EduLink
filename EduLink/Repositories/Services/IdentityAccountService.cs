@@ -137,6 +137,7 @@ namespace EduLink.Repositories.Services
                 EmailConfirmed = true,
 
             };
+           
 
             var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
 
@@ -148,6 +149,8 @@ namespace EduLink.Repositories.Services
                 }
                 return null;
             }
+           
+
 
             if (await _roleManager.RoleExistsAsync("Admin"))
             {
@@ -157,7 +160,7 @@ namespace EduLink.Repositories.Services
             var roles = await _userManager.GetRolesAsync(user);
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(360));
 
-            return new RegisterAdminResDTO
+            var register= new RegisterAdminResDTO
             {
                 AdminID = user.Id,
                 UserName = user.UserName,
@@ -165,6 +168,9 @@ namespace EduLink.Repositories.Services
                 Token = token,
                 Roles = roles
             };
+
+
+            return register;
         }
 
         public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)

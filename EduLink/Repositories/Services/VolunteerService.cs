@@ -190,6 +190,18 @@ namespace EduLink.Repositories.Services
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(emailDescriptionHtml);
             var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
+                    emailDescriptionPlain = emailDescriptionPlain
+            .Replace("\r\n", "\n") 
+            .Replace("\n", Environment.NewLine) 
+            .Replace("Dear Student,", "\nDear Student,\n")
+            .Replace("We are excited", "\nWe are excited")
+            .Replace("Start Time:", "\nStart Time:")
+            .Replace("End Time:", "\nEnd Time:")
+            .Replace("Location:", "\nLocation:")
+            .Replace("Description:", "\nDescription:")
+            .Replace("We hope you can join us!", "\nWe hope you can join us!\n")
+            .Replace("Best regards,", "\nBest regards,\n")
+            .Replace("EduLink Team", "\nEduLink Team");
 
             // Send email to all students
             if (studentEmails!=null) {
@@ -267,15 +279,52 @@ namespace EduLink.Repositories.Services
                 return new MessageResDTO { Message = "Meeting URL can only be created for online events." };
             }
 
-            var meetingUrl = $"https://meeting.service.com/{Guid.NewGuid()}";
+            var service = GoogleCalendarService.GetCalendarService();
 
-            eventToUpdate.EventAddress = meetingUrl;
+            // استخدم معرف منطقة زمنية معتمد من Google مثل "UTC" أو "America/New_York"
+            var validTimeZone = "UTC";  // اختر المنطقة الزمنية المناسبة
+
+            var newEvent = new Google.Apis.Calendar.v3.Data.Event
+            {
+                Summary = eventToUpdate.Title,
+                Description = eventToUpdate.EventDescription,
+                Start = new Google.Apis.Calendar.v3.Data.EventDateTime
+                {
+                    DateTime = eventToUpdate.StartTime.DateTime,
+                    TimeZone = validTimeZone // استخدم معرف منطقة زمنية صحيح
+                },
+                End = new Google.Apis.Calendar.v3.Data.EventDateTime
+                {
+                    DateTime = eventToUpdate.EndTime.DateTime,
+                    TimeZone = validTimeZone // استخدم معرف منطقة زمنية صحيح
+                },
+                ConferenceData = new Google.Apis.Calendar.v3.Data.ConferenceData
+                {
+                    CreateRequest = new Google.Apis.Calendar.v3.Data.CreateConferenceRequest
+                    {
+                        ConferenceSolutionKey = new Google.Apis.Calendar.v3.Data.ConferenceSolutionKey
+                        {
+                            Type = "hangoutsMeet"
+                        },
+                        RequestId = Guid.NewGuid().ToString()
+                    }
+                }
+            };
+
+            // إضافة الحدث إلى تقويم Google
+            var calendarId = "primary";
+            var request = service.Events.Insert(newEvent, calendarId);
+            request.ConferenceDataVersion = 1;
+            var createdEvent = await request.ExecuteAsync();
+
+            // تحديث عنوان الحدث مع رابط Google Meet
+            eventToUpdate.EventAddress = createdEvent.HangoutLink;
             _context.Events.Update(eventToUpdate);
 
             var result = await _context.SaveChangesAsync();
 
             return result > 0
-                ? new MessageResDTO { Message = $"The URL was created successfully: {meetingUrl}" }
+                ? new MessageResDTO { Message = $"The URL was created successfully: {createdEvent.HangoutLink}" }
                 : new MessageResDTO { Message = "Failed to create the URL." };
         }
 
