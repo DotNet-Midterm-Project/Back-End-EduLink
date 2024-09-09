@@ -5,6 +5,7 @@ using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EduLink.Controllers
 {
@@ -21,7 +22,7 @@ namespace EduLink.Controllers
 
         // GET: /Common/getAll-Workshop
         // Tested
-        [HttpGet("getAll-Workshop")]
+        [HttpGet("get-all-Workshops")]
         public async Task<IActionResult> GetAllWorkshops()
         {
             try
@@ -41,7 +42,7 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-articles
         // Tested
-        [HttpGet("get-articles")]
+        [HttpGet("get-all-articles")]
         public async Task<IActionResult> GetAllArticles()
         {
             var articlesResponse = await _commonService.GetAllArticlesAsync();
@@ -55,7 +56,7 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-articles/2
         // Tested
-        [HttpGet("get-articles/{volunteerId}")]
+        [HttpGet("get-articles-by-volunteerId/{volunteerId}")]
         public async Task<IActionResult> GetArticlesByVolunteerId(int volunteerId)
         {
             var articlesResponse = await _commonService.GetArticlesByVolunteerIdAsync(volunteerId);
@@ -69,7 +70,7 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-Event-Content?eventId=1
         // Tested
-        [HttpGet("get-Event-Content")]
+        [HttpGet("get-event-content")]
         public async Task<IActionResult> GetEventContent([FromQuery] int eventId)
         {
             var eventContentResponse = await _commonService.GetEventContentByEventIdAsync(eventId);
@@ -83,7 +84,7 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-Events?volunteerId=2&courseId=1
         // Tested
-        [HttpGet("get-Events")]
+        [HttpGet("get-events-by-volunteer-and-course")]
         public async Task<IActionResult> GetEvents([FromQuery] int volunteerId, [FromQuery] int courseId)
         {
             var eventResponse = await _commonService.GetEventsByVolunteerAndCourseAsync(volunteerId, courseId);
@@ -97,7 +98,7 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-event-session?eventId=1
         // Tested
-        [HttpGet("get-event-session")]
+        [HttpGet("get-event-sessions")]
         public async Task<IActionResult> GetEventSessions([FromQuery] int eventId)
         {
             var sessionResponse = await _commonService.GetSessionsByEventAsync(eventId);

@@ -61,7 +61,7 @@ namespace EduLink.Repositories.Services
         }
 
 
-        public async Task<List<VolunteerResDTO>> GetCourseVolunteersAsync(int courseId)
+        public async Task<List<VolunteerResDTO>> GetVolunteersForCourseAsync(int courseId)
         {
             var volunteerCourses = await eduLinkDbContext.VolunteerCourses
                 .Where(vc => vc.CourseID == courseId)
@@ -94,7 +94,7 @@ namespace EduLink.Repositories.Services
 
             return volunteerDto;
         }
-        public async Task<List<BookingForStudentResDTO>> GetBookingForStudentAsync(int StudentId)
+        public async Task<List<BookingForStudentResDTO>> GetBookingsForStudentAsync(int StudentId)
         {
             var StudentBooks = await eduLinkDbContext.Bookings
                  .Where(b => b.StudentID == StudentId)            

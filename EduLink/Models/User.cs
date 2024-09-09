@@ -21,7 +21,11 @@ namespace EduLink.Models
         public bool IsActived { get; set; }
         public DateTimeOffset TempCodeExpire {  get; set; }
         public Student Student { get; set; }
-   
+
+        //For Token
+        public string? RefreshToken { get; set; }
+        public DateTimeOffset RefreshTokenExpireTime { get; set; }
+
 
     }
 }
