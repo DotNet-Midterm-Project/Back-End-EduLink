@@ -19,5 +19,8 @@ namespace EduLink.Repositories.Interfaces
 
         //Search about Logout
         Task LogoutAsync(ClaimsPrincipal userPrincipal);
+
+        Task<bool> ResetPasswordAsync(ResetPasswordReqDTO resetPasswordDto);
+        Task<bool> ForgotPasswordAsync(ForgotPasswordReqDTO forgotPasswordDto);
     }
 }
