@@ -265,37 +265,42 @@ namespace EduLink.Repositories.Services
         // Generate a meeting URL for an online event
         public async Task<MessageResDTO> GenerateMeetingUrlAsync(int eventId)
         {
+            // Retrieve the event from the database using the provided eventId
             var eventToUpdate = await _context.Events
                 .FirstOrDefaultAsync(e => e.EventID == eventId);
 
+            // If the event is not found, return a message indicating this
             if (eventToUpdate == null)
             {
                 return new MessageResDTO { Message = "Event not found." };
             }
 
+            // Check if the event location is online; if not, return a message
             if (eventToUpdate.Location != EventLocation.Online)
             {
                 return new MessageResDTO { Message = "Meeting URL can only be created for online events." };
             }
 
+            // Get the Google Calendar service to interact with Google Calendar API
             var service = GoogleCalendarService.GetCalendarService();
 
-            // استخدم معرف منطقة زمنية معتمد من Google مثل "UTC" أو "America/New_York"
-            var validTimeZone = "UTC";  // اختر المنطقة الزمنية المناسبة
+            // Define the timezone for the event
+            var validTimeZone = "UTC";
 
+            // Create a new event object to be sent to Google Calendar
             var newEvent = new Google.Apis.Calendar.v3.Data.Event
             {
-                Summary = eventToUpdate.Title,
-                Description = eventToUpdate.EventDescription,
+                Summary = eventToUpdate.Title, // Set the event title
+                Description = eventToUpdate.EventDescription, // Set the event description
                 Start = new Google.Apis.Calendar.v3.Data.EventDateTime
                 {
-                    DateTime = eventToUpdate.StartTime.DateTime,
-                    TimeZone = validTimeZone // استخدم معرف منطقة زمنية صحيح
+                    DateTime = eventToUpdate.StartTime.DateTime, // Set the event start time
+                    TimeZone = validTimeZone // Set the timezone for the start time
                 },
                 End = new Google.Apis.Calendar.v3.Data.EventDateTime
                 {
-                    DateTime = eventToUpdate.EndTime.DateTime,
-                    TimeZone = validTimeZone // استخدم معرف منطقة زمنية صحيح
+                    DateTime = eventToUpdate.EndTime.DateTime, // Set the event end time
+                    TimeZone = validTimeZone // Set the timezone for the end time
                 },
                 ConferenceData = new Google.Apis.Calendar.v3.Data.ConferenceData
                 {
@@ -303,29 +308,34 @@ namespace EduLink.Repositories.Services
                     {
                         ConferenceSolutionKey = new Google.Apis.Calendar.v3.Data.ConferenceSolutionKey
                         {
-                            Type = "hangoutsMeet"
+                            Type = "hangoutsMeet" // Specify that the meeting should be a Google Meet
                         },
-                        RequestId = Guid.NewGuid().ToString()
+                        RequestId = Guid.NewGuid().ToString() // Generate a unique request ID for the meeting
                     }
                 }
             };
 
-            // إضافة الحدث إلى تقويم Google
+            // Define the calendar ID where the event will be created (primary calendar)
             var calendarId = "primary";
-            var request = service.Events.Insert(newEvent, calendarId);
-            request.ConferenceDataVersion = 1;
-            var createdEvent = await request.ExecuteAsync();
 
-            // تحديث عنوان الحدث مع رابط Google Meet
+            // Insert the new event into the Google Calendar
+            var request = service.Events.Insert(newEvent, calendarId);
+            request.ConferenceDataVersion = 1; // Specify the conference data version to create a Meet link
+            var createdEvent = await request.ExecuteAsync(); // Execute the request asynchronously
+
+            // Update the event in the database with the newly created Google Meet link
             eventToUpdate.EventAddress = createdEvent.HangoutLink;
             _context.Events.Update(eventToUpdate);
 
+            // Save the changes to the database
             var result = await _context.SaveChangesAsync();
 
+            // Return a success message with the meeting URL if successful, or a failure message if not
             return result > 0
                 ? new MessageResDTO { Message = $"The URL was created successfully: {createdEvent.HangoutLink}" }
                 : new MessageResDTO { Message = "Failed to create the URL." };
         }
+
 
         // Add a session to an event
         public async Task<MessageResDTO> AddSessionAsync(AddSessionReqDTO request)
