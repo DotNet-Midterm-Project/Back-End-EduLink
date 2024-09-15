@@ -90,7 +90,7 @@ namespace EduLink.Repositories.Services
 
             //Change this when the server is live.
             //var baseUrl = "http://localhost:5085/api/Account";
-            var confirmationLink = $"{_appUrl}/confirm-email?email={user.Email}&code={code}";
+            var confirmationLink = $"{_appUrl}/api/Account/confirm-email?email={user.Email}&code={code}";
 
             var subject = "Confirm your email";
             //with html
@@ -326,7 +326,7 @@ namespace EduLink.Repositories.Services
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
             //var baseUrl = "http://localhost:5085/api/Account";
-            var resetLink = $"{_appUrl}/reset-password?email={user.Email}&token={code}"; 
+            var resetLink = $"{_appUrl}/api/Account/reset-password?email={user.Email}&token={code}"; 
             var subject = "Reset Password";
             var emailBody = $@"
             <p>To reset your password, please click the following link:</p>
