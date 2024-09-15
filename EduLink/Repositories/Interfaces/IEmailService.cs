@@ -5,5 +5,7 @@
         //Maybe after that I add the description for the email
         Task SendEmailAsync(string toEmail, string subject, string message);
 
+        Task SendMultipleEmailsAsync(List<string> toEmails, string subject, string message);
+
     }
 }
