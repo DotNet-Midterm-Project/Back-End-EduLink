@@ -26,6 +26,9 @@ namespace EduLink.Models
         public string? RefreshToken { get; set; }
         public DateTimeOffset RefreshTokenExpireTime { get; set; }
 
+        public ICollection<Like> Likes { get; set; }
+        public ICollection<Comment> Comments { get; set; }
+
 
     }
 }

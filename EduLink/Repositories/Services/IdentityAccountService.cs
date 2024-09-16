@@ -1,3 +1,4 @@
+using Azure.Core;
 using EduLink.Data;
 using EduLink.Models;
 using EduLink.Models.DTO.Request;
@@ -29,7 +30,8 @@ namespace EduLink.Repositories.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
-
+       
+        private readonly string? _appUrl;
         public IdentityAccountService(EduLinkDbContext context, UserManager<User> userManager,
             SignInManager<User> signInManager, JwtTokenService jwtTokenService,
             RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration)
@@ -41,6 +43,7 @@ namespace EduLink.Repositories.Services
             _roleManager = roleManager;
             _emailService = emailService;
             _configuration = configuration;
+            _appUrl = _configuration["App:Url"];
         }
 
         public async Task<string> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState)
@@ -86,8 +89,8 @@ namespace EduLink.Repositories.Services
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
             //Change this when the server is live.
-            var baseUrl = "http://localhost:5085/api/Account";
-            var confirmationLink = $"{baseUrl}/confirm-email?email={user.Email}&code={code}";
+            //var baseUrl = "http://localhost:5085/api/Account";
+            var confirmationLink = $"{_appUrl}/api/Account/confirm-email?email={user.Email}&code={code}";
 
             var subject = "Confirm your email";
             //with html
@@ -160,7 +163,21 @@ namespace EduLink.Repositories.Services
             var roles = await _userManager.GetRolesAsync(user);
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(360));
 
+
+            var register= new RegisterAdminResDTO
+
+                AdminID = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Token = token,
+                Roles = roles
+            };
+
+
+            return register;
+=========
             return "Admin registration successful. Welcome to the administration team!";
+>>>>>>>>> Temporary merge branch 2
         }
 
         public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)
@@ -311,6 +328,44 @@ namespace EduLink.Repositories.Services
                 user.RefreshTokenExpireTime = DateTime.UtcNow;
                 await _userManager.UpdateAsync(user);
             }
+        }
+
+
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordReqDTO forgotPasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(forgotPasswordDto.Email);
+            if (user == null)
+            {
+                return false;
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            //var baseUrl = "http://localhost:5085/api/Account";
+            var resetLink = $"{_appUrl}/api/Account/reset-password?email={user.Email}&token={code}"; 
+            var subject = "Reset Password";
+            var emailBody = $@"
+            <p>To reset your password, please click the following link:</p>
+            <p><a href='{resetLink}'>Reset Password</a></p>";
+
+            await _emailService.SendEmailAsync(user.Email, subject, emailBody);
+
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordReqDTO resetPasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null)
+            {
+                return false;
+            }
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPasswordDto.Token));
+
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.NewPassword);
+            return result.Succeeded;
         }
 
     }

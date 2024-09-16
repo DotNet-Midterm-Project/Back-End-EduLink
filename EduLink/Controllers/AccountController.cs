@@ -96,6 +96,44 @@ namespace EduLink.Controllers
             }
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordReqDTO forgotPasswordDto)
+        {
+            var result = await _accountService.ForgotPasswordAsync(forgotPasswordDto);
+            if (!result)
+            {
+                return BadRequest("Failed to send reset email.");
+            }
+
+            return Ok("Password reset link sent.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordReqDTO resetPasswordDto)
+        {
+            var result = await _accountService.ResetPasswordAsync(resetPasswordDto);
+            if (!result)
+            {
+                return BadRequest("Error resetting password.");
+            }
+
+            return Ok("Password reset successful.");
+        }
+
+        [HttpGet("reset-password")]
+        public async Task<IActionResult> ResetPassword(string email, string token)
+        {
+            var res = new ResetPasswordResDTO
+            {
+                Email = email,
+                Token = token
+            };
+
+            return Ok(new
+            {
+                res,
+            });
+        }
 
         [Authorize(Roles = "Student, Volunteer")]
         [HttpPost("logout")]
@@ -104,6 +142,8 @@ namespace EduLink.Controllers
             await _accountService.LogoutAsync(User);
             return Ok(new { message = "Logged out successfully" });
         }
+
+        
 
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string email, string code)

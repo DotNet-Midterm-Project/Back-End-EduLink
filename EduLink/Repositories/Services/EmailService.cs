@@ -45,5 +45,30 @@ namespace EduLink.Repositories.Services
                 throw new Exception($"Email sending failed. Status code: {response.StatusCode}, Response: {responseBody}");
             }
         }
+
+        public async Task SendMultipleEmailsAsync(List<string> toEmails, string subject, string emailDescription)
+        {
+            var client = new SendGridClient(_apiKey);
+            var from = new EmailAddress(_fromEmail, "EduLink");
+
+            // Create a list of EmailAddress objects for the recipients
+            var toRecipients = toEmails.Select(email => new EmailAddress(email)).ToList();
+
+
+            var htmlContent = emailDescription;
+
+            // Use CreateSingleEmailToMultipleRecipients to create a message for multiple recipients
+            var msg = MailHelper.CreateSingleEmailToMultipleRecipients(from, toRecipients, subject, null, htmlContent);
+
+            // Send the email
+            var response = await client.SendEmailAsync(msg);
+
+            // Handle response
+            if (response.StatusCode != System.Net.HttpStatusCode.Accepted)
+            {
+                var responseBody = await response.Body.ReadAsStringAsync();
+                throw new Exception($"Email sending failed. Status code: {response.StatusCode}, Response: {responseBody}");
+            }
+        }
     }
 }
