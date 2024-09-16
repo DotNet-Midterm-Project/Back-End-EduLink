@@ -92,12 +92,24 @@ namespace EduLink.Repositories.Services
         public async Task DeleteCommentAsync(int commentId)
         {
             var comment = await _context.Comments.FirstOrDefaultAsync(c => c.CommentID == commentId);
+           
 
             _context.Comments.Remove(comment);
 
             await _context.SaveChangesAsync();
         }
 
-        
+        public async Task LikeArticleAsync(int aricleId, string userId)
+        {
+            var like = new Like
+            {
+                ArticleID = aricleId,
+                UserID = userId
+            };
+            _context.Likes.Add(like);
+            await _context.SaveChangesAsync();
+        }
+
+
     }
 }

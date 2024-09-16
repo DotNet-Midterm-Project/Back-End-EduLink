@@ -194,25 +194,14 @@ namespace EduLink.Repositories.Services
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(emailDescriptionHtml);
             var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
-                    emailDescriptionPlain = emailDescriptionPlain
-            .Replace("\r\n", "\n") 
-            .Replace("\n", Environment.NewLine) 
-            .Replace("Dear Student,", "\nDear Student,\n")
-            .Replace("We are excited", "\nWe are excited")
-            .Replace("Start Time:", "\nStart Time:")
-            .Replace("End Time:", "\nEnd Time:")
-            .Replace("Location:", "\nLocation:")
-            .Replace("Description:", "\nDescription:")
-            .Replace("We hope you can join us!", "\nWe hope you can join us!\n")
-            .Replace("Best regards,", "\nBest regards,\n")
-            .Replace("EduLink Team", "\nEduLink Team");
+               
+         
 
             // Send email to all students
-            if (studentEmails!=null) {
-                foreach (var email in studentEmails)
-                {
-                    await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
-                }
+            if (studentEmails!=null && request.EventType==EventType.Workshop) {
+                 
+                 await _emailService.SendMultipleEmailsAsync(studentEmails, emailSubject, emailDescriptionHtml);
+                
 
                 // Create and store announcement
                 var announcement = new Announcement
@@ -595,5 +584,64 @@ namespace EduLink.Repositories.Services
 
             return new MessageResDTO { Message = "Update Event successfully" };
         }
+
+        public async Task<List<BookingForVolunteerResDTO>> GetVolunteerBookingsAsync(int volunteerID)
+        {
+           
+            var volunteerEvents = await _context.Events
+                .Where(e => e.VolunteerCourse.VolunteerID == volunteerID)
+                .Include(e => e.Bookings)
+                    .ThenInclude(b => b.Student)
+                    .ThenInclude(s => s.User)
+                .Include(e => e.Sessions) 
+                    .ThenInclude(s => s.Bookings)
+                    .ThenInclude(b => b.Student)
+                    .ThenInclude(s => s.User)
+                .ToListAsync();
+
+
+            var eventBookings = volunteerEvents
+                .SelectMany(e => e.Bookings)
+                .Where(s => s.SessionID == null)
+                .Select(b => new BookingForVolunteerResDTO
+                {
+                    BookingID = b.BookingID,
+                    EventID = b.EventID,
+                    SessionID = null,
+                    StudentID = b.StudentID,
+                    StudentName = b.Student.User.UserName,
+                    BookingStatus = b.BookingStatus.ToString(),
+                    startDate = b.Event.StartTime,
+                    EndDate = b.Event.EndTime,
+                    EventTitle = b.Event.Title,
+                    BookingType = "Event"
+                })
+                .ToList();
+
+            
+            var sessionBookings = volunteerEvents
+                .SelectMany(e => e.Sessions)
+                .SelectMany(s => s.Bookings)
+                .Select(b => new BookingForVolunteerResDTO
+                {
+                    BookingID = b.BookingID,
+                    EventID = b.EventID,
+                    SessionID = b.SessionID,
+                    StudentID = b.StudentID,
+                    StudentName = b.Student.User.UserName,
+                    BookingStatus = b.BookingStatus.ToString(),
+                    startDate=b.Session.StartDate,
+                    EndDate=b.Session.EndDate,
+                    EventTitle = b.Event.Title,
+                    BookingType = "Session"
+                })
+                .ToList();
+
+            
+            var allBookings = eventBookings.Concat(sessionBookings).ToList();
+
+            return allBookings;
+        }
+      
     }
 }

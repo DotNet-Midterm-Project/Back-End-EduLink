@@ -11,5 +11,7 @@ namespace EduLink.Repositories.Interfaces
         Task UpdateCommentAsync(UpdateCommentReqDto dto);
         Task DeleteCommentAsync(int commentId);
 
+        Task LikeArticleAsync(int articleId, string userId);
+
     }
 }
