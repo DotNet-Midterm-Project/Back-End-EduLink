@@ -119,7 +119,7 @@ namespace EduLink.Controllers
         }
         [Authorize]
         [HttpPost("add-like/{articleId}")]
-        public async Task<IActionResult> LikePost(int articleId)
+        public async Task<IActionResult> LikeArticle(int articleId)
         {
             // Get the userId from the claims
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
