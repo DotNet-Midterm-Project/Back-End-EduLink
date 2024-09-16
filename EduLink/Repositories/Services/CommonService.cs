@@ -139,6 +139,16 @@ namespace EduLink.Repositories.Services
                 .ToListAsync();
             return sessions;
         }
+        public async Task LikeArticleAsync(int aricleId, string userId)
+        {
+            var like = new Like
+            {
+                ArticleID = aricleId,
+                UserID = userId
+            };
+            _context.Likes.Add(like);
+            await _context.SaveChangesAsync();
+        }
     }
 
 }
