@@ -1,5 +1,6 @@
 ﻿using EduLink.Models.DTO.Request;
 using EduLink.Repositories.Interfaces;
+using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -70,7 +71,7 @@ namespace EduLink.Controllers
         {
             var response = await _volunteer.AddSessionAsync(request);
 
-            if (response.Message.Contains("Successfully"))
+            if (response.Message.Contains("The session was added successfully."))
             {
                 return Ok(response);
             }
@@ -81,10 +82,10 @@ namespace EduLink.Controllers
         }
 
         // GET: Volunteer/Generate-URL-meeting/1
-        // Not Tested
-        [HttpPost("generate-url/{eventId}")]
+        //  Tested
+        [HttpPost("generate-event-url/{eventId}")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> GenerateMeetingUrl(int eventId)
+        public async Task<IActionResult> GenerateEventUrl(int eventId)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
@@ -99,13 +100,42 @@ namespace EduLink.Controllers
 
             var response = await _volunteer.GenerateMeetingUrlAsync(eventId);
 
-            if (response.Message == $"The URL was created successfully.")
+            if (response.Message == $"Failed to create the URL.")
             {
-                return Ok(response);
+                return BadRequest(response);
             }
             else
             {
+                return Ok(response);
+            }
+        }
+
+        // Post: Volunteer/Generate-URL-/1
+        //  Tested
+        [HttpPost("generate-session-url/{SessionId}")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> GeneratesessionUrl(int SessionId)
+        {
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
+            if (volunteerIDClaim == null)
+            {
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
+            }
+
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+
+            var response = await _volunteer.GenerateSessionUrlAsync(SessionId);
+
+            if (response.Message == $"Failed to create the URL.")
+            {
                 return BadRequest(response);
+            }
+            else
+            {
+                return Ok(response);
             }
         }
 
@@ -235,7 +265,7 @@ namespace EduLink.Controllers
         // GET: /Volunteer/get-articles
         // Tested
         [HttpGet("get-articles")]
-        [Authorize]
+        [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> GetArticles()
         {
             // Assuming that volunteerId can be obtained from the token or the request
@@ -262,7 +292,7 @@ namespace EduLink.Controllers
         // GET: /Volunteer/get-article/2
         // Tested
         [HttpGet("get-article/{articleId}")]
-        [Authorize]
+        [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> GetArticleByID(int articleId)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
@@ -286,10 +316,38 @@ namespace EduLink.Controllers
             return Ok(article);
         }
 
+        [HttpGet("bookings")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> GetVolunteerBookings()
+        {
+            if (User.Identity is ClaimsIdentity identity)
+            {
+                var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
+                if (volunteerIDClaim == null)
+                {
+                    return Unauthorized("Volunteer ID not found in token.");
+                }
+
+                if (!int.TryParse(volunteerIDClaim.Value, out var volunteerID))
+                {
+                    return BadRequest("Invalid Volunteer ID in token.");
+                }
+
+                var bookings = await _volunteer.GetVolunteerBookingsAsync(volunteerID);
+                if (bookings == null || bookings.Count == 0)
+                {
+                    return NotFound("No bookings found for the specified volunteer.");
+                }
+
+                return Ok(bookings);
+            }
+            return Unauthorized("Invalid token.");
+        }
+
         // PUT: /Volunteer/Update-Event
         // Tested
         [HttpPut("update-event")]
-        [Authorize]
+        [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventReqDTO request)
         {
             var response = await _volunteer.UpdateEventAsync(request);
@@ -329,7 +387,7 @@ namespace EduLink.Controllers
         // PUT: /Volunteer/update-article
         // Tested
         [HttpPut("update-article")]
-        [Authorize]
+        [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> UpdateArticle([FromBody] UpdateArticleReqDTO request)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
@@ -383,7 +441,7 @@ namespace EduLink.Controllers
         // PUT: /Volunteer/hidden-article
         // Tested
         [HttpPut("hidden-article")]
-        [Authorize]
+        [Authorize(Roles = "Volunteer")]
         public async Task<IActionResult> ModifyArticleStatus([FromBody] ModifyArticleStatusReqDTO request)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");

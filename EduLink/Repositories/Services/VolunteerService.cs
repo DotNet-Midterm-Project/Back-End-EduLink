@@ -64,7 +64,7 @@ namespace EduLink.Repositories.Services
         // Get all event contents for a specific event
         public async Task<IEnumerable<EventContentResDTO>> GetEventContentsAsync(int eventID)
         {
-            await _helperService.UpdateEventStatusesAsync();
+         
 
             var eventContents = await _context.Events
                 .Where(e => e.EventID == eventID)
@@ -93,6 +93,7 @@ namespace EduLink.Repositories.Services
         {
             var volunteerCourse = await _context.VolunteerCourses
                 .FirstOrDefaultAsync(vc => vc.VolunteerID == volunteerID && vc.CourseID == courseID);
+            await _helperService.UpdateEventStatusesAsync();
 
             if (volunteerCourse == null)
             {
@@ -160,7 +161,7 @@ namespace EduLink.Repositories.Services
                 EventType = request.EventType,
                 EventDescription = request.EventDescription,
                 EventDetailes = request.Details,
-                EventAddress = request.Location == EventLocation.Online ? "The session link will be sent later" : request.EventAddress,
+                EventAddress = request.Location == EventLocation.Online ? "The Event link will be sent later" : request.EventAddress,
                 Capacity = request.Capacity,
                 SessionCount = request.EventType == EventType.PrivateSession ? request.SessionCounts : 0,
                 EventStatus = EventStatus.Scheduled,
@@ -193,13 +194,14 @@ namespace EduLink.Repositories.Services
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(emailDescriptionHtml);
             var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
+               
+         
 
             // Send email to all students
-            if (studentEmails!=null) {
-                foreach (var email in studentEmails)
-                {
-                    await _emailService.SendEmailAsync(email, emailSubject, emailDescriptionHtml);
-                }
+            if (studentEmails!=null && request.EventType==EventType.Workshop) {
+                 
+                 await _emailService.SendMultipleEmailsAsync(studentEmails, emailSubject, emailDescriptionHtml);
+                
 
                 // Create and store announcement
                 var announcement = new Announcement
@@ -253,30 +255,154 @@ namespace EduLink.Repositories.Services
         // Generate a meeting URL for an online event
         public async Task<MessageResDTO> GenerateMeetingUrlAsync(int eventId)
         {
+            // Retrieve the event from the database using the provided eventId
             var eventToUpdate = await _context.Events
                 .FirstOrDefaultAsync(e => e.EventID == eventId);
 
+
+            // If the event is not found, return a message indicating this
             if (eventToUpdate == null)
             {
                 return new MessageResDTO { Message = "Event not found." };
             }
 
+            // Check if the event location is online; if not, return a message
             if (eventToUpdate.Location != EventLocation.Online)
             {
                 return new MessageResDTO { Message = "Meeting URL can only be created for online events." };
             }
 
-            var meetingUrl = $"https://meeting.service.com/{Guid.NewGuid()}";
+            // Get the Google Calendar service to interact with Google Calendar API
+            var service = GoogleCalendarService.GetCalendarService();
 
-            eventToUpdate.EventAddress = meetingUrl;
+            // Define the timezone for the event
+            var validTimeZone = "UTC";
+
+            // Create a new event object to be sent to Google Calendar
+            var newEvent = new Google.Apis.Calendar.v3.Data.Event
+            {
+                Summary = eventToUpdate.Title, // Set the event title
+                Description = eventToUpdate.EventDescription, // Set the event description
+                Start = new Google.Apis.Calendar.v3.Data.EventDateTime
+                {
+                    DateTime = eventToUpdate.StartTime.DateTime, // Set the event start time
+                    TimeZone = validTimeZone // Set the timezone for the start time
+                },
+                End = new Google.Apis.Calendar.v3.Data.EventDateTime
+                {
+                    DateTime = eventToUpdate.EndTime.DateTime, // Set the event end time
+                    TimeZone = validTimeZone // Set the timezone for the end time
+                },
+                ConferenceData = new Google.Apis.Calendar.v3.Data.ConferenceData
+                {
+                    CreateRequest = new Google.Apis.Calendar.v3.Data.CreateConferenceRequest
+                    {
+                        ConferenceSolutionKey = new Google.Apis.Calendar.v3.Data.ConferenceSolutionKey
+                        {
+                            Type = "hangoutsMeet" // Specify that the meeting should be a Google Meet
+                        },
+                        RequestId = Guid.NewGuid().ToString() // Generate a unique request ID for the meeting
+                    }
+                }
+            };
+
+            // Define the calendar ID where the event will be created (primary calendar)
+            var calendarId = "primary";
+
+            // Insert the new event into the Google Calendar
+            var request = service.Events.Insert(newEvent, calendarId);
+            request.ConferenceDataVersion = 1; // Specify the conference data version to create a Meet link
+            var createdEvent = await request.ExecuteAsync(); // Execute the request asynchronously
+
+            // Update the event in the database with the newly created Google Meet link
+            eventToUpdate.EventAddress = createdEvent.HangoutLink;
             _context.Events.Update(eventToUpdate);
 
+            // Save the changes to the database
             var result = await _context.SaveChangesAsync();
 
+            // Return a success message with the meeting URL if successful, or a failure message if not
             return result > 0
-                ? new MessageResDTO { Message = $"The URL was created successfully: {meetingUrl}" }
+                ? new MessageResDTO { Message = $"The URL was created successfully: {createdEvent.HangoutLink}" }
                 : new MessageResDTO { Message = "Failed to create the URL." };
         }
+
+        public async Task<MessageResDTO> GenerateSessionUrlAsync(int Sessionid)
+        {
+            // Retrieve the event from the database using the provided eventId
+            var eventToUpdate = await _context.Sessions.Include(s=> s.Event)
+                .FirstOrDefaultAsync(e => e.SessionID == Sessionid);
+
+
+            // If the event is not found, return a message indicating this
+            if (eventToUpdate == null)
+            {
+                return new MessageResDTO { Message = "Event not found." };
+            }
+
+            // Check if the event location is online; if not, return a message
+            if (eventToUpdate.Event.Location != EventLocation.Online)
+            {
+                Console.WriteLine(eventToUpdate.Event.Location);
+                Console.WriteLine(eventToUpdate);
+                return new MessageResDTO { Message = "Meeting URL can only be created for online events." };
+            }
+
+            // Get the Google Calendar service to interact with Google Calendar API
+            var service = GoogleCalendarService.GetCalendarService();
+
+            // Define the timezone for the event
+            var validTimeZone = "UTC";
+
+            // Create a new event object to be sent to Google Calendar
+            var newEvent = new Google.Apis.Calendar.v3.Data.Event
+            {
+                Summary = eventToUpdate.Event.Title, // Set the event title
+                Description = eventToUpdate.Details, // Set the event description
+                Start = new Google.Apis.Calendar.v3.Data.EventDateTime
+                {
+                    DateTime = eventToUpdate.StartDate.DateTime, // Set the event start time
+                    TimeZone = validTimeZone // Set the timezone for the start time
+                },
+                End = new Google.Apis.Calendar.v3.Data.EventDateTime
+                {
+                    DateTime = eventToUpdate.EndDate.DateTime, // Set the event end time
+                    TimeZone = validTimeZone // Set the timezone for the end time
+                },
+                ConferenceData = new Google.Apis.Calendar.v3.Data.ConferenceData
+                {
+                    CreateRequest = new Google.Apis.Calendar.v3.Data.CreateConferenceRequest
+                    {
+                        ConferenceSolutionKey = new Google.Apis.Calendar.v3.Data.ConferenceSolutionKey
+                        {
+                            Type = "hangoutsMeet" // Specify that the meeting should be a Google Meet
+                        },
+                        RequestId = Guid.NewGuid().ToString() // Generate a unique request ID for the meeting
+                    }
+                }
+            };
+
+            // Define the calendar ID where the event will be created (primary calendar)
+            var calendarId = "primary";
+
+            // Insert the new event into the Google Calendar
+            var request = service.Events.Insert(newEvent, calendarId);
+            request.ConferenceDataVersion = 1; // Specify the conference data version to create a Meet link
+            var createdEvent = await request.ExecuteAsync(); // Execute the request asynchronously
+
+            // Update the event in the database with the newly created Google Meet link
+            eventToUpdate.SessionAdress = createdEvent.HangoutLink;
+            _context.Sessions.Update(eventToUpdate);
+
+            // Save the changes to the database
+            var result = await _context.SaveChangesAsync();
+
+            // Return a success message with the meeting URL if successful, or a failure message if not
+            return result > 0
+                ? new MessageResDTO { Message = $"The URL was created successfully: {createdEvent.HangoutLink}" }
+                : new MessageResDTO { Message = "Failed to create the URL." };
+        }
+
 
         // Add a session to an event
         public async Task<MessageResDTO> AddSessionAsync(AddSessionReqDTO request)
@@ -303,6 +429,7 @@ namespace EduLink.Repositories.Services
                     Details = request.Details,
                     Capacity = request.SessionCapacity,
                     SessionStatus = SessionStatus.Open,
+                    SessionAdress = "The session link will be sent later"
                 };
 
                 eventToUpdate.Sessions.Add(newSession);
@@ -457,5 +584,64 @@ namespace EduLink.Repositories.Services
 
             return new MessageResDTO { Message = "Update Event successfully" };
         }
+
+        public async Task<List<BookingForVolunteerResDTO>> GetVolunteerBookingsAsync(int volunteerID)
+        {
+           
+            var volunteerEvents = await _context.Events
+                .Where(e => e.VolunteerCourse.VolunteerID == volunteerID)
+                .Include(e => e.Bookings)
+                    .ThenInclude(b => b.Student)
+                    .ThenInclude(s => s.User)
+                .Include(e => e.Sessions) 
+                    .ThenInclude(s => s.Bookings)
+                    .ThenInclude(b => b.Student)
+                    .ThenInclude(s => s.User)
+                .ToListAsync();
+
+
+            var eventBookings = volunteerEvents
+                .SelectMany(e => e.Bookings)
+                .Where(s => s.SessionID == null)
+                .Select(b => new BookingForVolunteerResDTO
+                {
+                    BookingID = b.BookingID,
+                    EventID = b.EventID,
+                    SessionID = null,
+                    StudentID = b.StudentID,
+                    StudentName = b.Student.User.UserName,
+                    BookingStatus = b.BookingStatus.ToString(),
+                    startDate = b.Event.StartTime,
+                    EndDate = b.Event.EndTime,
+                    EventTitle = b.Event.Title,
+                    BookingType = "Event"
+                })
+                .ToList();
+
+            
+            var sessionBookings = volunteerEvents
+                .SelectMany(e => e.Sessions)
+                .SelectMany(s => s.Bookings)
+                .Select(b => new BookingForVolunteerResDTO
+                {
+                    BookingID = b.BookingID,
+                    EventID = b.EventID,
+                    SessionID = b.SessionID,
+                    StudentID = b.StudentID,
+                    StudentName = b.Student.User.UserName,
+                    BookingStatus = b.BookingStatus.ToString(),
+                    startDate=b.Session.StartDate,
+                    EndDate=b.Session.EndDate,
+                    EventTitle = b.Event.Title,
+                    BookingType = "Session"
+                })
+                .ToList();
+
+            
+            var allBookings = eventBookings.Concat(sessionBookings).ToList();
+
+            return allBookings;
+        }
+      
     }
 }

@@ -13,6 +13,7 @@ namespace EduLink.Repositories.Interfaces
         Task<MessageResDTO> AddEventsAsync(int volunteerID,AddEventReqDTO request);
         Task<MessageResDTO> CancelEventAsync(int eventId, int volunteerID);
         Task<MessageResDTO> GenerateMeetingUrlAsync(int eventId);
+        Task<MessageResDTO> GenerateSessionUrlAsync(int eventId);
         Task<MessageResDTO> AddSessionAsync(AddSessionReqDTO request);
 
         Task<MessageResDTO> AddArticleAsync(AddArticleReqDTO request, int volunteerId);
@@ -21,6 +22,6 @@ namespace EduLink.Repositories.Interfaces
         Task<ArticleDTO> GetArticleByIdAsync(int articleId);
         Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId);
         Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request);
-        //Task<GetNotificationsResponse> GetNotificationsAsync(GetNotificationsRequest request);
+        Task<List<BookingForVolunteerResDTO>> GetVolunteerBookingsAsync(int volunteerID);
     }
 }

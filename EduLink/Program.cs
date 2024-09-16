@@ -2,6 +2,7 @@ using EduLink.Data;
 using EduLink.Models;
 using EduLink.Repositories.Interfaces;
 using EduLink.Repositories.Services;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ namespace EduLink
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
 
             // Get the connection string settings 
@@ -35,23 +36,15 @@ namespace EduLink
             builder.Services.AddScoped<HelperService>();
             builder.Services.AddScoped<IStudent, StudentService>();
             builder.Services.AddScoped<ICommon, CommonService>();
-
+            builder.Services.AddScoped<IComment, CommentService>();
             builder.Services.AddScoped<IVolunteer, VolunteerService>();
-
             builder.Services.AddScoped<IAdmin, AdminService>();
-
-
             builder.Services.AddScoped<JwtTokenService>();
 
             // Configure Identity
-            builder.Services.AddIdentity<User, IdentityRole>(options =>
-            {
-                // Add custom options if needed
-                // options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
-                // options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultProvider;
-            })
-            .AddEntityFrameworkStores<EduLinkDbContext>()
-            .AddDefaultTokenProviders(); // Ensure default token providers are registered
+            builder.Services.AddIdentity<User, IdentityRole>(options => { })
+                .AddEntityFrameworkStores<EduLinkDbContext>()
+                .AddDefaultTokenProviders();
 
             // Configure authentication
             builder.Services.AddAuthentication(options =>
@@ -71,11 +64,19 @@ namespace EduLink
                 options.AddPolicy("DefaultPolicy", policy =>
                     policy.RequireAuthenticatedUser());
             });
+            // Configure Hangfire
+            builder.Services.AddHangfire(config =>
+            {
+                config.UseSqlServerStorage(connectionString); 
+            });
+
+            // add Hangfire Dashboard
+            builder.Services.AddHangfireServer();
+
             // Configure Swagger
             builder.Services.AddSwaggerGen(options =>
             {
-
-                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "EduLink API",
                     Version = "v1",
@@ -92,20 +93,19 @@ namespace EduLink
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
                 {
-                    Reference = new OpenApiReference
                     {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
                     }
-                },
-                Array.Empty<string>()
-            }
-        });
-
+                });
             });
 
             var app = builder.Build();
@@ -135,9 +135,26 @@ namespace EduLink
                 }
             });
 
+            // Hangfire Dashboard
+            app.UseHangfireDashboard();
+            // Schedule tasks using Hangfire
+            RecurringJob.AddOrUpdate<HelperService>(
+                "update-events-statuses",
+                service => service.UpdateEventStatusesAsync(),
+                Cron.Hourly); // The task is executed every hour
+            RecurringJob.AddOrUpdate<HelperService>(
+                "update-Sessions-statuses",
+                service => service.UpdateSessionStatusesAsync(),
+                Cron.Hourly); // The task is executed every hour
+            RecurringJob.AddOrUpdate<HelperService>(
+                "update-booking-statuses",
+                service => service.UpdateBookingStatusesAsync(),
+                Cron.Minutely); // The task is executed every hour
+
             // Authentication and Authorization
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.MapControllers();
 
             app.Run();

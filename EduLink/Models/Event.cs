@@ -18,9 +18,9 @@ namespace EduLink.Models
     }
     public enum EventLocation
     {
-        Online = 1,
-        OnSite = 2,
-        Hybrid = 3
+        Online ,
+        OnSite ,
+        Hybrid 
     }
 
 
@@ -51,5 +51,6 @@ namespace EduLink.Models
         // Add this collection to represent the one-to-many relationship with Announcements
         public ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
+
     }
 }

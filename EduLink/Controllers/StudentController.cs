@@ -48,7 +48,7 @@ namespace EduLink.Controllers
                 {
                     return BadRequest("You are already booked for this WorkShop.");
                 }
-                if(result.Contains("fully")){
+                if(result.Contains("fully booked")){
                     return BadRequest(new MessageResDTO { Message = "Session is fully booked." });
                 }
 
@@ -84,7 +84,7 @@ namespace EduLink.Controllers
                     return BadRequest(new MessageResDTO { Message = "You are already booked for this WorkShop." });
                 }
 
-                if (result.Message.Contains("fully"))
+                if (result.Message.Contains("is fully booked"))
                 {
                     return BadRequest(new MessageResDTO { Message = "Session is fully booked." }); 
                 }
