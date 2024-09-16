@@ -1,25 +1,31 @@
 ﻿using EduLink.Models;
 using EduLink.Models.DTO.Request;
+using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text;
 
 namespace EduLink.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class AccountController : ControllerBase
     {
         private readonly IAccount _accountService;
         private readonly UserManager<User> _userManager;
 
-        public AccountController(IAccount accountService)
+        public AccountController(IAccount accountService, UserManager<User> userManager)
         {
             _accountService = accountService;
+            _userManager = userManager;
+
         }
 
         [HttpPost("register-student")]
@@ -72,15 +78,72 @@ namespace EduLink.Controllers
 
             return Ok(authResponse);
         }
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<LoginResDTO>> Refresh(TokenResDTO tokenDto)
+        {
+            try
+            {
+                var result = await _accountService.RefreshToken(tokenDto);
+                return Ok(result);
+            }
+            catch (SecurityTokenException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordReqDTO forgotPasswordDto)
+        {
+            var result = await _accountService.ForgotPasswordAsync(forgotPasswordDto);
+            if (!result)
+            {
+                return BadRequest("Failed to send reset email.");
+            }
+
+            return Ok("Password reset link sent.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordReqDTO resetPasswordDto)
+        {
+            var result = await _accountService.ResetPasswordAsync(resetPasswordDto);
+            if (!result)
+            {
+                return BadRequest("Error resetting password.");
+            }
+
+            return Ok("Password reset successful.");
+        }
+
+        [HttpGet("reset-password")]
+        public async Task<IActionResult> ResetPassword(string email, string token)
+        {
+            var res = new ResetPasswordResDTO
+            {
+                Email = email,
+                Token = token
+            };
+
+            return Ok(new
+            {
+                res,
+            });
+        }
+
+        [Authorize(Roles = "Student, Volunteer")]
         [HttpPost("logout")]
-        [Authorize(Roles = "Student, Student")]
-        [Authorize(Roles = "Student")]
         public async Task<IActionResult> Logout()
         {
-            await _accountService.LogoutAsync();
-            return Ok("Student has been logged out.");
+            await _accountService.LogoutAsync(User);
+            return Ok(new { message = "Logged out successfully" });
         }
+
+        
 
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string email, string code)

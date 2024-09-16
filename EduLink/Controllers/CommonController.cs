@@ -5,6 +5,8 @@ using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace EduLink.Controllers
 {
@@ -21,9 +23,11 @@ namespace EduLink.Controllers
 
         // GET: /Common/getAll-Workshop
         // Tested
-        [HttpGet("getAll-Workshop")]
+        [Authorize]
+        [HttpGet("get-all-Workshops")]
         public async Task<IActionResult> GetAllWorkshops()
         {
+            
             try
             {
                 var workshops = await _commonService.GetAllWorkshopsAsync();
@@ -41,7 +45,8 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-articles
         // Tested
-        [HttpGet("get-articles")]
+        [Authorize]
+        [HttpGet("get-all-articles")]
         public async Task<IActionResult> GetAllArticles()
         {
             var articlesResponse = await _commonService.GetAllArticlesAsync();
@@ -55,7 +60,8 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-articles/2
         // Tested
-        [HttpGet("get-articles/{volunteerId}")]
+        [Authorize]
+        [HttpGet("get-articles-by-volunteerId/{volunteerId}")]
         public async Task<IActionResult> GetArticlesByVolunteerId(int volunteerId)
         {
             var articlesResponse = await _commonService.GetArticlesByVolunteerIdAsync(volunteerId);
@@ -69,7 +75,8 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-Event-Content?eventId=1
         // Tested
-        [HttpGet("get-Event-Content")]
+        [Authorize]
+        [HttpGet("get-event-content")]
         public async Task<IActionResult> GetEventContent([FromQuery] int eventId)
         {
             var eventContentResponse = await _commonService.GetEventContentByEventIdAsync(eventId);
@@ -83,7 +90,8 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-Events?volunteerId=2&courseId=1
         // Tested
-        [HttpGet("get-Events")]
+        [Authorize]
+        [HttpGet("get-events-by-volunteer-and-course")]
         public async Task<IActionResult> GetEvents([FromQuery] int volunteerId, [FromQuery] int courseId)
         {
             var eventResponse = await _commonService.GetEventsByVolunteerAndCourseAsync(volunteerId, courseId);
@@ -97,7 +105,8 @@ namespace EduLink.Controllers
 
         // GET: /Common/get-event-session?eventId=1
         // Tested
-        [HttpGet("get-event-session")]
+        [Authorize]
+        [HttpGet("get-event-sessions")]
         public async Task<IActionResult> GetEventSessions([FromQuery] int eventId)
         {
             var sessionResponse = await _commonService.GetSessionsByEventAsync(eventId);
@@ -108,6 +117,23 @@ namespace EduLink.Controllers
 
             return Ok(sessionResponse);
         }
+        [Authorize]
+        [HttpPost("add-like/{articleId}")]
+        public async Task<IActionResult> LikeArticle(int articleId)
+        {
+            // Get the userId from the claims
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+            // Call the service method with the articleId and userId
+            await _commonService.LikeArticleAsync(articleId, userId);
+            return Ok("Like added successfully");
+        }
+
     }
 }
 

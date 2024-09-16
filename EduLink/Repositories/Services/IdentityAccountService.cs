@@ -1,3 +1,4 @@
+using Azure.Core;
 using EduLink.Data;
 using EduLink.Models;
 using EduLink.Models.DTO.Request;
@@ -9,8 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NuGet.Common;
 using SendGrid.Helpers.Mail.Model;
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace EduLink.Repositories.Services
@@ -23,9 +29,12 @@ namespace EduLink.Repositories.Services
         private readonly JwtTokenService _jwtTokenService;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
-
+        private readonly IConfiguration _configuration;
+       
+        private readonly string? _appUrl;
         public IdentityAccountService(EduLinkDbContext context, UserManager<User> userManager,
-            SignInManager<User> signInManager, JwtTokenService jwtTokenService, RoleManager<IdentityRole> roleManager, IEmailService emailService)
+            SignInManager<User> signInManager, JwtTokenService jwtTokenService,
+            RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
@@ -33,9 +42,11 @@ namespace EduLink.Repositories.Services
             _jwtTokenService = jwtTokenService;
             _roleManager = roleManager;
             _emailService = emailService;
+            _configuration = configuration;
+            _appUrl = _configuration["App:Url"];
         }
 
-        public async Task<RegisterStudentResDTO> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState)
+        public async Task<string> RegisterStudentAsync(RegisterUserReqDTO registerStudentDto, ModelStateDictionary modelState)
         {
             if (!modelState.IsValid)
             {
@@ -54,7 +65,7 @@ namespace EduLink.Repositories.Services
                 PhoneNumber = registerStudentDto.PhoneNumber,
                 DepartmentID = registerStudentDto.DepartmentID,
 
-                
+
             };
 
             var result = await _userManager.CreateAsync(user, registerStudentDto.Password);
@@ -78,9 +89,9 @@ namespace EduLink.Repositories.Services
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
             //Change this when the server is live.
-            var baseUrl = "http://localhost:5085/api/Account";
-            var confirmationLink = $"{baseUrl}/confirm-email?email={user.Email}&code={code}";
-            
+            //var baseUrl = "http://localhost:5085/api/Account";
+            var confirmationLink = $"{_appUrl}/api/Account/confirm-email?email={user.Email}&code={code}";
+
             var subject = "Confirm your email";
             //with html
             var emailDescription = $@"
@@ -105,18 +116,10 @@ namespace EduLink.Repositories.Services
             var roles = await _userManager.GetRolesAsync(user);
             //var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
 
-            return new RegisterStudentResDTO
-            {
-                StudentID = student.StudentID,
-                UserName = user.UserName,
-                Email = user.Email,
-                DepartmentID = user.DepartmentID,
-                Token = token,
-                Roles = roles
-            };
+            return "Student registration successful.";
         }
 
-        public async Task<RegisterAdminResDTO> RegisterAdminAsync(RegisterUserReqDTO registerAdminDto, ModelStateDictionary modelState)
+        public async Task<string> RegisterAdminAsync(RegisterUserReqDTO registerAdminDto, ModelStateDictionary modelState)
         {
             if (!modelState.IsValid)
             {
@@ -160,17 +163,9 @@ namespace EduLink.Repositories.Services
             var roles = await _userManager.GetRolesAsync(user);
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(360));
 
-            var register= new RegisterAdminResDTO
-            {
-                AdminID = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                Token = token,
-                Roles = roles
-            };
 
+            return "Admin registration successful. Welcome to the administration team!";
 
-            return register;
         }
 
         public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)
@@ -182,15 +177,82 @@ namespace EduLink.Repositories.Services
             }
             //if (!user.EmailConfirmed)
             //    return null;
-
-            //I am not sure about this.
-            //var result = await _signInManager.PasswordSignInAsync(user.UserName, loginDto.Password, false, false);
             var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
             if (!result.Succeeded)
             {
                 return null;
             }
 
+            return await CreateDtoUserResponseAsync(user, true);
+        }
+
+        public async Task<bool> AddStudentToVolunteerRoleAsync(string studentID)
+        {
+            // Find the user by ID
+            var user = await _userManager.FindByIdAsync(studentID);
+            if (user == null)
+            {
+                return false; // User not found, return false immediately
+            }
+
+            // Ensure the role exists before adding the user to the role
+            if (await _roleManager.RoleExistsAsync("Volunteer"))
+            {
+                // Add the user to the 'Volunteer' role
+                var result = await _userManager.AddToRoleAsync(user, "Volunteer");
+                //await _context.SaveChangesAsync();
+
+                // Return true if adding the role succeeded
+                return result.Succeeded;
+            }
+
+            // Return false if the role doesn't exist
+            return false;
+        }
+        //Refresh Token here
+        public async Task<LoginResDTO> RefreshToken(TokenResDTO tokenResDto)
+        {
+            var principle = GetPrincipalFromExpiredToken(tokenResDto.AccessToken);
+            var user = await _userManager.FindByNameAsync(principle.Identity.Name);
+            if (user == null || user.RefreshToken != tokenResDto.RefreshToken ||
+                user.RefreshTokenExpireTime <= DateTime.Now)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+            }
+            return await CreateDtoUserResponseAsync(user, false);
+        }
+
+        //Some methods used in refresh token
+        // generate the refresh token:
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+
+        //get principal from the expired access token: 
+        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = JwtTokenService.ValidateToken(_configuration);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken securityToken;
+            var principle = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid Token");
+            }
+            return principle;
+        }
+
+        //for token
+        private async Task<string> GenerateTokenBasedOnRole(User user)
+        {
             var roles = await _userManager.GetRolesAsync(user);
             string token = null;
 
@@ -222,44 +284,76 @@ namespace EduLink.Repositories.Services
                 // Default token logic
                 token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(60));
             }
+            return token;
+
+        }
+
+        private async Task<LoginResDTO> CreateDtoUserResponseAsync(User user, bool populateExp)
+        {
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            if (populateExp)
+                user.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
 
             return new LoginResDTO
             {
-                Token = token,
                 UserId = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                Roles = roles
+                Roles = await _userManager.GetRolesAsync(user),
+                AccessToken = await GenerateTokenBasedOnRole(user),
+                RefreshToken = refreshToken
             };
+
         }
 
-        public async Task<bool> AddStudentToVolunteerRoleAsync(string studentID)
+        public async Task LogoutAsync(ClaimsPrincipal userPrincipal)
         {
-            // Find the user by ID
-            var user = await _userManager.FindByIdAsync(studentID);
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user != null)
+            {
+                user.RefreshTokenExpireTime = DateTime.UtcNow;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+
+
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordReqDTO forgotPasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(forgotPasswordDto.Email);
             if (user == null)
             {
-                return false; // User not found, return false immediately
+                return false;
             }
 
-            // Ensure the role exists before adding the user to the role
-            if (await _roleManager.RoleExistsAsync("Volunteer"))
-            {
-                // Add the user to the 'Volunteer' role
-                var result = await _userManager.AddToRoleAsync(user, "Volunteer");
-                //await _context.SaveChangesAsync();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-                // Return true if adding the role succeeded
-                return result.Succeeded;
-            }
+            //var baseUrl = "http://localhost:5085/api/Account";
+            var resetLink = $"{_appUrl}/api/Account/reset-password?email={user.Email}&token={code}"; 
+            var subject = "Reset Password";
+            var emailBody = $@"
+            <p>To reset your password, please click the following link:</p>
+            <p><a href='{resetLink}'>Reset Password</a></p>";
 
-            // Return false if the role doesn't exist
-            return false;
+            await _emailService.SendEmailAsync(user.Email, subject, emailBody);
+
+            return true;
         }
 
-        public async Task LogoutAsync()
+        public async Task<bool> ResetPasswordAsync(ResetPasswordReqDTO resetPasswordDto)
         {
-            await _signInManager.SignOutAsync();
+            var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null)
+            {
+                return false;
+            }
+            var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPasswordDto.Token));
+
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.NewPassword);
+            return result.Succeeded;
         }
 
     }

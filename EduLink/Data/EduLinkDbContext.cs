@@ -21,6 +21,8 @@ namespace EduLink.Data
         public DbSet<DepartmentCourses> DepartmentCourses { get; set; }
         public DbSet<Announcement> Announcement { get; set; }
         public DbSet<Session> Sessions { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Like> Likes { get; set; }
 
 
         public EduLinkDbContext(DbContextOptions options) : base(options){}
@@ -208,6 +210,37 @@ namespace EduLink.Data
                            .HasForeignKey(b => b.SessionID)
                            .OnDelete(DeleteBehavior.NoAction);
 
+
+            //Comments
+            modelBuilder.Entity<User>()
+                .HasMany(m => m.Comments)
+                .WithOne(m => m.User)
+                .HasForeignKey(fk => fk.UserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Article>()
+               .HasMany(m => m.Comments)
+               .WithOne(m => m.Article)
+               .HasForeignKey(fk => fk.ArticleID)
+               .OnDelete(DeleteBehavior.ClientSetNull);
+
+            //Likes
+            modelBuilder.Entity<Like>()
+          .HasKey(l => new { l.UserID, l.ArticleID });
+
+            modelBuilder.Entity<Like>()
+                .HasOne(l => l.User)
+                .WithMany(u => u.Likes)
+                .HasForeignKey(l => l.UserID)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<Like>()
+                .HasOne(l => l.Article)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(l => l.ArticleID)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            
 
             //Seed Roles
             SeedRoles(modelBuilder, "Admin");
