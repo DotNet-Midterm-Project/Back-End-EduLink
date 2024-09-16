@@ -16,6 +16,8 @@ namespace EduLink.Models
         public int VolunteerID { get; set; }
         public Volunteer Volunteer { get; set; }
         public ArticleStatus Status { get; set; }
+        public ICollection<Comment> Comments { get; set; }
+        public ICollection<Like> Likes { get; set; }
     }
     public enum ArticleStatus
     {
