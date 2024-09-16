@@ -58,12 +58,14 @@ namespace EduLink
                 options.TokenValidationParameters = JwtTokenService.ValidateToken(builder.Configuration);
             });
 
+
             builder.Services.AddAuthorization(options =>
             {
                 // You can define policies if needed, or use the default policy
                 options.AddPolicy("DefaultPolicy", policy =>
                     policy.RequireAuthenticatedUser());
             });
+
             // Configure Hangfire
             builder.Services.AddHangfire(config =>
             {
@@ -72,6 +74,7 @@ namespace EduLink
 
             // add Hangfire Dashboard
             builder.Services.AddHangfireServer();
+
 
             // Configure Swagger
             builder.Services.AddSwaggerGen(options =>
