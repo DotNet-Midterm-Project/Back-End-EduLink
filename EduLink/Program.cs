@@ -30,6 +30,7 @@ namespace EduLink
             builder.Services.AddDbContext<EduLinkDbContext>(opt => opt.UseSqlServer(connectionString));
 
             // Register services
+          //  builder.Services.AddScoped<GoogleCalendarService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IAccount, IdentityAccountService>();
             builder.Services.AddScoped<HelperService>();
@@ -133,6 +134,7 @@ namespace EduLink
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+        
 
             app.Run();
         }

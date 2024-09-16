@@ -18,9 +18,9 @@ namespace EduLink.Models
     }
     public enum EventLocation
     {
-        Online = 1,
-        OnSite = 2,
-        Hybrid = 3
+        Online ,
+        OnSite ,
+        Hybrid 
     }
 
 

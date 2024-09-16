@@ -70,7 +70,7 @@ namespace EduLink.Controllers
         {
             var response = await _volunteer.AddSessionAsync(request);
 
-            if (response.Message.Contains("Successfully"))
+            if (response.Message.Contains("The session was added successfully."))
             {
                 return Ok(response);
             }
@@ -81,10 +81,10 @@ namespace EduLink.Controllers
         }
 
         // GET: Volunteer/Generate-URL-meeting/1
-        // Not Tested
-        [HttpPost("generate-url/{eventId}")]
+        //  Tested
+        [HttpPost("generate-event-url/{eventId}")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> GenerateMeetingUrl(int eventId)
+        public async Task<IActionResult> GenerateEventUrl(int eventId)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
@@ -99,13 +99,42 @@ namespace EduLink.Controllers
 
             var response = await _volunteer.GenerateMeetingUrlAsync(eventId);
 
-            if (response.Message == $"The URL was created successfully.")
+            if (response.Message == $"Failed to create the URL.")
             {
-                return Ok(response);
+                return BadRequest(response);
             }
             else
             {
+                return Ok(response);
+            }
+        }
+
+        // Post: Volunteer/Generate-URL-/1
+        //  Tested
+        [HttpPost("generate-session-url/{SessionId}")]
+        [Authorize(Roles = "Volunteer")]
+        public async Task<IActionResult> GeneratesessionUrl(int SessionId)
+        {
+            var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
+            if (volunteerIDClaim == null)
+            {
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
+            }
+
+            if (!int.TryParse(volunteerIDClaim.Value, out int volunteerID))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+
+            var response = await _volunteer.GenerateSessionUrlAsync(SessionId);
+
+            if (response.Message == $"Failed to create the URL.")
+            {
                 return BadRequest(response);
+            }
+            else
+            {
+                return Ok(response);
             }
         }
 

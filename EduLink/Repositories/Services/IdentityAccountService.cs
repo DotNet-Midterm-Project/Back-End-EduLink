@@ -140,6 +140,7 @@ namespace EduLink.Repositories.Services
                 EmailConfirmed = true,
 
             };
+           
 
             var result = await _userManager.CreateAsync(user, registerAdminDto.Password);
 
@@ -151,6 +152,8 @@ namespace EduLink.Repositories.Services
                 }
                 return null;
             }
+           
+
 
             if (await _roleManager.RoleExistsAsync("Admin"))
             {
@@ -160,7 +163,21 @@ namespace EduLink.Repositories.Services
             var roles = await _userManager.GetRolesAsync(user);
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(360));
 
+
+            var register= new RegisterAdminResDTO
+
+                AdminID = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Token = token,
+                Roles = roles
+            };
+
+
+            return register;
+=========
             return "Admin registration successful. Welcome to the administration team!";
+>>>>>>>>> Temporary merge branch 2
         }
 
         public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)
