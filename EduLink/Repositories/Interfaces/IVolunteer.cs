@@ -22,6 +22,6 @@ namespace EduLink.Repositories.Interfaces
         Task<ArticleDTO> GetArticleByIdAsync(int articleId);
         Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId);
         Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request);
-        //Task<GetNotificationsResponse> GetNotificationsAsync(GetNotificationsRequest request);
+        Task<List<BookingForVolunteerResDTO>> GetVolunteerBookingsAsync(int volunteerID);
     }
 }

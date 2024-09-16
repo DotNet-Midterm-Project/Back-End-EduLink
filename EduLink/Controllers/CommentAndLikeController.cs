@@ -2,6 +2,7 @@
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,11 @@ namespace EduLink.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentController : ControllerBase
+    public class CommentAndLikeController : ControllerBase
     {
         private readonly IComment _comment;
 
-        public CommentController(IComment commentService)
+        public CommentAndLikeController(IComment commentService)
         {
             _comment = commentService;
         }
@@ -41,7 +42,22 @@ namespace EduLink.Controllers
 
             return Ok(createdComment);
         }
+        [Authorize]
+        [HttpPost("add-like/{articleId}")]
+        public async Task<IActionResult> LikeArticle(int articleId)
+        {
+            // Get the userId from the claims
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (userId == null)
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+            // Call the service method with the articleId and userId
+            await _comment.LikeArticleAsync(articleId, userId);
+            return Ok("Like added successfully");
+        }
         // GET: api/Comment/get-comment-by-id/{commentId}
         [Authorize]
         [HttpGet("get-comment-by-id/{commentId}")]
@@ -75,12 +91,14 @@ namespace EduLink.Controllers
 
         // DELETE: api/Comment/delete-comment/5
         [Authorize]
-        [HttpDelete("delete-comment/{id}")]
+        [HttpDelete("delete-comment/{commentId}")]
         public async Task<IActionResult> DeleteComment(int commentId)
-        {
+        { 
             await _comment.DeleteCommentAsync(commentId);
             return Ok("Comment deleted successfully");
         }
+
+
 
        
     }

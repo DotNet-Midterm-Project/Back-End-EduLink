@@ -164,20 +164,9 @@ namespace EduLink.Repositories.Services
             var token = await _jwtTokenService.GenerateToken(user, TimeSpan.FromMinutes(360));
 
 
-            var register= new RegisterAdminResDTO
 
-                AdminID = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                Token = token,
-                Roles = roles
-            };
-
-
-            return register;
-=========
             return "Admin registration successful. Welcome to the administration team!";
->>>>>>>>> Temporary merge branch 2
+
         }
 
         public async Task<LoginResDTO> LoginAsync(LoginReqDTO loginDto)

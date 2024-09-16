@@ -2,6 +2,7 @@
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -117,21 +118,19 @@ namespace EduLink.Controllers
 
             return Ok(sessionResponse);
         }
+       
         [Authorize]
-        [HttpPost("add-like/{articleId}")]
-        public async Task<IActionResult> LikeArticle(int articleId)
+        [HttpGet("ArticleById/{id}")]
+        public async Task<IActionResult> GetArticleById(int id)
         {
-            // Get the userId from the claims
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var article = await _commonService.GetArticleByIdAsync(id);
 
-            if (userId == null)
+            if (article == null)
             {
-                return Unauthorized("User is not authenticated.");
+                return NotFound("Article not found.");
             }
 
-            // Call the service method with the articleId and userId
-            await _commonService.LikeArticleAsync(articleId, userId);
-            return Ok("Like added successfully");
+            return Ok(article);
         }
 
     }
