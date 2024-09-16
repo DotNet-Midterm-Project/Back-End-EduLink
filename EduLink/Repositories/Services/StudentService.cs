@@ -61,7 +61,7 @@ namespace EduLink.Repositories.Services
         }
 
 
-        public async Task<List<VolunteerResDTO>> GetCourseVolunteersAsync(int courseId)
+        public async Task<List<VolunteerResDTO>> GetVolunteersForCourseAsync(int courseId)
         {
             var volunteerCourses = await eduLinkDbContext.VolunteerCourses
                 .Where(vc => vc.CourseID == courseId)
@@ -94,24 +94,25 @@ namespace EduLink.Repositories.Services
 
             return volunteerDto;
         }
-        public async Task<List<BookingForStudentResDTO>> GetBookingForStudentAsync(int StudentId)
+        public async Task<List<BookingForStudentResDTO>> GetBookingsForStudentAsync(int StudentId)
         {
             var StudentBooks = await eduLinkDbContext.Bookings
                  .Where(b => b.StudentID == StudentId)            
                  .Include(b => b.Event)
                  .ThenInclude(e => e.VolunteerCourse)
                  .ThenInclude(vc => vc.Course)
+                 .Include(v=>v.Session)
                  .ToListAsync();
 
             var BookingDto = StudentBooks.Select(b => new BookingForStudentResDTO
-            {         
+            {   BookingId = b.BookingID,
                 EventTitle = b.Event.Title,
                 CourseName = b.Event.VolunteerCourse.Course.CourseName,
                 EventLocation = b.Event.Location.ToString(),
-                StartTime = b.Event.StartTime,
-                EndTime = b.Event.EndTime,
+                StartTime = b.Event.EventType== EventType.Workshop? b.Event.StartTime:b.Session.StartDate,
+                EndTime = b.Event.EventType == EventType.Workshop ? b.Event.StartTime : b.Session.EndDate,
                 SessionStatus = b.BookingStatus.ToString(),
-                EventAddress = b.Event.EventAddress,
+                EventAddress = b.Event.EventType== EventType.Workshop? b.Event.EventAddress:b.Session.SessionAdress ,
 
             }).ToList();
             return BookingDto;

@@ -4,6 +4,7 @@ using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    partial class EduLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240909125428_AddRefreshTokenColumn")]
+    partial class AddRefreshTokenColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -333,10 +336,6 @@ namespace EduLink.Migrations
 
                     b.Property<int>("EventID")
                         .HasColumnType("int");
-
-                    b.Property<string>("SessionAdress")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SessionStatus")
                         .HasColumnType("int");

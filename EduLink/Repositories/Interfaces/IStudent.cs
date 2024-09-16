@@ -9,9 +9,9 @@ namespace EduLink.Repositories.Interfaces
 
 
         Task<List<DepartmentCoursesResDTO>> GetCoursesByStudentDepartmentAsync(int StudentId, string? filterName = null);
-        Task<List<VolunteerResDTO>> GetCourseVolunteersAsync(int CourseId );
+        Task<List<VolunteerResDTO>> GetVolunteersForCourseAsync(int CourseId );
 
-        Task<List<BookingForStudentResDTO>> GetBookingForStudentAsync(int StudentId);
+        Task<List<BookingForStudentResDTO>> GetBookingsForStudentAsync(int StudentId);
         Task<MessageResDTO> DeleteBookingAsynct(int StudentId, int BookingId);
 
         Task<MessageResDTO> AddFeedbackAsync(FeedbackReqDTO bookingDtoRequest);

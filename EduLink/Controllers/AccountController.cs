@@ -1,25 +1,31 @@
 ﻿using EduLink.Models;
 using EduLink.Models.DTO.Request;
+using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text;
 
 namespace EduLink.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class AccountController : ControllerBase
     {
         private readonly IAccount _accountService;
         private readonly UserManager<User> _userManager;
 
-        public AccountController(IAccount accountService)
+        public AccountController(IAccount accountService, UserManager<User> userManager)
         {
             _accountService = accountService;
+            _userManager = userManager;
+
         }
 
         [HttpPost("register-student")]
@@ -72,14 +78,31 @@ namespace EduLink.Controllers
 
             return Ok(authResponse);
         }
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<LoginResDTO>> Refresh(TokenResDTO tokenDto)
+        {
+            try
+            {
+                var result = await _accountService.RefreshToken(tokenDto);
+                return Ok(result);
+            }
+            catch (SecurityTokenException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
+
+        [Authorize(Roles = "Student, Volunteer")]
         [HttpPost("logout")]
-        [Authorize(Roles = "Student, Student")]
-        [Authorize(Roles = "Student")]
         public async Task<IActionResult> Logout()
         {
-            await _accountService.LogoutAsync();
-            return Ok("Student has been logged out.");
+            await _accountService.LogoutAsync(User);
+            return Ok(new { message = "Logged out successfully" });
         }
 
         [HttpGet("confirm-email")]

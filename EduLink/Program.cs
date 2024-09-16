@@ -69,6 +69,7 @@ namespace EduLink
             // Configure Swagger
             builder.Services.AddSwaggerGen(options =>
             {
+
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
                 {
                     Title = "EduLink API",
@@ -99,6 +100,7 @@ namespace EduLink
                 Array.Empty<string>()
             }
         });
+
             });
 
             var app = builder.Build();

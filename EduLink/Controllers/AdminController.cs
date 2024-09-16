@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EduLink.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -20,7 +22,7 @@ namespace EduLink.Controllers
             this.admin = admin;
         }
 
-        [HttpPost("AddCourse")]
+        [HttpPost("add-course")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCourse([FromBody] AddCourseReqDto addCourseReqDto)
         {
@@ -44,7 +46,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpPost("AddCourseToDepartment/{DepartmentID}/{CourseID}")]
+        [HttpPost("add-course-to-department/{DepartmentID}/{CourseID}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddCourseToDepartment([FromRoute] int DepartmentID, [FromRoute] int CourseID)
         {
@@ -66,7 +68,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpPost("AddNewDepartment")]
+        [HttpPost("add-new-department")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddDepartment([FromBody] AddDepartmentReqDto departmentReqDto)
         {
@@ -88,7 +90,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpPost("StudentBecomeVolunteer/{VolunteerId}")]
+        [HttpPost("student-to-become-volunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddStudentToVolunteer([FromRoute] int VolunteerId)
         {
@@ -107,7 +109,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpGet("GetAllCourses")]
+        [HttpGet("get-all-courses")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllCourses([FromQuery] string? SearchName = null , int PageNumber = 1, int PageSize = 100)
         {
@@ -120,7 +122,7 @@ namespace EduLink.Controllers
 
             return Ok(result);
         }
-        [HttpGet("GetAllDepartment")]
+        [HttpGet("get-all-departments")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllDepartments([FromQuery] string? SearchName = null, int PageNumber = 1, int PageSize = 100)
         {
@@ -135,7 +137,7 @@ namespace EduLink.Controllers
             }
             return Ok(result);
         }
-        [HttpGet("GetAllVolunteers")]
+        [HttpGet("get-all-volunteers")]
         [Authorize(Roles = "Admin")]
         
         public async Task<IActionResult> GetAllVolunteers([FromQuery] string? filterName, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100, bool? sortByRating = false, bool? GetBeComeVolunteerRequest = false)
@@ -156,7 +158,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpGet("GetFeedbackFromVolunteer/{VolunteerId}")]
+        [HttpGet("get-feedbacks-for-volunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetFeedbacksVolunteer([FromRoute] int VolunteerId)
         {
@@ -175,7 +177,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpPut("UpdateCourse/{CourseID}")]
+        [HttpPut("update-course/{CourseID}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCourse([FromRoute] int CourseID, [FromBody] UpdateCourseReqDto updateCourseReqDto)
         {
@@ -199,7 +201,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("DeleteArticle/{ArticleId}")]
+        [HttpDelete("delete-article/{ArticleId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteArticle([FromRoute] int ArticleId)
         {
@@ -219,7 +221,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("DeleteCourse/{CourseId}")]
+        [HttpDelete("delete-course/{CourseId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCourse([FromRoute] int CourseId)
         {
@@ -238,7 +240,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("DeleteVolunteer/{VolunteerId}")]
+        [HttpDelete("delete-volunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteVolunteer([FromRoute] int VolunteerId)
         {

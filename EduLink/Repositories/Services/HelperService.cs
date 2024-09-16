@@ -19,6 +19,7 @@ namespace EduLink.Repositories.Services
 
     
             var events = await _context.Events.ToListAsync();
+        
 
             foreach (var currentEvent in events)
             {
@@ -38,7 +39,7 @@ namespace EduLink.Repositories.Services
                     currentEvent.EventStatus = EventStatus.Closed;
                 }
             }
-
+           
     
             await _context.SaveChangesAsync();
         }
