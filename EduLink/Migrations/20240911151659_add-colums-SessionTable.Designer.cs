@@ -4,6 +4,7 @@ using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    partial class EduLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240911151659_add-colums-SessionTable")]
+    partial class addcolumsSessionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,9 +72,6 @@ namespace EduLink.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<string>("ArticleFile")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
 
@@ -122,37 +122,6 @@ namespace EduLink.Migrations
                     b.HasIndex("StudentID");
 
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("EduLink.Models.Comment", b =>
-                {
-                    b.Property<int>("CommentID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentID"));
-
-                    b.Property<int>("ArticleID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CommentText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("CommentID");
-
-                    b.HasIndex("ArticleID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("EduLink.Models.Course", b =>
@@ -236,9 +205,6 @@ namespace EduLink.Migrations
                     b.Property<string>("EventAddress")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EventBannerImage")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("EventDescription")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -312,9 +278,6 @@ namespace EduLink.Migrations
                     b.Property<int>("ContentType")
                         .HasColumnType("int");
 
-                    b.Property<string>("EventContentFile")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("EventID")
                         .HasColumnType("int");
 
@@ -349,21 +312,6 @@ namespace EduLink.Migrations
                         .IsUnique();
 
                     b.ToTable("Feedbacks");
-                });
-
-            modelBuilder.Entity("EduLink.Models.Like", b =>
-                {
-                    b.Property<string>("UserID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("ArticleID")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserID", "ArticleID");
-
-                    b.HasIndex("ArticleID");
-
-                    b.ToTable("Likes");
                 });
 
             modelBuilder.Entity("EduLink.Models.Session", b =>
@@ -485,9 +433,6 @@ namespace EduLink.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("ProfileImage")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
@@ -796,24 +741,6 @@ namespace EduLink.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("EduLink.Models.Comment", b =>
-                {
-                    b.HasOne("EduLink.Models.Article", "Article")
-                        .WithMany("Comments")
-                        .HasForeignKey("ArticleID")
-                        .IsRequired();
-
-                    b.HasOne("EduLink.Models.User", "User")
-                        .WithMany("Comments")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Article");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("EduLink.Models.DepartmentCourses", b =>
                 {
                     b.HasOne("EduLink.Models.Course", "Course")
@@ -872,23 +799,6 @@ namespace EduLink.Migrations
                         .IsRequired();
 
                     b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("EduLink.Models.Like", b =>
-                {
-                    b.HasOne("EduLink.Models.Article", "Article")
-                        .WithMany("Likes")
-                        .HasForeignKey("ArticleID")
-                        .IsRequired();
-
-                    b.HasOne("EduLink.Models.User", "User")
-                        .WithMany("Likes")
-                        .HasForeignKey("UserID")
-                        .IsRequired();
-
-                    b.Navigation("Article");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EduLink.Models.Session", b =>
@@ -1005,13 +915,6 @@ namespace EduLink.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EduLink.Models.Article", b =>
-                {
-                    b.Navigation("Comments");
-
-                    b.Navigation("Likes");
-                });
-
             modelBuilder.Entity("EduLink.Models.Booking", b =>
                 {
                     b.Navigation("Feedbacks")
@@ -1060,10 +963,6 @@ namespace EduLink.Migrations
 
             modelBuilder.Entity("EduLink.Models.User", b =>
                 {
-                    b.Navigation("Comments");
-
-                    b.Navigation("Likes");
-
                     b.Navigation("Student")
                         .IsRequired();
                 });

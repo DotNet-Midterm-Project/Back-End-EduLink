@@ -143,16 +143,51 @@ namespace EduLink.Repositories.Services
                 .ToListAsync();
             return sessions;
         }
-        public async Task LikeArticleAsync(int aricleId, string userId)
+  
+
+
+        public async Task<ArticleDetailsResDTO> GetArticleByIdAsync(int id)
         {
-            var like = new Like
+            var article = await _context.Articles
+                .Include(a => a.Volunteer)               
+                .ThenInclude(v => v.Student)           
+                .ThenInclude(s => s.User)                
+                .Include(a => a.Comments)              
+                .ThenInclude(c => c.User)               
+                .Include(a => a.Likes)                   
+                .FirstOrDefaultAsync(a => a.ArticleID == id);
+
+            if (article == null)
             {
-                ArticleID = aricleId,
-                UserID = userId
+                return null;
+            }
+
+            
+            var commentsDto = article.Comments.Select(c => new CommentDTO
+            {
+                CommentID = c.CommentID,
+                Content = c.CommentText,
+                CommenterName = c.User.UserName, 
+                CommentDate = c.CreatedAt,
+            }).ToList();
+
+           
+            var articleDetailsDto = new ArticleDetailsResDTO
+            {
+                ArticleID = article.ArticleID,
+                VolunteerID = article.VolunteerID,
+                VolunteerName = article.Volunteer.Student.User.UserName,
+                Title = article.Title,
+                ArticleContent = article.ArticleContent,
+                PublicationDate = article.PublicationDate,
+                Status = article.Status.ToString(),
+                LikesCount = article.Likes.Count, 
+                Comments = commentsDto 
             };
-            _context.Likes.Add(like);
-            await _context.SaveChangesAsync();
+
+            return articleDetailsDto;
         }
+
 
         public async Task<MessageResDTO> EditProfile(UpdateUserReqDto userDto, int studentId)
         {
@@ -203,7 +238,5 @@ namespace EduLink.Repositories.Services
                 Message = "Profile updated successfully."
             };
         }
-
     }
-
 }

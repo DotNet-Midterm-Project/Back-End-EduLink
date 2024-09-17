@@ -78,6 +78,7 @@ namespace EduLink.Controllers
 
             return Ok(authResponse);
         }
+        [AllowAnonymous]
         [HttpPost("refresh-token")]
         public async Task<ActionResult<LoginResDTO>> Refresh(TokenResDTO tokenDto)
         {

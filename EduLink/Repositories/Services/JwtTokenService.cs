@@ -26,7 +26,7 @@ namespace EduLink.Repositories.Services
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = GetSecurityKey(configuration),
                 ClockSkew = TimeSpan.Zero,
-                ValidateLifetime = false,
+                ValidateLifetime = true,
                 ValidateIssuer = false,
                 ValidateAudience = false
             };
