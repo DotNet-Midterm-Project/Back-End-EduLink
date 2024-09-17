@@ -229,6 +229,7 @@ namespace EduLink.Repositories.Services
               //  user.ProfileImage = ProfilePicture;
             }
             string[] allowedFileExtensions = new string[] {".jpg", ".jpeg", ".png" };
+
              var newFileName = await file.SaveFileAsync(userDto.ProfilePicture, allowedFileExtensions);
             user.ProfileImage = newFileName;
             _context.Users.Update(user);

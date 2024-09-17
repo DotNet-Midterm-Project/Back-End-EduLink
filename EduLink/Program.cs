@@ -69,6 +69,18 @@ namespace EduLink
                     policy.RequireAuthenticatedUser());
             });
 
+            // Enable CORS for all origins (adjust for production)
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSwaggerUI", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5085") // Replace {PORT} with the actual port of your API, e.g., 5000
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+
             // Configure Hangfire
             builder.Services.AddHangfire(config =>
             {
@@ -115,6 +127,9 @@ namespace EduLink
             });
 
             var app = builder.Build();
+
+            //Cors
+            app.UseCors("AllowSwaggerUI");
 
             // Use Swagger
             app.UseSwagger(options =>

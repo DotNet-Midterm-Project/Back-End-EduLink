@@ -26,7 +26,7 @@ namespace EduLink.Repositories.Services
              }
             var ext = Path.GetExtension(file.FileName);
             if (!allowedFileExtentions.Contains(ext)) { 
-                throw new ArgumentNullException(nameof(file));
+                throw new Exception("This Extension Not Allowed ):");
 
             }
             var fileName = $"{Guid.NewGuid().ToString()}{ext}";

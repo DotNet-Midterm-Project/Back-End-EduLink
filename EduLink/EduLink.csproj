@@ -26,10 +26,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Uploads\" />
     <Content Update="credentials.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Uploads\" />
   </ItemGroup>
 
 </Project>
