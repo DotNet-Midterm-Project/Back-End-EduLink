@@ -6,7 +6,6 @@
         public int GroupId { get; set; }
         public int StudentID { get; set; }
         public MemberRole Role { get; set; } // Change to enum type
-        public string Description { get; set; }
 
         // Navigation properties
         public virtual Group Group { get; set; }

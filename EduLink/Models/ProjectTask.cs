@@ -1,12 +1,16 @@
-﻿namespace EduLink.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EduLink.Models
 {
     public class ProjectTask
     {
         public int ProjectTaskId { get; set; }
         public int GroupId { get; set; }
+        [MaxLength(1000)]
         public string TaskName { get; set; }
         public int AssignedTo { get; set; }
         public TaskStatus Status { get; set; }
+        [MaxLength(2000)]
         public string Description { get; set; }
         public DateTime DueDate { get; set; }
 
