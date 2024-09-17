@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    [Migration("20240911151659_add-colums-SessionTable")]
-    partial class addcolumsSessionTable
+    [Migration("20240917165633_update-maxlingth-stringVariables")]
+    partial class updatemaxlingthstringVariables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,6 +72,9 @@ namespace EduLink.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<string>("ArticleFile")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
 
@@ -122,6 +125,37 @@ namespace EduLink.Migrations
                     b.HasIndex("StudentID");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("EduLink.Models.Comment", b =>
+                {
+                    b.Property<int>("CommentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentID"));
+
+                    b.Property<int>("ArticleID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CommentText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CommentID");
+
+                    b.HasIndex("ArticleID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("EduLink.Models.Course", b =>
@@ -205,6 +239,9 @@ namespace EduLink.Migrations
                     b.Property<string>("EventAddress")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EventBannerImage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("EventDescription")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -278,6 +315,9 @@ namespace EduLink.Migrations
                     b.Property<int>("ContentType")
                         .HasColumnType("int");
 
+                    b.Property<string>("EventContentFile")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("EventID")
                         .HasColumnType("int");
 
@@ -314,6 +354,145 @@ namespace EduLink.Migrations
                     b.ToTable("Feedbacks");
                 });
 
+            modelBuilder.Entity("EduLink.Models.Group", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("LeaderID")
+                        .HasColumnType("int");
+
+                    b.HasKey("GroupId");
+
+                    b.HasIndex("LeaderID");
+
+                    b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("EduLink.Models.GroupMember", b =>
+                {
+                    b.Property<int>("GroupMemberId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupMemberId"));
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentID")
+                        .HasColumnType("int");
+
+                    b.HasKey("GroupMemberId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("StudentID");
+
+                    b.ToTable("GroupMembers");
+                });
+
+            modelBuilder.Entity("EduLink.Models.Like", b =>
+                {
+                    b.Property<string>("UserID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ArticleID")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserID", "ArticleID");
+
+                    b.HasIndex("ArticleID");
+
+                    b.ToTable("Likes");
+                });
+
+            modelBuilder.Entity("EduLink.Models.Meeting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Announcement")
+                        .IsRequired()
+                        .HasMaxLength(2500)
+                        .HasColumnType("nvarchar(2500)");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MeetingLink")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("Meetings");
+                });
+
+            modelBuilder.Entity("EduLink.Models.ProjectTask", b =>
+                {
+                    b.Property<int>("ProjectTaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectTaskId"));
+
+                    b.Property<int>("AssignedTo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("ProjectTaskId");
+
+                    b.HasIndex("AssignedTo");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("ProjectTasks");
+                });
+
             modelBuilder.Entity("EduLink.Models.Session", b =>
                 {
                     b.Property<int>("SessionID")
@@ -337,7 +516,7 @@ namespace EduLink.Migrations
                     b.Property<int>("EventID")
                         .HasColumnType("int");
 
-                    b.Property<string>("SessionAdress")
+                    b.Property<string>("SessionAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -433,6 +612,9 @@ namespace EduLink.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
@@ -741,6 +923,24 @@ namespace EduLink.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("EduLink.Models.Comment", b =>
+                {
+                    b.HasOne("EduLink.Models.Article", "Article")
+                        .WithMany("Comments")
+                        .HasForeignKey("ArticleID")
+                        .IsRequired();
+
+                    b.HasOne("EduLink.Models.User", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Article");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EduLink.Models.DepartmentCourses", b =>
                 {
                     b.HasOne("EduLink.Models.Course", "Course")
@@ -799,6 +999,83 @@ namespace EduLink.Migrations
                         .IsRequired();
 
                     b.Navigation("Booking");
+                });
+
+            modelBuilder.Entity("EduLink.Models.Group", b =>
+                {
+                    b.HasOne("EduLink.Models.Student", "Leader")
+                        .WithMany("LedGroups")
+                        .HasForeignKey("LeaderID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Leader");
+                });
+
+            modelBuilder.Entity("EduLink.Models.GroupMember", b =>
+                {
+                    b.HasOne("EduLink.Models.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EduLink.Models.Student", "Student")
+                        .WithMany("GroupMemberships")
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("EduLink.Models.Like", b =>
+                {
+                    b.HasOne("EduLink.Models.Article", "Article")
+                        .WithMany("Likes")
+                        .HasForeignKey("ArticleID")
+                        .IsRequired();
+
+                    b.HasOne("EduLink.Models.User", "User")
+                        .WithMany("Likes")
+                        .HasForeignKey("UserID")
+                        .IsRequired();
+
+                    b.Navigation("Article");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EduLink.Models.Meeting", b =>
+                {
+                    b.HasOne("EduLink.Models.Group", "Group")
+                        .WithMany("Meetings")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("EduLink.Models.ProjectTask", b =>
+                {
+                    b.HasOne("EduLink.Models.GroupMember", "AssignedMember")
+                        .WithMany("AssignedTasks")
+                        .HasForeignKey("AssignedTo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EduLink.Models.Group", "Group")
+                        .WithMany("Tasks")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssignedMember");
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("EduLink.Models.Session", b =>
@@ -915,6 +1192,13 @@ namespace EduLink.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EduLink.Models.Article", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
+                });
+
             modelBuilder.Entity("EduLink.Models.Booking", b =>
                 {
                     b.Navigation("Feedbacks")
@@ -948,6 +1232,20 @@ namespace EduLink.Migrations
                     b.Navigation("Sessions");
                 });
 
+            modelBuilder.Entity("EduLink.Models.Group", b =>
+                {
+                    b.Navigation("Meetings");
+
+                    b.Navigation("Members");
+
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("EduLink.Models.GroupMember", b =>
+                {
+                    b.Navigation("AssignedTasks");
+                });
+
             modelBuilder.Entity("EduLink.Models.Session", b =>
                 {
                     b.Navigation("Bookings");
@@ -957,12 +1255,20 @@ namespace EduLink.Migrations
                 {
                     b.Navigation("Bookings");
 
+                    b.Navigation("GroupMemberships");
+
+                    b.Navigation("LedGroups");
+
                     b.Navigation("Volunteer")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("EduLink.Models.User", b =>
                 {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
+
                     b.Navigation("Student")
                         .IsRequired();
                 });
