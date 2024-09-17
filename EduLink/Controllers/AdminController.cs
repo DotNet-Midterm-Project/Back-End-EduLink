@@ -16,10 +16,12 @@ namespace EduLink.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdmin admin;
+       
 
-        public AdminController(IAdmin admin)
+        public AdminController(IAdmin admin )
         {
             this.admin = admin;
+            
         }
 
         [HttpPost("add-course")]

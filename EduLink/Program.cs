@@ -6,6 +6,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
@@ -39,7 +40,9 @@ namespace EduLink
             builder.Services.AddScoped<IComment, CommentService>();
             builder.Services.AddScoped<IVolunteer, VolunteerService>();
             builder.Services.AddScoped<IAdmin, AdminService>();
+            builder.Services.AddScoped<IFile, FileService>();
             builder.Services.AddScoped<JwtTokenService>();
+
 
             // Configure Identity
             builder.Services.AddIdentity<User, IdentityRole>(options => { })
@@ -58,6 +61,26 @@ namespace EduLink
                 options.TokenValidationParameters = JwtTokenService.ValidateToken(builder.Configuration);
             });
 
+
+            builder.Services.AddAuthorization(options =>
+            {
+                // You can define policies if needed, or use the default policy
+                options.AddPolicy("DefaultPolicy", policy =>
+                    policy.RequireAuthenticatedUser());
+            });
+
+            // Enable CORS for all origins (adjust for production)
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSwaggerUI", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5085") // Replace {PORT} with the actual port of your API, e.g., 5000
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+
             // Configure Hangfire
             builder.Services.AddHangfire(config =>
             {
@@ -66,6 +89,7 @@ namespace EduLink
 
             // add Hangfire Dashboard
             builder.Services.AddHangfireServer();
+
 
             // Configure Swagger
             builder.Services.AddSwaggerGen(options =>
@@ -104,6 +128,9 @@ namespace EduLink
 
             var app = builder.Build();
 
+            //Cors
+            app.UseCors("AllowSwaggerUI");
+
             // Use Swagger
             app.UseSwagger(options =>
             {
@@ -127,6 +154,12 @@ namespace EduLink
                 {
                     await next();
                 }
+            });
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+          Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+                RequestPath = "/Resources"
             });
 
             // Hangfire Dashboard

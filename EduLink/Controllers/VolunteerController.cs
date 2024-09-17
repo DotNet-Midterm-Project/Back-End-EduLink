@@ -1,9 +1,13 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using Azure.Core;
+using EduLink.Models;
+using EduLink.Models.DTO.Request;
 using EduLink.Repositories.Interfaces;
+using Humanizer;
 using EduLink.Repositories.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Drawing;
 using System.Security.Claims;
 
 namespace EduLink.Controllers
@@ -13,17 +17,19 @@ namespace EduLink.Controllers
     public class VolunteerController : ControllerBase
     {
         private readonly IVolunteer _volunteer;
+     
 
-        public VolunteerController(IVolunteer volunteer)
+        public VolunteerController(IVolunteer volunteer )
         {
             _volunteer = volunteer;
+            
         }
 
         // POST: /Volunteer/add-Event
         // Tested
         [HttpPost("add-event")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> AddEvent([FromBody] AddEventReqDTO request)
+        public async Task<IActionResult> AddEvent([FromForm] AddEventReqDTO request)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
@@ -35,14 +41,16 @@ namespace EduLink.Controllers
             {
                 return BadRequest(new { message = "Invalid Volunteer ID." });
             }
-
-            var response = await _volunteer.AddEventsAsync(volunteerID, request);
+            
+            var response = await _volunteer.AddEventsAsync(volunteerID, request );
 
 
             if (response.Message == "Volunteer is not associated with the course.")
             {
                 return BadRequest(new { message = response.Message });
             }
+            if (response.Message == "File size should not exceed 1 MB.")
+                return BadRequest(response.Message);
 
             return Ok(new { message = response.Message });
         }
@@ -51,12 +59,20 @@ namespace EduLink.Controllers
         // Tested
         [Authorize(Roles = "Volunteer")]
         [HttpPost("add-event-content")]
-        public async Task<IActionResult> AddEventContent([FromBody] EventContetnReqDTO dto)
+        public async Task<IActionResult> AddEventContent([FromForm] EventContetnReqDTO dto)
         {
             if (dto == null)
             {
                 return BadRequest("Invalid content data.");
             }
+            //if (dto.UploadFile?.Length > 1 * 2048 * 2048)
+            //{
+            //    return StatusCode(StatusCodes.Status400BadRequest, "File Size should not exceed 2 MB");
+
+            //}
+            //string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+            //var CreateFile = await _file.SaveFileAsync(dto?.UploadFile, allowedFileExtensions);
+
 
             var response = await _volunteer.AddEventContentAsync(dto);
 
@@ -143,8 +159,9 @@ namespace EduLink.Controllers
         // Tested
         [HttpPost("add-article")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> AddArticle([FromBody] AddArticleReqDTO request)
+        public async Task<IActionResult> AddArticle([FromForm] AddArticleReqDTO request  )
         {
+            
 
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
@@ -162,7 +179,10 @@ namespace EduLink.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _volunteer.AddArticleAsync(request, volunteerID);
+
+            var response = await _volunteer.AddArticleAsync(request, volunteerID );
+            if (response.Message == "File size should not exceed 1 MB.")
+                return BadRequest(response.Message);
 
             return Ok(response);
         }
@@ -348,8 +368,14 @@ namespace EduLink.Controllers
         // Tested
         [HttpPut("update-event")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventReqDTO request)
+        public async Task<IActionResult> UpdateEvent([FromForm] UpdateEventReqDTO request)
         {
+            var Event = await _volunteer.GetEventByIdAsync(request.EventID);
+            if(Event == null)
+            {
+                return NotFound("the Event NotFound");
+            }
+
             var response = await _volunteer.UpdateEventAsync(request);
             return Ok(response);
         }
@@ -388,7 +414,7 @@ namespace EduLink.Controllers
         // Tested
         [HttpPut("update-article")]
         [Authorize(Roles = "Volunteer")]
-        public async Task<IActionResult> UpdateArticle([FromBody] UpdateArticleReqDTO request)
+        public async Task<IActionResult> UpdateArticle([FromForm] UpdateArticleReqDTO request)
         {
             var volunteerIDClaim = User.Claims.FirstOrDefault(c => c.Type == "VolunteerID");
             if (volunteerIDClaim == null)
@@ -401,42 +427,26 @@ namespace EduLink.Controllers
                 return BadRequest(new { message = "Invalid Volunteer ID." });
             }
 
-            if (request == null)
+            if (request == null || request.ArticleID <= 0 || string.IsNullOrWhiteSpace(request.Title) || request.Title.Length > 200 ||
+                string.IsNullOrWhiteSpace(request.ArticleContent) || request.ArticleContent.Length > 2000 || !Enum.IsDefined(typeof(ArticleStatus), request.Status))
             {
-                return BadRequest("Request cannot be null.");
+                return BadRequest("Invalid request data.");
             }
 
-            if (request.ArticleID <= 0)
-            {
-                return BadRequest("Invalid Article ID.");
-            }
 
-            if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Length > 200)
-            {
-                return BadRequest("Title is required and should not exceed 200 characters.");
-            }
+            var response = await _volunteer.UpdateArticleAsync(request, volunteerID );
 
-            if (string.IsNullOrWhiteSpace(request.ArticleContent) || request.ArticleContent.Length > 2000)
+            if (response == null)
             {
-                return BadRequest("Article content is required and should not exceed 2000 characters.");
+                return NotFound("Article not found or update failed.");
             }
+            if (response.Message == "File size should not exceed 2 MB.")
+                return BadRequest(response.Message);
 
-            try
-            {
-                var response = await _volunteer.UpdateArticleAsync(request, volunteerID);
-
-                if (response == null)
-                {
-                    return NotFound("Article not found or update failed.");
-                }
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+            return Ok(response);
         }
+
+
 
         // PUT: /Volunteer/hidden-article
         // Tested
