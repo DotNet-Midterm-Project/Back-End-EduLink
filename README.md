@@ -1,10 +1,10 @@
-# 🎓 EduAid Platform
+# 🎓 EduLink Platform
 
 **EduAid** is a volunteer-driven platform designed to support students at the College of Information Technology by offering academic sessions and personalized assistance through dedicated student volunteers. The system is built to streamline the academic support process by connecting students with volunteers, organizing academic events, and providing administrators with tools to manage and analyze academic activities.
 
 ## 📊 ERD Diagram
 
-![EduAid Platform ERD] <!-- ؟؟؟؟؟؟؟؟؟؟؟؟؟ -->
+![EduLink ERD Diagram](https://github.com/DotNet-Midterm-Project/Back-End-EduLink/blob/DEV/EduLinkERD.jpeg)
 
 ## 🛠️ Overview of Relationships
 
