@@ -25,7 +25,7 @@ namespace EduLink.Models
         [MaxLength(200)]
         public string Details { get; set; }
         public int Capacity { get; set; }
-        public string SessionAdress { get; set; }
+        public string SessionAddress { get; set; }
         public SessionStatus SessionStatus { get; set; }
 
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();

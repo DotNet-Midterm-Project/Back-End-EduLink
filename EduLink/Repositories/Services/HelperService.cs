@@ -171,7 +171,7 @@ namespace EduLink.Repositories.Services
                             <p>Dear Student,</p>
                             <p>This is a reminder that your session for the event titled <strong>{booking.Event.Title}</strong> is about to start.</p>
                             <p><strong>Start Time:</strong> {booking.Session.StartDate}</p>
-                            <p><strong>Location:</strong> {booking.Session.SessionAdress}</p>
+                            <p><strong>Location:</strong> {booking.Session.SessionAddress}</p>
                             <p>Please make sure to attend the session at the designated location on time.</p>
                             <p>Best regards,</p>
                             <p>EduLink Team</p>";

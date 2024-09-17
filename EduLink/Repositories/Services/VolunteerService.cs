@@ -391,7 +391,7 @@ namespace EduLink.Repositories.Services
             var createdEvent = await request.ExecuteAsync(); // Execute the request asynchronously
 
             // Update the event in the database with the newly created Google Meet link
-            eventToUpdate.SessionAdress = createdEvent.HangoutLink;
+            eventToUpdate.SessionAddress = createdEvent.HangoutLink;
             _context.Sessions.Update(eventToUpdate);
 
             // Save the changes to the database
@@ -429,7 +429,7 @@ namespace EduLink.Repositories.Services
                     Details = request.Details,
                     Capacity = request.SessionCapacity,
                     SessionStatus = SessionStatus.Open,
-                    SessionAdress = "The session link will be sent later"
+                    SessionAddress = "The session link will be sent later"
                 };
 
                 eventToUpdate.Sessions.Add(newSession);

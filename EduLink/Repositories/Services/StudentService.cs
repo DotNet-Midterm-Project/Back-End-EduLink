@@ -112,7 +112,7 @@ namespace EduLink.Repositories.Services
                 StartTime = b.Event.EventType== EventType.Workshop? b.Event.StartTime:b.Session.StartDate,
                 EndTime = b.Event.EventType == EventType.Workshop ? b.Event.StartTime : b.Session.EndDate,
                 SessionStatus = b.BookingStatus.ToString(),
-                EventAddress = b.Event.EventType== EventType.Workshop? b.Event.EventAddress:b.Session.SessionAdress ,
+                EventAddress = b.Event.EventType== EventType.Workshop? b.Event.EventAddress:b.Session.SessionAddress ,
 
             }).ToList();
             return BookingDto;

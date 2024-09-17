@@ -1,4 +1,5 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using EduLink.Models;
+using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Security.Claims;

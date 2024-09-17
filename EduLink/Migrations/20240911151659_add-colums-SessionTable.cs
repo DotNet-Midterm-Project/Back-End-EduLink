@@ -11,7 +11,7 @@ namespace EduLink.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "SessionAdress",
+                name: "SessionAddress",
                 table: "Sessions",
                 type: "nvarchar(max)",
                 nullable: false,
@@ -22,7 +22,7 @@ namespace EduLink.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "SessionAdress",
+                name: "SessionAddress",
                 table: "Sessions");
         }
     }
