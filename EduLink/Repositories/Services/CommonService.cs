@@ -220,17 +220,11 @@ namespace EduLink.Repositories.Services
                 user.Email = userDto.Email;
                 user.NormalizedEmail = user.Email.ToUpper();
             }
-            if (user.ProfileImage != null) {
-                string oldImage = user.ProfileImage;
-                file.DeleteFileAsync(oldImage);
-            }
-            if (userDto.ProfilePicture != null)
-            {
-              //  user.ProfileImage = ProfilePicture;
-            }
-            string[] allowedFileExtensions = new string[] {".jpg", ".jpeg", ".png" };
+            string? oldImage = user.ProfileImage;
+            string[] allowedFileExtensions = new string[] {".jpg", ".jpeg", ".png", ".PNG" };
 
              var newFileName = await file.SaveFileAsync(userDto.ProfilePicture, allowedFileExtensions);
+            file.DeleteFileAsync(oldImage);
             user.ProfileImage = newFileName;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
