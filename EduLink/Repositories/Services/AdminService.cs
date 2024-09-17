@@ -14,11 +14,13 @@ namespace EduLink.Repositories.Services
     {
         private readonly EduLinkDbContext eduLinkDbContext;
         private readonly UserManager<User> userManager;
+        private readonly IFile _file;
 
-        public AdminService(EduLinkDbContext eduLinkDbContext, UserManager<User> userManager)
+        public AdminService(EduLinkDbContext eduLinkDbContext, UserManager<User> userManager , IFile file )
         {
             this.eduLinkDbContext = eduLinkDbContext;
             this.userManager = userManager;
+            _file = file;
         }
 
         public async Task<string> AddCourse(AddCourseReqDto addCourseReqDto)
@@ -115,11 +117,15 @@ namespace EduLink.Repositories.Services
         public async Task<string> DeleteArticleAsync(int articleId)
         {
             var article = await eduLinkDbContext.Articles.FindAsync(articleId);
-
             if (article == null)
             {
                 return $"Article with ID {articleId} not found.";
             }
+            if (article.ArticleFile != null) {
+               await _file.DeleteFileAsync(article.ArticleFile);
+            
+            }
+
 
             eduLinkDbContext.Articles.Remove(article);
             await eduLinkDbContext.SaveChangesAsync();

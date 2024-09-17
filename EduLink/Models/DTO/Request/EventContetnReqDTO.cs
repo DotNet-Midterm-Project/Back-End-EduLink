@@ -14,6 +14,7 @@ namespace EduLink.Models.DTO.Request
         public Content ContentType { get; set; }
         public string ContentDescription { get; set; }
         public string ContentAddress { get; set; }
+        public IFormFile? UploadFile { get; set; }
     }
 
 }

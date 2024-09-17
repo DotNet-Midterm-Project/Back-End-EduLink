@@ -5,6 +5,7 @@ using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using HtmlAgilityPack;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace EduLink.Repositories.Services
 {
@@ -13,12 +14,14 @@ namespace EduLink.Repositories.Services
         private readonly EduLinkDbContext _context;
         private readonly HelperService _helperService;
         private readonly IEmailService _emailService;
+        private readonly IFile file;
 
-        public VolunteerService(EduLinkDbContext context, HelperService helperService, IEmailService emailService)
+        public VolunteerService(EduLinkDbContext context, HelperService helperService, IEmailService emailService, IFile file)
         {
             _context = context;
             _helperService = helperService;
             _emailService = emailService;
+            this.file = file;
         }
 
         // Get volunteer courses
@@ -38,14 +41,23 @@ namespace EduLink.Repositories.Services
         }
 
         // Add event content to a specific event
-        public async Task<MessageResDTO> AddEventContentAsync(EventContetnReqDTO dto)
+        public async Task<MessageResDTO> AddEventContentAsync(EventContetnReqDTO dto )
         {
             var eventExists = await _context.Events.AnyAsync(e => e.EventID == dto.EventID);
             if (!eventExists)
             {
                 return new MessageResDTO { Message = "Event not found." };
             }
+            if (dto.UploadFile?.Length > 1 * 2048 * 2048)
+            {
+                return new MessageResDTO
+                {
+                    Message = "File Size should not exceed 2 MB"
 
+                };
+            }
+            string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+            var CreateFile = await file.SaveFileAsync(dto?.UploadFile, allowedFileExtensions);
             var newContent = new EventContent
             {
                 EventID = dto.EventID,
@@ -53,6 +65,7 @@ namespace EduLink.Repositories.Services
                 ContentType = dto.ContentType,
                 ContentDescription = dto.ContentDescription,
                 ContentAddress = dto.ContentAddress,
+                EventContentFile = CreateFile
             };
 
             await _context.EventContents.AddAsync(newContent);
@@ -124,6 +137,7 @@ namespace EduLink.Repositories.Services
                 Details = e.EventDetailes,
                 VolunteerName = e.VolunteerCourse?.Volunteer?.Student?.User?.UserName ?? "Volunteer Name is null",
                 CourseName = e.VolunteerCourse?.Course?.CourseName ?? "Course Name is null",
+                BannerImage = e.EventBannerImage
             }).ToList();
 
             return eventResponse;
@@ -150,6 +164,17 @@ namespace EduLink.Repositories.Services
                     Message = "Volunteer is not associated with the course."
                 };
             }
+            if (request?.EventBannerImage?.Length > 1 * 1024 * 1024)
+            {
+                return new MessageResDTO
+                {
+                    Message = "File Size should not exceed 1 MB"
+                };
+
+            }
+            string[] allowedFileExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+            var CreateBannerImage = await file.SaveFileAsync(request?.EventBannerImage, allowedFileExtensions);
+            
 
             var eventEntity = new Event
             {
@@ -165,7 +190,8 @@ namespace EduLink.Repositories.Services
                 Capacity = request.Capacity,
                 SessionCount = request.EventType == EventType.PrivateSession ? request.SessionCounts : 0,
                 EventStatus = EventStatus.Scheduled,
-               
+                EventBannerImage = CreateBannerImage
+
             };
 
             await _context.Events.AddAsync(eventEntity);
@@ -452,7 +478,16 @@ namespace EduLink.Repositories.Services
             {
                 throw new Exception("Volunteer not found");
             }
+            if (request.UploadFile?.Length > 1 * 1024 * 1024)
+            {
+                return new MessageResDTO {
+                    Message = "File Size should not exceed 1 MB"
+                };
+            }
 
+            string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+
+            var CreateFile = await file.SaveFileAsync(request?.UploadFile, allowedFileExtensions);
             var article = new Article
             {
                 Title = request.Title,
@@ -461,6 +496,7 @@ namespace EduLink.Repositories.Services
                 Status = ArticleStatus.Visible,
                 VolunteerID = volunteerId,
                 Volunteer = volunteer,
+                ArticleFile = CreateFile
                
             };
 
@@ -509,7 +545,9 @@ namespace EduLink.Repositories.Services
                     VolunteerName = a.Volunteer.Student.User.UserName,
                     ArticleContent = a.ArticleContent,
                     PublicationDate = a.PublicationDate,
-                    Status = a.Status.ToString()
+                    Status = a.Status.ToString(),
+                    ArticleFile = a.ArticleFile
+
                 })
                 .ToListAsync();
 
@@ -531,14 +569,15 @@ namespace EduLink.Repositories.Services
                     Title = a.Title,
                     ArticleContent = a.ArticleContent,
                     PublicationDate = a.PublicationDate,
-                    Status = a.Status.ToString()
+                    Status = a.Status.ToString(),
+                    ArticleFile = a.ArticleFile
                 })
                 .FirstOrDefaultAsync();
 
             return article;
         }
 
-        public async Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId)
+        public async Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId ) 
         {
             var article = await _context.Articles
                 .FirstOrDefaultAsync(a => a.ArticleID == request.ArticleID && a.VolunteerID == volunteerId);
@@ -547,19 +586,50 @@ namespace EduLink.Repositories.Services
             {
                 return new MessageResDTO { Message = "Article not found or volunteer not authorized" };
             }
+           
+            string oldArticleFile = article.ArticleFile;
+            if (oldArticleFile != null)
+            {
+                await file.DeleteFileAsync(oldArticleFile);
+                Console.WriteLine($"Successfully deleted old file: {oldArticleFile}");
+            }
+            string newFileName = null;
+            if (request.formFile != null)
+            {
+                if (request.formFile.Length > 1 * 2048 * 2048)
+                {
+                    return new MessageResDTO
+                    {
+                        Message = "File size should not exceed 2 MB."
+                    };
+                }
+
+                string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                newFileName = await file.SaveFileAsync(request.formFile, allowedFileExtensions);
+
+                if (string.IsNullOrEmpty(newFileName))
+                {
+                    return null;
+                }
+
+            }
 
             // Update article properties
             article.Title = request.Title;
             article.ArticleContent = request.ArticleContent;
             article.PublicationDate = request.PublicationDate;
             article.Status = request.Status;
-        
+           
+                article.ArticleFile = newFileName;
+            
+
             // Save changes to the database
             _context.Articles.Update(article);
             await _context.SaveChangesAsync();
 
             return new MessageResDTO { Message = $"The Article '{article.Title}' updated successfully" };
         }
+
 
         public async Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request)
         {
@@ -569,7 +639,30 @@ namespace EduLink.Repositories.Services
             {
                 return new MessageResDTO { Message = "Event not found" };
             }
+            string? oldAEventImage = eventToUpdate.EventBannerImage ;
+            if (oldAEventImage != null)
+            {
+                await file.DeleteFileAsync(oldAEventImage);
+                Console.WriteLine($"Successfully deleted old file: {oldAEventImage}");
+            }
+            string newImage = null;
+            if (request.file != null)
+            {
+                if (request.file.Length > 1 * 1024 * 1024)
+                {
+                    return new  MessageResDTO{
+                      Message = "File size should not exceed 1 MB."
+                    };
+                }
 
+                string[] allowedFileExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+                newImage = await file.SaveFileAsync(request.file, allowedFileExtensions);
+
+                if (string.IsNullOrEmpty(newImage))
+                {
+                    return null;
+                }
+            }
             eventToUpdate.Title = request.Title;
             eventToUpdate.EventDescription = request.EventDescription;
             eventToUpdate.EventDetailes = request.EventDetails;
@@ -578,11 +671,34 @@ namespace EduLink.Repositories.Services
             eventToUpdate.Capacity = request.Capacity;
             eventToUpdate.EventType = request.EventType;
             eventToUpdate.SessionCount = request.SessionCount;
+            eventToUpdate.EventBannerImage = newImage;
 
             _context.Events.Update(eventToUpdate);
             await _context.SaveChangesAsync();
 
             return new MessageResDTO { Message = "Update Event successfully" };
+        }
+
+
+        public async Task<EventResDTO> GetEventByIdAsync(int eventId)
+        {
+            var eventDto = await _context.Events
+                .Where(a => a.EventID == eventId)
+                .Select(a => new EventResDTO
+                {
+                    EventID = a.EventID,
+                    Title = a.Title,
+                    EventDescription = a.EventDescription,
+                    EventType = a.EventType.ToString(),                  
+                    Capacity = a.Capacity,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    EventAddress = a.EventAddress,
+                    BannerImage = a.EventBannerImage 
+                })
+                .FirstOrDefaultAsync();
+
+            return eventDto;
         }
 
         public async Task<List<BookingForVolunteerResDTO>> GetVolunteerBookingsAsync(int volunteerID)
@@ -642,6 +758,5 @@ namespace EduLink.Repositories.Services
 
             return allBookings;
         }
-      
     }
 }

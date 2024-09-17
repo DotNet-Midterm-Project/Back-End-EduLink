@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
+
+using Microsoft.AspNetCore.Http;
 
 namespace EduLink.Models.DTO.Request
 {
@@ -14,5 +17,7 @@ namespace EduLink.Models.DTO.Request
 
         [Required]
         public DateTime PublicationDate { get; set; }
+        public IFormFile? UploadFile { get; set; }
+
     }
 }

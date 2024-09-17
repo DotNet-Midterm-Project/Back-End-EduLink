@@ -15,5 +15,6 @@
         public string EventAddress { get; set; }
         public string VolunteerName { get; set; }
         public string CourseName { get; set; }
+        public string? BannerImage { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
@@ -39,7 +40,9 @@ namespace EduLink
             builder.Services.AddScoped<IComment, CommentService>();
             builder.Services.AddScoped<IVolunteer, VolunteerService>();
             builder.Services.AddScoped<IAdmin, AdminService>();
+            builder.Services.AddScoped<IFile, FileService>();
             builder.Services.AddScoped<JwtTokenService>();
+
 
             // Configure Identity
             builder.Services.AddIdentity<User, IdentityRole>(options => { })
@@ -136,6 +139,12 @@ namespace EduLink
                 {
                     await next();
                 }
+            });
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+          Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+                RequestPath = "/Resources"
             });
 
             // Hangfire Dashboard

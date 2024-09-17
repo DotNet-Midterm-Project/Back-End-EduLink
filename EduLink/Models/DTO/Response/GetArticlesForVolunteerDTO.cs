@@ -14,5 +14,6 @@ public class ArticleDTO
     public string ArticleContent { get; set; }
  
     public DateTime PublicationDate { get; set; }
+    public string? ArticleFile  { get; set; }
     public string Status { get; set; }
 }

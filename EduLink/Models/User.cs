@@ -24,6 +24,8 @@ namespace EduLink.Models
 
         //For Token
         public string? RefreshToken { get; set; }
+        public string? ProfileImage {  get; set; }
+
         public DateTimeOffset RefreshTokenExpireTime { get; set; }
 
         public ICollection<Like> Likes { get; set; }

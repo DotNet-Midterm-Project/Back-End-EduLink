@@ -1,4 +1,5 @@
-﻿using EduLink.Models.DTO.Response;
+﻿using EduLink.Models.DTO.Request;
+using EduLink.Models.DTO.Response;
 
 namespace EduLink.Repositories.Interfaces
 {
@@ -12,7 +13,8 @@ namespace EduLink.Repositories.Interfaces
         Task<List<EventContentResDTO>> GetEventContentByEventIdAsync(int eventId);
         Task<List<EventResDTO>> GetEventsByVolunteerAndCourseAsync(int volunteerId, int courseId);
         Task<List<SessionResponseDTO>> GetSessionsByEventAsync(int eventId);
-
+        Task LikeArticleAsync(int articleId, string userId);
+        Task<MessageResDTO> EditProfile(UpdateUserReqDto user , int studentId );
     }
 
 }

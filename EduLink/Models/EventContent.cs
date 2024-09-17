@@ -15,7 +15,7 @@ namespace EduLink.Models
         public string ContentDescription { get; set; }
         [MaxLength(2000)]
         public string ContentAddress { get; set; }
-
+        public string? EventContentFile { get; set; }
 
 
     }
