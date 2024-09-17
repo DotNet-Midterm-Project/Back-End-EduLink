@@ -23,6 +23,10 @@ namespace EduLink.Data
         public DbSet<Session> Sessions { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Like> Likes { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupMember> GroupMembers { get; set; }
+        public DbSet<ProjectTask> ProjectTasks { get; set; } // Changed from Task to ProjectTask
+        public DbSet<Meeting> Meetings { get; set; }
 
 
         public EduLinkDbContext(DbContextOptions options) : base(options){}
@@ -240,7 +244,51 @@ namespace EduLink.Data
                 .HasForeignKey(l => l.ArticleID)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            
+            // Configure the relationship between Student and Group
+            modelBuilder.Entity<Group>()
+                .HasOne(g => g.Leader)
+                .WithMany(s => s.LedGroups)
+                .HasForeignKey(g => g.LeaderID)
+                .OnDelete(DeleteBehavior.Restrict); // Ensure that a leader can only be removed if no group depends on them
+
+             // Configure the relationship between GroupMember and Group
+            modelBuilder.Entity<Group>()
+                       .HasMany(g => g.Members)
+                       .WithOne(m => m.Group)
+                       .HasForeignKey(m => m.GroupId);
+
+            // Configure the relationship between ProjectTask and Group
+            modelBuilder.Entity<Group>()
+            .HasMany(g => g.Tasks)
+            .WithOne(t => t.Group)
+            .HasForeignKey(t => t.GroupId);
+
+            // Configure the relationship between Meeting and Group
+            modelBuilder.Entity<Group>()
+                .HasMany(g => g.Meetings)
+                .WithOne(m => m.Group)
+                .HasForeignKey(m => m.GroupId);
+
+            // Configure the relationship between Student and GroupMember
+            modelBuilder.Entity<GroupMember>()
+                .HasOne(m => m.Student)
+                .WithMany(s => s.GroupMemberships)
+                .HasForeignKey(m => m.StudentID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure the relationship between GroupMember and ProjectTask
+            modelBuilder.Entity<ProjectTask>()
+                .HasOne(t => t.AssignedMember)
+                .WithMany(m => m.AssignedTasks)
+                .HasForeignKey(t => t.AssignedTo)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure the relationship between Group and Meeting
+            modelBuilder.Entity<Group>()
+                .HasMany(g => g.Meetings)
+                .WithOne(m => m.Group)
+                .HasForeignKey(m => m.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             //Seed Roles
             SeedRoles(modelBuilder, "Admin");

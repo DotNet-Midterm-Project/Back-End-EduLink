@@ -337,7 +337,7 @@ namespace EduLink.Migrations
                     b.Property<int>("EventID")
                         .HasColumnType("int");
 
-                    b.Property<string>("SessionAdress")
+                    b.Property<string>("SessionAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

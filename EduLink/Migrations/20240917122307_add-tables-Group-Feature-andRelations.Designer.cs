@@ -4,6 +4,7 @@ using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduLink.Migrations
 {
     [DbContext(typeof(EduLinkDbContext))]
-    partial class EduLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240917122307_add-tables-Group-Feature-andRelations")]
+    partial class addtablesGroupFeatureandRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,9 +71,6 @@ namespace EduLink.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("ArticleFile")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PublicationDate")
                         .HasColumnType("datetime2");
@@ -236,9 +236,6 @@ namespace EduLink.Migrations
                     b.Property<string>("EventAddress")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EventBannerImage")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("EventDescription")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -311,9 +308,6 @@ namespace EduLink.Migrations
 
                     b.Property<int>("ContentType")
                         .HasColumnType("int");
-
-                    b.Property<string>("EventContentFile")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EventID")
                         .HasColumnType("int");
@@ -607,9 +601,6 @@ namespace EduLink.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("ProfileImage")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
