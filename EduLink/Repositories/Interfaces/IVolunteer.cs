@@ -1,4 +1,5 @@
-﻿using EduLink.Models.DTO.Request;
+﻿using EduLink.Models;
+using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 
 namespace EduLink.Repositories.Interfaces
@@ -19,8 +20,9 @@ namespace EduLink.Repositories.Interfaces
         Task<MessageResDTO> ModifyArticleStatusAsync(ModifyArticleStatusReqDTO request, int volunteerId);
         Task<ArticlesResDTO> GetArticlesForVolunteerAsync(int volunteerId);
         Task<ArticleDTO> GetArticleByIdAsync(int articleId);
-        Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId);
-        Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request);
+        Task<MessageResDTO> UpdateArticleAsync(UpdateArticleReqDTO request, int volunteerId );
+        Task<MessageResDTO> UpdateEventAsync(UpdateEventReqDTO request );
         //Task<GetNotificationsResponse> GetNotificationsAsync(GetNotificationsRequest request);
+        Task<EventResDTO> GetEventByIdAsync(int eventId);
     }
 }

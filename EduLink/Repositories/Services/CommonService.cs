@@ -3,15 +3,19 @@ using EduLink.Models;
 using EduLink.Repositories.Interfaces;
 using EduLink.Data;
 using Microsoft.EntityFrameworkCore;
+using EduLink.Models.DTO.Request;
+using Azure.Core;
 namespace EduLink.Repositories.Services
 {
     public class CommonService : ICommon
     {
         private readonly EduLinkDbContext _context;
+        private readonly IFile file;
 
-        public CommonService(EduLinkDbContext context)
+        public CommonService(EduLinkDbContext context , IFile _file)
         {
             _context = context;
+            file = _file;
         }
 
         public async Task<List<WorkshopResponseDTO>> GetAllWorkshopsAsync()
@@ -149,6 +153,57 @@ namespace EduLink.Repositories.Services
             _context.Likes.Add(like);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<MessageResDTO> EditProfile(UpdateUserReqDto userDto, int studentId)
+        {
+            
+            var userId = await _context.Students
+                .Where(e => e.StudentID == studentId)
+                .Select(e => e.UserID)
+                .FirstOrDefaultAsync();
+
+            if (userId == null)
+            {
+                return null;
+            }
+
+         
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(userDto.Name))
+            {
+                user.UserName = userDto.Name;
+                user.NormalizedUserName = user.UserName.ToUpper(); 
+            }
+
+            if (!string.IsNullOrEmpty(userDto.Email))
+            {
+                user.Email = userDto.Email;
+                user.NormalizedEmail = user.Email.ToUpper();
+            }
+            if (user.ProfileImage != null) {
+                string oldImage = user.ProfileImage;
+                file.DeleteFileAsync(oldImage);
+            }
+            if (userDto.ProfilePicture != null)
+            {
+              //  user.ProfileImage = ProfilePicture;
+            }
+            string[] allowedFileExtensions = new string[] {".jpg", ".jpeg", ".png" };
+             var newFileName = await file.SaveFileAsync(userDto.ProfilePicture, allowedFileExtensions);
+            user.ProfileImage = newFileName;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return new MessageResDTO
+            {
+                Message = "Profile updated successfully."
+            };
+        }
+
     }
 
 }

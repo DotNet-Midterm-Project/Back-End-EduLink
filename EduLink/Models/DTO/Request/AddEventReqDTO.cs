@@ -24,5 +24,6 @@ namespace EduLink.Models.DTO.Request
         public DateTimeOffset EndTime { get; set; }
         public string EventAddress { get; set; }
         public int SessionCounts { get; set; }
+        public IFormFile? EventBannerImage {  get; set; } 
     }
 }

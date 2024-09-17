@@ -17,5 +17,6 @@ namespace EduLink.Models.DTO.Request
         public EventType EventType { get; set; }
         public string? EventAddress { get; set; }
         public int? SessionCount { get; set; }
+        public IFormFile? file { get; set; }
     }
 }

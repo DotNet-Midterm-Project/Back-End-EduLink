@@ -133,6 +133,29 @@ namespace EduLink.Controllers
             await _commonService.LikeArticleAsync(articleId, userId);
             return Ok("Like added successfully");
         }
+        [Authorize]
+        [HttpPut("Edit-Profile")]
+        public async Task<IActionResult> EditPrifile([FromForm] UpdateUserReqDto user)
+        {
+            var StudentIdClaims = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
+            if (StudentIdClaims == null)
+            {
+                return Unauthorized(new { message = "Volunteer ID not found in token." });
+            }
+            if (!int.TryParse(StudentIdClaims.Value, out int StudentId))
+            {
+                return BadRequest(new { message = "Invalid Volunteer ID." });
+            }
+            var response = await _commonService.EditProfile(user, StudentId);
+
+            if (response == null)
+            {
+                return NotFound("User Not Found");
+            }
+
+            return Ok(response);
+        }
+
 
     }
 }
