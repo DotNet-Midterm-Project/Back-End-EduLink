@@ -39,5 +39,5 @@ The EduAid Platform is structured around three main entities: **Students**, **St
   
 ---
 
-**Made with 💙 by the EduAid Team.**
+**Made with 💙 by the EduLink Team.**
 
