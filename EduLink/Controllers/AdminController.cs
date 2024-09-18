@@ -92,7 +92,7 @@ namespace EduLink.Controllers
             return Ok(result);
         }
 
-        [HttpPost("student-to-become-volunteer/{VolunteerId}")]
+        [HttpPost("approve-volunteer/{VolunteerId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddStudentToVolunteer([FromRoute] int VolunteerId)
         {

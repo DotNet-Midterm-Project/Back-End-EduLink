@@ -3,6 +3,7 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Mail;
@@ -15,12 +16,13 @@ namespace EduLink.Repositories.Services
         private readonly EduLinkDbContext eduLinkDbContext;
         private readonly UserManager<User> userManager;
         private readonly IFile _file;
-
-        public AdminService(EduLinkDbContext eduLinkDbContext, UserManager<User> userManager , IFile file )
+        private readonly IEmailService  _email;
+        public AdminService(EduLinkDbContext eduLinkDbContext, UserManager<User> userManager , IFile file, IEmailService email )
         {
             this.eduLinkDbContext = eduLinkDbContext;
             this.userManager = userManager;
             _file = file;
+            _email = email;
         }
 
         public async Task<string> AddCourse(AddCourseReqDto addCourseReqDto)
@@ -97,8 +99,12 @@ namespace EduLink.Repositories.Services
         public async Task<string> AddStudentToVolunteer(int volunteerId)
         {
             var volunteer = await eduLinkDbContext.Volunteers
+                .Include(v => v.VolunteerCourse)
+        .ThenInclude(vc => vc.Course)
+        .ThenInclude(c=>c.CourseName)
         .Include(v => v.Student) 
         .ThenInclude(s => s.User) 
+        
         .FirstOrDefaultAsync(v => v.VolunteerID == volunteerId);
             if (volunteer == null)
             {
@@ -110,6 +116,25 @@ namespace EduLink.Repositories.Services
 
             await userManager.AddToRoleAsync(user, "Volunteer");
             await eduLinkDbContext.SaveChangesAsync();
+           
+            var studentEmaile = user.Email;
+            var emailSubject = $"New Event: Volunteer Approval";
+             var emailDescriptionHtml = $@"
+            <p>Dear {user.UserName},</p>
+            <p>We are pleased to inform you that you have been approved as a volunteer.</p>
+            <p>Please log in to the system to check your activities and responsibilities.</p>
+            <p>If you have any questions, feel free to reach out.</p>
+            <p>Best regards,</p> 
+            <p>EduLink Team</p>";
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(emailDescriptionHtml);
+            var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
+            if (user.Email != null)
+            {
+
+                await _email.SendEmailAsync(studentEmaile, emailSubject, emailDescriptionHtml);
+            }
+
 
             return "Volunteer Approved Successfully";
         }

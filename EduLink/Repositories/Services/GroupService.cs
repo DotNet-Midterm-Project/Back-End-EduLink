@@ -44,7 +44,9 @@ namespace EduLink.Repositories.Services
 
             // Add the new group to the database
             _context.Groups.Add(group);
-           
+            await _context.SaveChangesAsync();
+
+
             var GroupMember = new GroupMember
             {
                 GroupId = group.GroupId,
@@ -266,7 +268,7 @@ namespace EduLink.Repositories.Services
 
             return new MessageResDTO
             {
-                Message = $"Member with StudentID {newMember.StudentID} added successfully to group {group.GroupName}."
+                Message = $"Member with Student {student.User.UserName} added successfully to group {group.GroupName}."
             };
         }
 
