@@ -221,6 +221,13 @@ namespace EduLink.Repositories.Services
                 user.NormalizedEmail = user.Email.ToUpper();
             }
             string? oldImage = user.ProfileImage;
+            if (userDto.ProfilePicture.Length > 4 * 1024 * 1024)
+            {
+                return new MessageResDTO
+                {
+                    Message = "File size should not exceed 4 MB."
+                };
+            }
             string[] allowedFileExtensions = new string[] {".jpg", ".jpeg", ".png", ".PNG" };
 
              var newFileName = await file.SaveFileAsync(userDto.ProfilePicture, allowedFileExtensions);

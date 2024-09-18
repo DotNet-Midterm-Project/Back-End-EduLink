@@ -1,6 +1,7 @@
 ﻿using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EduLink.Repositories.Interfaces
 {
@@ -19,6 +20,9 @@ namespace EduLink.Repositories.Interfaces
         Task<MessageResDTO> BookSessionAsync(int studentId, int sessionId);
         Task<MessageResDTO> RegisterVolunteerAsync(int studentId,VolunteerRegisterReqDTO registerDTO);
         Task<List<AnnouncementResDTO>> GetAnnouncementsAsync();
+
+        Task<bool> IsStudentBookedForEventAsync(int studentId, int eventId);
+        Task<(MemoryStream FileStream, string ContentType, string FileName)> DownloadEventFileAsync(int eventId, int studentId);
 
     }
 }

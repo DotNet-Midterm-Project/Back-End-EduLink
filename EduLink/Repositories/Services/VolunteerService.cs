@@ -48,15 +48,15 @@ namespace EduLink.Repositories.Services
             {
                 return new MessageResDTO { Message = "Event not found." };
             }
-            if (dto.UploadFile?.Length > 1 * 2048 * 2048)
+            if (dto.UploadFile?.Length > 4 * 1024 * 1024)
             {
                 return new MessageResDTO
                 {
-                    Message = "File Size should not exceed 2 MB"
+                    Message = "File Size should not exceed 4 MB"
 
                 };
             }
-            string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+            string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png", ".docx" };
             var CreateFile = await file.SaveFileAsync(dto?.UploadFile, allowedFileExtensions);
             var newContent = new EventContent
             {
@@ -164,11 +164,11 @@ namespace EduLink.Repositories.Services
                     Message = "Volunteer is not associated with the course."
                 };
             }
-            if (request?.EventBannerImage?.Length > 1 * 1024 * 1024)
+            if (request?.EventBannerImage?.Length > 4 * 1024 * 1024)
             {
                 return new MessageResDTO
                 {
-                    Message = "File Size should not exceed 1 MB"
+                    Message = "File Size should not exceed 4 MB"
                 };
 
             }
@@ -479,14 +479,14 @@ namespace EduLink.Repositories.Services
             {
                 throw new Exception("Volunteer not found");
             }
-            if (request.UploadFile?.Length > 1 * 1024 * 1024)
+            if (request.UploadFile?.Length > 4 * 1024 * 1024)
             {
                 return new MessageResDTO {
-                    Message = "File Size should not exceed 1 MB"
+                    Message = "File Size should not exceed 4 MB"
                 };
             }
 
-            string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+            string[] allowedFileExtensions = new string[] {".jpg", ".jpeg", ".png" };
 
             var CreateFile = await file.SaveFileAsync(request?.UploadFile, allowedFileExtensions);
             var article = new Article
@@ -597,15 +597,15 @@ namespace EduLink.Repositories.Services
             string newFileName = null;
             if (request.formFile != null)
             {
-                if (request.formFile.Length > 1 * 2048 * 2048)
+                if (request.formFile.Length > 4 * 1024 * 1024)
                 {
                     return new MessageResDTO
                     {
-                        Message = "File size should not exceed 2 MB."
+                        Message = "File size should not exceed 4 MB."
                     };
                 }
 
-                string[] allowedFileExtensions = new string[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                string[] allowedFileExtensions = new string[] { ".jpg", ".jpeg", ".png" };
                 newFileName = await file.SaveFileAsync(request.formFile, allowedFileExtensions);
 
                 if (string.IsNullOrEmpty(newFileName))
@@ -649,10 +649,10 @@ namespace EduLink.Repositories.Services
             string newImage = null;
             if (request.file != null)
             {
-                if (request.file.Length > 1 * 1024 * 1024)
+                if (request.file.Length > 4 * 1024 * 1024)
                 {
                     return new  MessageResDTO{
-                      Message = "File size should not exceed 1 MB."
+                      Message = "File size should not exceed 4 MB."
                     };
                 }
 
