@@ -43,7 +43,7 @@ namespace EduLink
             builder.Services.AddScoped<IFile, FileService>();
             builder.Services.AddScoped<JwtTokenService>();
 
-
+            builder.Services.AddScoped<ITask, TaskService>();
             // Configure Identity
             builder.Services.AddIdentity<User, IdentityRole>(options => { })
                 .AddEntityFrameworkStores<EduLinkDbContext>()
