@@ -47,7 +47,9 @@ namespace EduLink
 
             builder.Services.AddScoped<ITask, TaskService>();
             // Configure Identity
-            builder.Services.AddIdentity<User, IdentityRole>(options => { })
+            builder.Services.AddIdentity<User, IdentityRole>(options => {
+                options.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<EduLinkDbContext>()
                 .AddDefaultTokenProviders();
 
