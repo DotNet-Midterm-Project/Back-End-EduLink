@@ -22,7 +22,7 @@ namespace EduLink.Controllers
         public async Task<IActionResult> CreateTask(CreateTaskReqDto taskReqDto)
         {
  
-            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentId");
+            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
             if (studentClaimsId == null)
             {
                 return Unauthorized(new { message = "Student ID not found in token." });
@@ -69,7 +69,7 @@ namespace EduLink.Controllers
         public async Task<IActionResult> GetAllTasksForStudent(int groupId)
         {
             
-            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentId");
+            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
             if (studentClaimsId == null)
             {
                 return Unauthorized(new { message = "Student ID not found in token." });
@@ -82,7 +82,7 @@ namespace EduLink.Controllers
             }
 
           
-            var tasks = await task.AllTasksForStudent(groupId, studentId);
+            var tasks = await task.GetAllTasksForStudent(groupId, studentId);
 
             if (tasks == null || !tasks.Any())
             {
@@ -96,7 +96,7 @@ namespace EduLink.Controllers
         public async Task<IActionResult> GetTaskById(int groupId, int taskId)
         {
             // Extract the StudentId from the claims (from the token)
-            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentId");
+            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
             if (studentClaimsId == null)
             {
                 return Unauthorized(new { message = "Student ID not found in token." });
@@ -111,18 +111,18 @@ namespace EduLink.Controllers
             // Call the service to get the task by ID
             var gettask = await task.GetTaskById(studentId, groupId, taskId);
 
-            if (task == null)
+            if (gettask == null)
             {
                 return NotFound(new { message = "Task not found or student does not belong to the group." });
             }
 
-            return Ok(task);
+            return Ok(gettask);
         }
         [HttpPut("UpdateTask")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> UpdateTask(UpdateTaskReqDto updateTaskReqDto)
         {
-            var StudentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentId");
+            var StudentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
             if (StudentClaimsId == null)
             {
                 return Unauthorized(new { message = "Student ID not found in token." });
@@ -148,7 +148,7 @@ namespace EduLink.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> UpdateTaskStatus(int taskId, int status)
         {
-            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentId");
+            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
             if (studentClaimsId == null)
             {
                 return Unauthorized(new { message = "Student ID not found in token." });
@@ -172,7 +172,7 @@ namespace EduLink.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> DeleteTask(int taskId)
         {
-            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentId");
+            var studentClaimsId = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
             if (studentClaimsId == null)
             {
                 return Unauthorized(new { message = "Student ID not found in token." });
