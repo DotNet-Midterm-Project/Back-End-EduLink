@@ -153,6 +153,30 @@ namespace EduLink.Controllers
 
             return Ok(groupDto);
         }
+        [Authorize(Roles = "Student")]
+        [HttpGet("group-members/{groupId}")]
+        public async Task<IActionResult> GetMembersOfGroup(int groupId)
+        {
+            var memberIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
+            if (memberIdClaim == null)
+            {
+                return Unauthorized(new { message = "Student ID not found in token." });
+            }
+
+            if (!int.TryParse(memberIdClaim.Value, out int memberId))
+            {
+                return BadRequest(new { message = "Invalid Student ID." });
+            }
+
+            var members = await _groupService.GetMembersOfGroupAsync(groupId, memberId);
+
+            if (!members.Any())
+            {
+                return BadRequest(new { message = "You are not a member of this group or group not found." });
+            }
+
+            return Ok(members);
+        }
 
 
 
@@ -180,6 +204,31 @@ namespace EduLink.Controllers
             var result = await _groupService.UpdateGroupAsync(groupId, updateGroupDto, leaderId);
 
             if (result.Message.Contains("not found") || result.Message.Contains("Only the group leader"))
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "Student")]
+        [HttpPut("update-members-role")]
+        public async Task<IActionResult> UpdateMemberRole([FromBody] GroupMemberUpdateReqDto memberUpdate)
+        {
+            var leaderIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
+            if (leaderIdClaim == null)
+            {
+                return Unauthorized(new { message = "Student ID not found in token." });
+            }
+
+            if (!int.TryParse(leaderIdClaim.Value, out int leaderId))
+            {
+                return BadRequest(new { message = "Invalid Student ID." });
+            }
+
+            var result = await _groupService.UpdateMemberRoleAsync(memberUpdate, leaderId);
+
+            if (result.Message == "Only the group leader can update member roles.")
             {
                 return BadRequest(result);
             }
@@ -217,31 +266,7 @@ namespace EduLink.Controllers
 
 
 
-        [Authorize(Roles ="Student")]
-        [HttpGet("{groupId}/members")]
-        public async Task<IActionResult> GetMembersOfGroup(int groupId)
-        {
-            var memberIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
-            if (memberIdClaim == null)
-            {
-                return Unauthorized(new { message = "Student ID not found in token." });
-            }
-
-            if (!int.TryParse(memberIdClaim.Value, out int memberId))
-            {
-                return BadRequest(new { message = "Invalid Student ID." });
-            }
-
-            var members = await _groupService.GetMembersOfGroupAsync(groupId, memberId);
-
-            if (!members.Any())
-            {
-                return BadRequest(new { message = "You are not a member of this group or group not found." });
-            }
-
-            return Ok(members); 
-        }
-
+     
 
         [Authorize(Roles = "Student")]
         [HttpDelete("delete-member/{groupId}/{memberId}")]
@@ -269,29 +294,6 @@ namespace EduLink.Controllers
             return Ok(result); 
         }
 
-        [Authorize(Roles = "Student")]
-        [HttpPut("update-members-role")]
-        public async Task<IActionResult> UpdateMemberRole([FromBody] GroupMemberUpdateReqDto memberUpdate)
-        {
-            var leaderIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StudentID");
-            if (leaderIdClaim == null)
-            {
-                return Unauthorized(new { message = "Student ID not found in token." });
-            }
-
-            if (!int.TryParse(leaderIdClaim.Value, out int leaderId))
-            {
-                return BadRequest(new { message = "Invalid Student ID." });
-            }
-
-            var result = await _groupService.UpdateMemberRoleAsync(memberUpdate, leaderId);
-
-            if (result.Message == "Only the group leader can update member roles.")
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result); 
-        }
+       
     }
 }
