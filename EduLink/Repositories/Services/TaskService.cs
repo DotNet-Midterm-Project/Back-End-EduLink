@@ -42,6 +42,7 @@ namespace EduLink.Repositories.Services
                 };
             }
 
+            // Get the student's role in the group
             var studentRoleInGroup = await context.GroupMembers
                 .Where(gm => gm.GroupId == createTaskReqDto.GroupId && gm.StudentID == studentId)
                 .Select(gm => gm.Role)
@@ -63,47 +64,45 @@ namespace EduLink.Repositories.Services
                 };
             }
 
-            // Check if the assigned student is part of the group
-            var existStudentInGroup = await context.GroupMembers
-                .AnyAsync(gm => gm.GroupId == createTaskReqDto.GroupId && gm.StudentID == createTaskReqDto.StudentId);
+            // Check if the assigned student is part of the group and get their GroupMemberId
+            var groupMember = await context.GroupMembers
+                .Where(gm => gm.GroupId == createTaskReqDto.GroupId && gm.StudentID == createTaskReqDto.StudentId)
+                .FirstOrDefaultAsync();
 
-            if (!existStudentInGroup)
+            if (groupMember == null)
             {
                 return new MessageResDTO
                 {
                     Message = "The Assigned Student is not found in this Group"
                 };
             }
+
+            // Get the student's email
             var studentEmaile = await context.Students
-             .Where(e => e.StudentID == createTaskReqDto.StudentId)
-             .Include(e => e.User) 
-             .Select(e => e.User.Email) 
-             .FirstOrDefaultAsync();
+                .Where(e => e.StudentID == createTaskReqDto.StudentId)
+                .Include(e => e.User)
+                .Select(e => e.User.Email)
+                .FirstOrDefaultAsync();
+
+            // Email details
             var emailSubject = $"New Task Assigned: {createTaskReqDto.TaskName}";
             var emailDescriptionHtml = $@"
-            <p>Dear Student,</p>
-            <p>We would like to inform you that a new task has been assigned to you:</p>
-            <p><strong>Task Name:</strong> {createTaskReqDto.TaskName}</p>
-            <p><strong>Due Date:</strong> {createTaskReqDto.DueDate}</p>
-            <p><strong>Description:</strong> {createTaskReqDto.Description}</p>
-            <p>Please ensure you complete this task by the due date.</p>
-            <p>Best regards,</p>
-            <p>EduLink Team</p>";
+        <p>Dear Student,</p>
+        <p>A new task has been assigned to you:</p>
+        <p><strong>Task Name:</strong> {createTaskReqDto.TaskName}</p>
+        <p><strong>Due Date:</strong> {createTaskReqDto.DueDate}</p>
+        <p><strong>Description:</strong> {createTaskReqDto.Description}</p>
+        <p>Best regards,</p>
+        <p>EduLink Team</p>";
 
-            // Convert HTML to plain text
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(emailDescriptionHtml);
-            var emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
-
-
-
+            // Send email
             await email.SendEmailAsync(studentEmaile, emailSubject, emailDescriptionHtml);
 
             // Create the task
             var task = new ProjectTask
             {
                 TaskName = createTaskReqDto.TaskName,
-                AssignedTo = createTaskReqDto.StudentId,
+                AssignedTo = groupMember.GroupMemberId,  // Use the correct GroupMemberId
                 Description = createTaskReqDto.Description,
                 DueDate = createTaskReqDto.DueDate,
                 GroupId = createTaskReqDto.GroupId,
@@ -118,24 +117,23 @@ namespace EduLink.Repositories.Services
                 Message = "Task created successfully"
             };
         }
-        public async Task<List<TaskResDto>> AllTasksForStudent(int groupId,int studentId)
+
+        public async Task<List<TaskResDto>> GetAllTasksForStudent(int groupId, int studentId)
         {
- 
-            var existGroup = await context.Groups.FindAsync(groupId);
-            if (existGroup == null)
+            // Find the GroupMemberId of the student in the specified group
+            var groupMember = await context.GroupMembers
+                .Where(gm => gm.GroupId == groupId && gm.StudentID == studentId)
+                .Select(gm => gm.GroupMemberId)
+                .FirstOrDefaultAsync();
+
+            if (groupMember == 0)
             {
-                return null; 
+                return null; // Student is not a member of the specified group
             }
 
-            var existStudentinGroup = await context.GroupMembers
-                .AnyAsync(gm => gm.GroupId == groupId && gm.StudentID == studentId);
-
-            if (!existStudentinGroup)
-            {
-                return null; 
-            }
+            // Fetch tasks assigned to the student (by GroupMemberId) within the specified group
             var tasks = await context.ProjectTasks
-                .Where(t => t.GroupId == groupId && t.AssignedTo == studentId)
+                .Where(t => t.GroupId == groupId && t.AssignedTo == groupMember) // Use GroupMemberId here
                 .Select(t => new TaskResDto
                 {
                     TaskName = t.TaskName,
@@ -150,37 +148,46 @@ namespace EduLink.Repositories.Services
             return tasks;
         }
 
+
         public async Task<TaskResDto> GetTaskById(int studentId, int groupId, int taskId)
         {
-     
+            // Check if the group exists
             var existGroup = await context.Groups.FindAsync(groupId);
             if (existGroup == null)
             {
-
-                return null;
+                return null; // Group does not exist
             }
 
-            var existStudentInGroup = await context.GroupMembers
-                .AnyAsync(gm => gm.GroupId == groupId && gm.StudentID == studentId);
+            // Find the GroupMemberId for the student in the group
+            var groupMemberId = await context.GroupMembers
+                .Where(gm => gm.GroupId == groupId && gm.StudentID == studentId)
+                .Select(gm => gm.GroupMemberId)
+                .FirstOrDefaultAsync();
 
-            if (!existStudentInGroup)
+            if (groupMemberId == 0) // If groupMemberId is not found
             {
-                return null; 
+                return null; // Student is not part of the group
             }
+
+            // Fetch the task assigned to the student using the GroupMemberId
             var task = await context.ProjectTasks
-                .Where(t => t.GroupId == groupId && t.ProjectTaskId == taskId && t.AssignedTo == studentId)
+                .Where(t => t.GroupId == groupId && t.ProjectTaskId == taskId && t.AssignedTo == groupMemberId)
                 .Select(t => new TaskResDto
                 {
                     TaskName = t.TaskName,
                     ProjectTaskId = t.ProjectTaskId,
                     DueDate = t.DueDate,
                     Description = t.Description,
-                    Status = t.Status.ToString(), 
+                    Status = t.Status.ToString(),
                     GroupId = t.GroupId
                 })
                 .FirstOrDefaultAsync();
+
+            // Return task or null if not found
             return task;
         }
+
+
 
         public async Task<MessageResDTO> UpdateTask(UpdateTaskReqDto updateTaskReqDto, int studentId)
         {
