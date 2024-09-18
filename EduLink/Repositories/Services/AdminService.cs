@@ -100,8 +100,6 @@ namespace EduLink.Repositories.Services
         {
             var volunteer = await eduLinkDbContext.Volunteers
                 .Include(v => v.VolunteerCourse)
-        .ThenInclude(vc => vc.Course)
-        .ThenInclude(c=>c.CourseName)
         .Include(v => v.Student) 
         .ThenInclude(s => s.User) 
         
