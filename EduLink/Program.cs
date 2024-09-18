@@ -43,6 +43,7 @@ namespace EduLink
             builder.Services.AddScoped<IFile, FileService>();
             builder.Services.AddScoped<IGroup, GroupService>();
             builder.Services.AddScoped<JwtTokenService>();
+            builder.Services.AddScoped<IMeetingService, MeetingService>();  
 
             builder.Services.AddScoped<ITask, TaskService>();
             // Configure Identity
