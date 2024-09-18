@@ -161,11 +161,11 @@ namespace EduLink.Repositories.Services
                 BookingID = feedbackDtoRequest.BookingId
             };
 
-            var checkEvent = await eduLinkDbContext.Events.FindAsync(feedback.BookingID);
-            if(checkEvent == null)
-            {
-                return new MessageResDTO { Message = "not found" };
-            }
+            //var checkEvent = await eduLinkDbContext.Events.FindAsync(feedback.BookingID);
+            //if(checkEvent == null)
+            //{
+            //    return new MessageResDTO { Message = "not found" };
+            //}
            
                 var volunteer = booking.Event.VolunteerCourse.Volunteer;
                   
@@ -174,8 +174,8 @@ namespace EduLink.Repositories.Services
                     volunteer.RatingAcount++;
                     eduLinkDbContext.Feedbacks.Add(feedback);
                     await eduLinkDbContext.SaveChangesAsync();
-                
-            return null;
+
+            return   new MessageResDTO { Message = "Add Feedback Successfully " };
 
             
    
