@@ -11,7 +11,11 @@ namespace EduLink.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-         
+
+            //migrationBuilder.RenameColumn(
+            //    name: "SessionAdress",
+            //    table: "Sessions",
+            //    newName: "SessionAddress");
 
             migrationBuilder.CreateTable(
                 name: "Groups",

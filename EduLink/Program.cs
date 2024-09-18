@@ -41,6 +41,7 @@ namespace EduLink
             builder.Services.AddScoped<IVolunteer, VolunteerService>();
             builder.Services.AddScoped<IAdmin, AdminService>();
             builder.Services.AddScoped<IFile, FileService>();
+            builder.Services.AddScoped<IGroup, GroupService>();
             builder.Services.AddScoped<JwtTokenService>();
 
             builder.Services.AddScoped<ITask, TaskService>();

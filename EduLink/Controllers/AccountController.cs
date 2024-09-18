@@ -54,18 +54,18 @@ namespace EduLink.Controllers
         }
 
         //Move to admin or we need to wait for approve from admin
-        [HttpPost("become-volunteer")]
-        //[Authorize(Roles = "Student")]
-        public async Task<IActionResult> BecomeVolunteer(string volunteerID)
-        {
-            var result = await _accountService.AddStudentToVolunteerRoleAsync(volunteerID);
-            if (!result)
-            {
-                return NotFound("Student not found or user is not a student.");
-            }
+        //[HttpPost("become-volunteer")]
+        ////[Authorize(Roles = "Student")]
+        //public async Task<IActionResult> BecomeVolunteer(string volunteerID)
+        //{
+        //    var result = await _accountService.AddStudentToVolunteerRoleAsync(volunteerID);
+        //    if (!result)
+        //    {
+        //        return NotFound("Student not found or user is not a student.");
+        //    }
 
-            return Ok("Student has become a volunteer.");
-        }
+        //    return Ok("Student has become a volunteer.");
+        //}
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginReqDTO loginDto)

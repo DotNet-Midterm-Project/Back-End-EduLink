@@ -7,4 +7,6 @@
         public string Message { get; set; }
         public DateTime AnounceDate { get; set; }
     }
+
+
 }
