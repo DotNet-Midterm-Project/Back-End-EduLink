@@ -3,10 +3,13 @@ using EduLink.Models;
 using EduLink.Models.DTO.Request;
 using EduLink.Models.DTO.Response;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 using Microsoft.IdentityModel.Tokens;
+using SendGrid.Helpers.Mail;
 
 
 namespace EduLink.Repositories.Services
@@ -336,6 +339,83 @@ namespace EduLink.Repositories.Services
                 })
                 .ToListAsync();
         }
-    }
+
+        //Download file
+
+        // Check if student is booked for the event
+        public async Task<bool> IsStudentBookedForEventAsync(int studentId, int eventId)
+        {
+            return await eduLinkDbContext.Bookings
+                                 .AnyAsync(b => b.EventID == eventId && b.StudentID == studentId);
+        }
+
+        // Fetch the event content and return the file for download
+        public async Task<(MemoryStream FileStream, string ContentType, string FileName)> DownloadEventFileAsync(int eventId, int studentId)
+        {
+            // Check if the student is booked for this event
+            var isBooked = await IsStudentBookedForEventAsync(studentId, eventId);
+
+            if (!isBooked)
+            {
+                throw new UnauthorizedAccessException("You are not booked for this event.");
+            }
+
+            // Fetch the EventContent for the event
+            var eventContent = await eduLinkDbContext.EventContents
+                                          .FirstOrDefaultAsync(e => e.EventID == eventId);
+
+            if (eventContent == null || string.IsNullOrEmpty(eventContent.EventContentFile))
+            {
+                throw new FileNotFoundException("No file is available for this event.");
+            }
+
+            // Get the absolute file path
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", eventContent.EventContentFile);
+
+            // Log the path for debugging
+            Console.WriteLine($"Attempting to download file from path: {filePath}");
+
+            // Check if the file exists on the server
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("File does not exist on server.");
+            }
+
+            try
+            {
+                // Create memory stream and copy file contents to it
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+
+                // Reset memory stream position for returning the file
+                memory.Position = 0;
+
+                // Infer the file's content type
+                var provider = new FileExtensionContentTypeProvider();
+                if (!provider.TryGetContentType(filePath, out string contentType))
+                {
+                    contentType = "application/octet-stream"; // Default content type if unknown
+                }
+
+                // Get the file name for download
+                var fileName = Path.GetFileName(filePath);
+
+                // Return the file data as a tuple (stream, content type, file name)
+                return (memory, contentType, fileName);
+            }
+            catch (Exception ex)
+            {
+                // Log exception details for debugging
+                Console.WriteLine($"Error occurred while downloading the file: {ex.ToString()}");
+                throw new Exception("An error occurred while processing the file.", ex);
+            }
+        }
+
+        
+    
+}
 }    
 

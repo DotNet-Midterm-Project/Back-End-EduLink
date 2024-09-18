@@ -244,6 +244,47 @@ namespace EduLink.Controllers
             return Ok(announcements);
         }
 
+        //Download
+        [HttpGet("download/{eventId}")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> DownloadEventFile(int eventId)
+        {
+            // Assume studentId is extracted from claims or passed in some other way
+            var studentId = GetStudentIdFromClaims();
+
+
+            try
+            {
+                var (fileStream, contentType, fileName) = await student.DownloadEventFileAsync(eventId, studentId);
+
+                // Return the file for download
+                return File(fileStream, contentType, fileName);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Handle unauthorized access
+                return StatusCode(403, ex.Message);
+            }
+            catch (FileNotFoundException ex)
+            {
+                // Handle file not found
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle generic errors
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        private int GetStudentIdFromClaims()
+        {
+            // Replace this with the actual logic to get studentId from claims
+            var studentIdClaim = User.FindFirst("StudentID");
+            return int.Parse(studentIdClaim?.Value ?? "0");
+        }
+
+
         [HttpDelete("delete-booking/{BookingID}")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> DeleteBooking([FromRoute] int BookingID)
