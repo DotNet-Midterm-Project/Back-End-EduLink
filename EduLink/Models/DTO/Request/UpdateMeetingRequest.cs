@@ -1,8 +1,6 @@
-﻿using System.Data;
-
-namespace EduLink.Models.DTO.Request
+﻿namespace EduLink.Models.DTO.Request
 {
-    public class MeetingRequestDTO
+    public class UpdateMeetingRequest
     {
         public int GroupId { get; set; }
         public DateTime ScheduledDate { get; set; }

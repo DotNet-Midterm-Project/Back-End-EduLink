@@ -23,7 +23,7 @@ namespace EduLink.Controllers
                 return BadRequest("Invalid request.");
 
             var meeting = await _meetingService.CreateMeetingAsync(request);
-            return CreatedAtAction(nameof(GetMeeting), new { groupId = meeting.GroupId }, meeting);
+            return Ok(meeting);
         }
 
         [HttpGet]
@@ -36,23 +36,48 @@ namespace EduLink.Controllers
         [HttpGet("{meetingId}")]
         public async Task<IActionResult> GetMeeting(int groupId, int meetingId)
         {
+            if (groupId <= 0 || meetingId <= 0)
+                return BadRequest("Invalid group ID or meeting ID.");
+
             var meeting = await _meetingService.GetMeetingByIdAsync(groupId, meetingId);
+            if (meeting == null)
+                return BadRequest("Meeting not found.");
+
             return Ok(meeting);
         }
 
         [HttpPut("{meetingId}")]
-        public async Task<IActionResult> UpdateMeeting(int groupId, int meetingId, [FromBody] MeetingRequestDTO request)
+        public async Task<IActionResult> UpdateMeeting(int meetingId, [FromBody] UpdateMeetingRequest request)
         {
-            var updatedMeeting = await _meetingService.UpdateMeetingAsync(groupId, meetingId, request);
+            var updatedMeeting = await _meetingService.UpdateMeetingAsync(meetingId, request);
+            if (updatedMeeting == null)
+            {
+                return BadRequest("Request cannot be null");
+            }
             return Ok(updatedMeeting);
         }
 
         [HttpDelete("{meetingId}")]
         public async Task<IActionResult> DeleteMeeting(int groupId, int meetingId)
         {
-            await _meetingService.DeleteMeetingAsync(groupId, meetingId);
-            return Ok(new { message = "Meeting deleted successfully." });
+            if (groupId <= 0 || meetingId <= 0)
+            {
+                return BadRequest(new { message = "Invalid group ID or meeting ID." });
+            }
+
+            try
+            {
+                await _meetingService.DeleteMeetingAsync(groupId, meetingId);
+                return Ok(new { message = "Meeting deleted successfully." });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Meeting not found." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred: {ex.Message}" });
+            }
         }
     }
-
 }

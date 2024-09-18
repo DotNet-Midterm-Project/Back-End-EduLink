@@ -4,58 +4,124 @@ using EduLink.Models;
 using EduLink.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using EduLink.Data;
-using System.ComponentModel.DataAnnotations;
+using HtmlAgilityPack;
 
 namespace EduLink.Repositories.Services
 {
     public class MeetingService : IMeetingService
     {
         private readonly EduLinkDbContext _dbContext;
-
-        public MeetingService(EduLinkDbContext dbContext)
+        private readonly IEmailService _Email;
+        public MeetingService(EduLinkDbContext dbContext, IEmailService email)
         {
             _dbContext = dbContext;
+            _Email = email;
         }
 
-        public async Task<MeetingResponseDTO> CreateMeetingAsync(MeetingRequestDTO request)
+        public async Task<MessageResDTO> CreateMeetingAsync(MeetingRequestDTO request)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+            var emailDescriptionPlain = "";
 
-            // Validate MeetingRequestDTO properties
-            if (string.IsNullOrWhiteSpace(request.MeetingLink))
-                throw new ValidationException("Meeting link is required.");
+            var group = await _dbContext.Groups
+                .Include(g => g.Members)
+                .ThenInclude(m => m.Student)
+                .ThenInclude(s => s.User)
+                .FirstOrDefaultAsync(g => g.GroupId == request.GroupId);
 
-            if (request.ScheduledDate == default)
-                throw new ValidationException("Scheduled date is required.");
-
-            // Add more validations as needed
-
-            var meeting = new Meeting
+            if (group != null)
             {
-                MeetingLink = request.MeetingLink,
-                ScheduledDate = request.ScheduledDate,
-                Announcement = request.Announcement,
-                GroupId = request.GroupId
-            };
+                var emails = group.Members
+                    .Select(m => m.Student.User.Email)
+                    .Where(email => !string.IsNullOrWhiteSpace(email))
+                    .ToList();
 
-            _dbContext.Meetings.Add(meeting);
-            await _dbContext.SaveChangesAsync();
+                var service = GoogleCalendarService.GetCalendarService();
 
-            return new MeetingResponseDTO
+                // Define the timezone for the event
+                var validTimeZone = "UTC";
+
+                // Create a new event object to be sent to Google Calendar
+                var newEvent = new Google.Apis.Calendar.v3.Data.Event
+                {
+                    Summary = group.GroupName, // Set the event title
+                    Description = group.Description, // Set the event description
+                    Start = new Google.Apis.Calendar.v3.Data.EventDateTime
+                    {
+                        DateTime = request.ScheduledDate, // Set the event start time
+                        TimeZone = validTimeZone // Set the timezone for the start time
+                    },
+                    End = new Google.Apis.Calendar.v3.Data.EventDateTime
+                    {
+                        DateTime = request.ScheduledDate.AddMinutes(60), // Set the event end time 60 minutes after the start
+                        TimeZone = validTimeZone // Set the timezone for the end time
+                    },
+                    ConferenceData = new Google.Apis.Calendar.v3.Data.ConferenceData
+                    {
+                        CreateRequest = new Google.Apis.Calendar.v3.Data.CreateConferenceRequest
+                        {
+                            ConferenceSolutionKey = new Google.Apis.Calendar.v3.Data.ConferenceSolutionKey
+                            {
+                                Type = "hangoutsMeet" // Specify that the meeting should be a Google Meet
+                            },
+                            RequestId = Guid.NewGuid().ToString() // Generate a unique request ID for the meeting
+                        }
+                    }
+                };
+
+                // Define the calendar ID where the event will be created (primary calendar)
+                var calendarId = "primary";
+
+                // Insert the new event into the Google Calendar
+                var request1 = service.Events.Insert(newEvent, calendarId);
+                request1.ConferenceDataVersion = 1; // Specify the conference data version to create a Meet link
+                var createdEvent = await request1.ExecuteAsync(); // Execute the request asynchronously
+                if (emails.Any())
+                {
+                    var emailSubject = $"New Meeting: {group.GroupName}";
+                    var emailDescriptionHtml = $@"
+                <p>Dear Student,</p>
+                <p>We would like to inform you about an upcoming meeting for the group titled <strong>{group.GroupName}</strong>.</p>
+                <p><strong>Meeting Date and Time:</strong> {request.ScheduledDate}</p>
+                <p><strong>Meeting Link:</strong> <a href='{createdEvent.HangoutLink}'>Join the Meeting</a></p>
+                <p>Please make sure to join the meeting using the provided link at the scheduled time.</p>
+                <p>Best regards,</p>
+                <p>EduLink Team</p>";
+
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(emailDescriptionHtml);
+                    emailDescriptionPlain = htmlDoc.DocumentNode.InnerText;
+
+                    await _Email.SendMultipleEmailsAsync(emails, emailSubject, emailDescriptionHtml);
+                }
+
+                var meeting = new Meeting
+                {
+                    MeetingLink = createdEvent.HangoutLink,
+                    ScheduledDate = request.ScheduledDate,
+                    Announcement = emailDescriptionPlain,
+                    GroupId = request.GroupId
+                };
+
+                _dbContext.Meetings.Add(meeting);
+                await _dbContext.SaveChangesAsync();
+
+                return new MessageResDTO
+                {
+                    Message = $"The meeting has been created successfully." +
+                    $" The URL: ('{meeting.MeetingLink}') and send Announcement to ('{meeting.Group.GroupName}') Member."
+                };
+            }
+            else
             {
-                MeetingLink = meeting.MeetingLink,
-                ScheduledDate = meeting.ScheduledDate,
-                Announcement = meeting.Announcement,
-                GroupId = meeting.GroupId
-            };
+                return new MessageResDTO
+                {
+                    Message = "Group not found."
+                };
+            }
         }
 
         public async Task<IEnumerable<MeetingResponseDTO>> GetAllMeetingsAsync(int groupId)
         {
-            if (groupId <= 0)
-                throw new ArgumentException("Invalid group ID.", nameof(groupId));
-
             var meetings = await _dbContext.Meetings
                 .Where(m => m.GroupId == groupId)
                 .ToListAsync();
@@ -71,14 +137,11 @@ namespace EduLink.Repositories.Services
 
         public async Task<MeetingResponseDTO> GetMeetingByIdAsync(int groupId, int meetingId)
         {
-            if (groupId <= 0 || meetingId <= 0)
-                throw new ArgumentException("Invalid group ID or meeting ID.");
-
             var meeting = await _dbContext.Meetings
                 .FirstOrDefaultAsync(m => m.GroupId == groupId && m.Id == meetingId);
 
             if (meeting == null)
-                throw new KeyNotFoundException("Meeting not found.");
+                return null;
 
             return new MeetingResponseDTO
             {
@@ -89,30 +152,15 @@ namespace EduLink.Repositories.Services
             };
         }
 
-        public async Task<MeetingResponseDTO> UpdateMeetingAsync(int groupId, int meetingId, MeetingRequestDTO request)
+        public async Task<MeetingResponseDTO> UpdateMeetingAsync(int meetingId, UpdateMeetingRequest request)
         {
-            if (groupId <= 0 || meetingId <= 0)
-                throw new ArgumentException("Invalid group ID or meeting ID.");
-
             if (request == null)
-                throw new ArgumentNullException(nameof(request), "Request cannot be null.");
-
-            // Validate MeetingRequestDTO properties
-            if (string.IsNullOrWhiteSpace(request.MeetingLink))
-                throw new ValidationException("Meeting link is required.");
-
-            if (request.ScheduledDate == default)
-                throw new ValidationException("Scheduled date is required.");
+                return null;
 
             var meeting = await _dbContext.Meetings
-                .FirstOrDefaultAsync(m => m.GroupId == groupId && m.Id == meetingId);
+                .FirstOrDefaultAsync(m => m.Id == meetingId);
 
-            if (meeting == null)
-                throw new KeyNotFoundException("Meeting not found.");
-
-            meeting.MeetingLink = request.MeetingLink;
             meeting.ScheduledDate = request.ScheduledDate;
-            meeting.Announcement = request.Announcement;
 
             await _dbContext.SaveChangesAsync();
 
@@ -127,14 +175,11 @@ namespace EduLink.Repositories.Services
 
         public async Task DeleteMeetingAsync(int groupId, int meetingId)
         {
-            if (groupId <= 0 || meetingId <= 0)
-                throw new ArgumentException("Invalid group ID or meeting ID.");
-
             var meeting = await _dbContext.Meetings
                 .FirstOrDefaultAsync(m => m.GroupId == groupId && m.Id == meetingId);
 
             if (meeting == null)
-                throw new KeyNotFoundException("Meeting not found.");
+                return;
 
             _dbContext.Meetings.Remove(meeting);
             await _dbContext.SaveChangesAsync();
