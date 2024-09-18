@@ -1,5 +1,6 @@
 ﻿using EduLink.Models.DTO.Request;
 using EduLink.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EduLink.Controllers
@@ -15,7 +16,7 @@ namespace EduLink.Controllers
         {
             _meetingService = meetingService;
         }
-
+        [Authorize(Roles = "Student")]
         [HttpPost]
         public async Task<IActionResult> CreateMeeting([FromBody] MeetingRequestDTO request)
         {
@@ -26,6 +27,7 @@ namespace EduLink.Controllers
             return Ok(meeting);
         }
 
+        [Authorize(Roles = "Student")]
         [HttpGet]
         public async Task<IActionResult> GetAllMeetings(int groupId)
         {
@@ -46,6 +48,7 @@ namespace EduLink.Controllers
             return Ok(meeting);
         }
 
+        [Authorize(Roles = "Student")]
         [HttpPut("{meetingId}")]
         public async Task<IActionResult> UpdateMeeting(int meetingId, [FromBody] UpdateMeetingRequest request)
         {
@@ -57,6 +60,7 @@ namespace EduLink.Controllers
             return Ok(updatedMeeting);
         }
 
+        [Authorize(Roles = "Student")]
         [HttpDelete("{meetingId}")]
         public async Task<IActionResult> DeleteMeeting(int groupId, int meetingId)
         {
