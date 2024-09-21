@@ -4,7 +4,7 @@
 
 ## 📊 ERD Diagram
 
-![EduLink ERD Diagram](https://github.com/DotNet-Midterm-Project/Back-End-EduLink/blob/DEV/EduLink ERD.png)
+![EduLink ERD Diagram](https://github.com/DotNet-Midterm-Project/Back-End-EduLink/blob/DEV/EduLink_ERD.png)
 
 ## 🛠️ Overview of Relationships
 
