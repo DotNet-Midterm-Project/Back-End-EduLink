@@ -32,8 +32,8 @@ The EduAid Platform is structured around three main entities: **Students**, **St
 - **Administrator ↔️ Department/Course**: Administrators manage departments, courses, and volunteer applications.
 
 ## 🔧 Tech Stack
-- **Frontend**: React, HTML, CSS
-- **Backend**: .Net-Core, Entity-Framework
+- **Frontend**: React, HTML, CSS (Comming soon)
+- **Backend**: .Net-Core, Entity-Framework-Core
 - **Database**: SQL Server
 - **Authentication**: JWT
   
