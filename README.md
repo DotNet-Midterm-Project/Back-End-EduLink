@@ -4,7 +4,7 @@
 
 ## 📊 ERD Diagram
 
-![EduLink ERD Diagram](https://github.com/DotNet-Midterm-Project/Back-End-EduLink/blob/DEV/EduLinkERD.jpeg)
+![EduLink ERD Diagram](https://github.com/DotNet-Midterm-Project/Back-End-EduLink/blob/DEV/EduLink_ERD.png)
 
 ## 🛠️ Overview of Relationships
 
@@ -32,8 +32,8 @@ The EduAid Platform is structured around three main entities: **Students**, **St
 - **Administrator ↔️ Department/Course**: Administrators manage departments, courses, and volunteer applications.
 
 ## 🔧 Tech Stack
-- **Frontend**: React, HTML, CSS
-- **Backend**: .Net-Core, Entity-Framework
+- **Frontend**: React, HTML, CSS (Comming soon)
+- **Backend**: .Net-Core, Entity-Framework-Core
 - **Database**: SQL Server
 - **Authentication**: JWT
   
