@@ -19,6 +19,11 @@ namespace EduLink.Repositories.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string emailDescription)
         {
+            // Log or debug to verify if the key is correctly retrieved
+            if (string.IsNullOrEmpty(_apiKey))
+            {
+                throw new Exception("SendGrid API key is not found in environment variables");
+            }
             var client = new SendGridClient(_apiKey);
             var from = new EmailAddress(_fromEmail, "EduLink");
             var to = new EmailAddress(toEmail);
