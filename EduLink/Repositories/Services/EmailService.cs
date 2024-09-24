@@ -17,6 +17,7 @@ namespace EduLink.Repositories.Services
             _fromEmail = _configuration["SendGrid:FromEmail"];
         }
 
+
         public async Task SendEmailAsync(string toEmail, string subject, string emailDescription)
         {
             // Log or debug to verify if the key is correctly retrieved
